@@ -47,15 +47,21 @@ export function DocumentoImprimivel({
     <div className="mx-auto max-w-3xl bg-white p-10 text-slate-900 print:p-0">
       <PrintButton />
 
-      <header className="mb-6 border-b-2 border-slate-900 pb-4 text-center">
-        <h1 className="text-2xl font-extrabold tracking-tight">{empresa.nome}</h1>
-        {empresa.razaoSocial && <p className="text-sm">{empresa.razaoSocial}</p>}
-        <p className="text-xs text-slate-600">
-          {[empresa.cnpj && `CNPJ: ${empresa.cnpj}`, empresa.ie && `IE: ${empresa.ie}`]
-            .filter(Boolean)
-            .join("   ·   ")}
-        </p>
-        {empresa.telefones && <p className="text-xs text-slate-600">Telefones: {empresa.telefones}</p>}
+      <header className="mb-6 flex items-center gap-4 border-b-2 border-slate-900 pb-4">
+        {/* eslint-disable-next-line @next/next/no-img-element -- logo estática, precisa renderizar igual na impressão/PDF */}
+        <img src="/brand/logo.png" alt="" className="h-20 w-20 shrink-0" />
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-extrabold tracking-tight">{empresa.nome}</h1>
+          {empresa.razaoSocial && <p className="text-sm">{empresa.razaoSocial}</p>}
+          <p className="text-xs text-slate-600">
+            {[empresa.cnpj && `CNPJ: ${empresa.cnpj}`, empresa.ie && `IE: ${empresa.ie}`]
+              .filter(Boolean)
+              .join("   ·   ")}
+          </p>
+          {empresa.telefones && <p className="text-xs text-slate-600">Telefones: {empresa.telefones}</p>}
+        </div>
+        {/* espaçador pra manter o texto centralizado apesar da logo à esquerda */}
+        <div className="h-20 w-20 shrink-0" aria-hidden />
       </header>
 
       <div className="mb-4 flex items-center justify-between">

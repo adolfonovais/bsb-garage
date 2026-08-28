@@ -8,7 +8,6 @@ import {
   FileText,
   Wrench,
   Settings,
-  Car,
   Factory,
   ArrowLeftRight,
   Wallet,
@@ -31,8 +30,15 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-neutral-800 bg-black text-neutral-100 md:flex">
-      <div className="flex items-center gap-2 border-b border-neutral-800 px-5 py-5">
-        <Car className="h-6 w-6 text-amber-400" />
+      <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
+        {/* eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev */}
+        <img
+          src="/brand/logo.png"
+          alt="Logo BSB Garage Martelinho de Ouro"
+          width={44}
+          height={44}
+          className="shrink-0"
+        />
         <div>
           <p className="text-sm font-bold leading-tight">BSB Garage</p>
           <p className="text-xs text-neutral-400 leading-tight">Martelinho de Ouro</p>
