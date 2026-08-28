@@ -12,6 +12,23 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Substitui o amarelo/laranja padrão do Tailwind (amber-*) pelo dourado da
+   logo do BSB Garage Martelinho de Ouro. Como o app usa as classes amber-*
+   em vários componentes, redefinir os tons aqui atualiza a cor em todo lugar
+   de uma vez, sem precisar trocar classe por classe. */
+@theme {
+  --color-amber-50: #fdf6e3;
+  --color-amber-100: #faecc0;
+  --color-amber-200: #f5db8a;
+  --color-amber-300: #f0c754;
+  --color-amber-400: #eab82f;
+  --color-amber-500: #d9a316;
+  --color-amber-600: #b8870f;
+  --color-amber-700: #92690c;
+  --color-amber-800: #6f4f0a;
+  --color-amber-900: #543d08;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
