@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { atualizarEmpresa, alternarAtivoUsuario, criarUsuario } from "@/app/(app)/configuracoes/actions";
 import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { nfseConfigurada } from "@/lib/nfse";
+import { whatsappConfigurado } from "@/lib/whatsapp";
+import { CheckCircle2, Circle } from "lucide-react";
 
 export default async function ConfiguracoesPage() {
   const session = await auth();
@@ -94,6 +97,44 @@ export default async function ConfiguracoesPage() {
             </div>
           </form>
         </details>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="mb-1 text-sm font-semibold text-slate-900">Integrações</h2>
+        <p className="mb-4 text-xs text-slate-500">
+          Recursos que dependem de contas/aprovações externas — o sistema já está pronto para
+          ativá-los assim que estiverem disponíveis.
+        </p>
+        <ul className="space-y-3 text-sm">
+          <li className="flex items-start gap-2">
+            {nfseConfigurada() ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            ) : (
+              <Circle className="mt-0.5 h-4 w-4 shrink-0 text-slate-300" />
+            )}
+            <div>
+              <p className="font-medium text-slate-900">Emissão de NFS-e</p>
+              <p className="text-xs text-slate-500">
+                Pendente: escolher um provedor (Focus NFe, eNotas ou PlugNotas), obter certificado
+                digital A1 da empresa e confirmar o CNPJ emissor.
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-2">
+            {whatsappConfigurado() ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            ) : (
+              <Circle className="mt-0.5 h-4 w-4 shrink-0 text-slate-300" />
+            )}
+            <div>
+              <p className="font-medium text-slate-900">Aviso por WhatsApp (Maytra)</p>
+              <p className="text-xs text-slate-500">
+                Pendente: aprovação do app Maytra pela Meta. Até lá, o aviso de OS concluída sai
+                só por e-mail.
+              </p>
+            </div>
+          </li>
+        </ul>
       </Card>
     </div>
   );

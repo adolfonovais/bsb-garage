@@ -59,6 +59,21 @@ async function main() {
     });
   }
 
+  // ---- Estoque de materiais (catálogo básico) ----
+  const pecas: { nome: string; unidade: string; quantidadeMinima: number; custoUnitario: number }[] = [
+    { nome: "Tinta preta metálica", unidade: "l", quantidadeMinima: 2, custoUnitario: 180 },
+    { nome: "Massa plástica", unidade: "kg", quantidadeMinima: 5, custoUnitario: 35 },
+    { nome: "Verniz automotivo", unidade: "l", quantidadeMinima: 2, custoUnitario: 150 },
+    { nome: "Lixa 400", unidade: "un", quantidadeMinima: 20, custoUnitario: 3 },
+  ];
+  for (const p of pecas) {
+    await prisma.peca.upsert({
+      where: { nome: p.nome },
+      update: {},
+      create: { ...p, quantidadeAtual: p.quantidadeMinima * 2 },
+    });
+  }
+
   // ---- Oficina terceirizada de exemplo ----
   await prisma.oficinaTerceirizada.upsert({
     where: { nome: "JL Pintura" },

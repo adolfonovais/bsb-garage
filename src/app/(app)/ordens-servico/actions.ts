@@ -3,13 +3,13 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma, TX_OPTIONS } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
 import { dataDoFormulario, numeroFormatado } from "@/lib/format";
 import { salvarFoto, removerFoto } from "@/lib/storage";
-import { enviarEmailOSConcluida } from "@/lib/mail";
+import { notificarClienteOSConcluida } from "@/lib/notificacoes";
 
 const OSSchema = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
@@ -62,7 +62,7 @@ export async function criarOS(formData: FormData) {
         },
       },
     });
-  });
+  }, TX_OPTIONS);
 
   revalidatePath("/ordens-servico");
   redirect(`/ordens-servico/${os.id}`);
@@ -83,12 +83,14 @@ export async function atualizarStatusOS(osId: string, status: string) {
   revalidatePath(`/ordens-servico/${osId}`);
   revalidatePath("/ordens-servico");
 
-  // Avisa o cliente por e-mail quando o carro fica pronto (não trava a
-  // atualização de status caso o e-mail falhe — ver src/lib/mail.ts).
+  // Avisa o cliente quando o carro fica pronto (e-mail hoje, WhatsApp assim
+  // que o Maytra for aprovado — ver src/lib/notificacoes.ts). Não trava a
+  // atualização de status caso o aviso falhe.
   if (status === "CONCLUIDA") {
     const empresa = await prisma.empresaConfig.findUnique({ where: { id: 1 } });
-    await enviarEmailOSConcluida({
+    await notificarClienteOSConcluida({
       paraEmail: os.cliente.email,
+      paraTelefone: os.cliente.telefone,
       nomeCliente: os.cliente.nome,
       numeroOS: numeroFormatado(os.numero, os.ano),
       nomeEmpresa: empresa?.nome ?? "BSB Garage Martelinho de Ouro",
@@ -168,4 +170,61 @@ export async function excluirFoto(osId: string, fotoId: string) {
   const foto = await prisma.fotoOS.delete({ where: { id: fotoId } });
   await removerFoto(foto.url);
   revalidatePath(`/ordens-servico/${osId}`);
+}
+
+const UsoPecaSchema = z.object({
+  pecaId: z.string().min(1, "Selecione a peça/material."),
+  quantidade: z.string().min(1, "Informe a quantidade."),
+  // Este formulário não tem campo de observação — .get() volta `null`, não
+  // `undefined`, quando o input simplesmente não existe no form.
+  observacao: z.string().trim().nullable().optional(),
+});
+
+export async function usarPeca(osId: string, formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const dados = UsoPecaSchema.parse({
+    pecaId: formData.get("pecaId"),
+    quantidade: formData.get("quantidade"),
+    observacao: formData.get("observacao"),
+  });
+  const quantidade = Number(dados.quantidade) || 0;
+
+  await prisma.$transaction([
+    prisma.movimentacaoEstoque.create({
+      data: {
+        pecaId: dados.pecaId,
+        osId,
+        tipo: "SAIDA",
+        quantidade,
+        observacao: dados.observacao || null,
+      },
+    }),
+    prisma.peca.update({
+      where: { id: dados.pecaId },
+      data: { quantidadeAtual: { decrement: quantidade } },
+    }),
+  ], TX_OPTIONS);
+
+  revalidatePath(`/ordens-servico/${osId}`);
+  revalidatePath("/estoque");
+}
+
+export async function removerUsoPeca(osId: string, movimentacaoId: string) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const mov = await prisma.movimentacaoEstoque.findUniqueOrThrow({ where: { id: movimentacaoId } });
+
+  await prisma.$transaction([
+    prisma.movimentacaoEstoque.delete({ where: { id: movimentacaoId } }),
+    prisma.peca.update({
+      where: { id: mov.pecaId },
+      data: { quantidadeAtual: { increment: Number(mov.quantidade) } },
+    }),
+  ], TX_OPTIONS);
+
+  revalidatePath(`/ordens-servico/${osId}`);
+  revalidatePath("/estoque");
 }

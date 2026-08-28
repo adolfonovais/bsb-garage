@@ -20,3 +20,9 @@ export const prisma =
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
+
+// Timeout mais folgado para transações (padrão do Prisma é maxWait: 2000ms,
+// timeout: 5000ms — curto demais em dev, onde uma rota sendo compilada pela
+// primeira vez pode travar o event loop por vários segundos e estourar o
+// prazo pra simplesmente abrir a transação). Usar em todo `prisma.$transaction(...)`.
+export const TX_OPTIONS = { maxWait: 15_000, timeout: 15_000 };

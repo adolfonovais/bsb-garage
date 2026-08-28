@@ -12,6 +12,7 @@ import {
   Factory,
   ArrowLeftRight,
   Wallet,
+  Boxes,
 } from "lucide-react";
 
 const links = [
@@ -19,6 +20,7 @@ const links = [
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/ordens-servico", label: "Ordens de Serviço", icon: Wrench },
+  { href: "/estoque", label: "Estoque", icon: Boxes },
   { href: "/oficinas", label: "Oficinas terceirizadas", icon: Factory },
   { href: "/repasses", label: "Repasses", icon: ArrowLeftRight },
   { href: "/financeiro", label: "Financeiro", icon: Wallet },
@@ -69,7 +71,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
         )}
       </nav>
       <div className="border-t border-neutral-800 px-4 py-3 text-xs text-neutral-500">
-        Estoque de peças chega na próxima fase.
+        NFS-e e WhatsApp chegam em breve — ver Configurações.
       </div>
     </aside>
   );

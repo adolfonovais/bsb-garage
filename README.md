@@ -1,8 +1,8 @@
 # BSB Garage Martelinho de Ouro — Sistema de Gestão
 
 Sistema web para a oficina BSB Garage Martelinho de Ouro: orçamentos, ordens de
-serviço, clientes/veículos, oficinas terceirizadas, financeiro e (na próxima
-fase) estoque.
+serviço, clientes/veículos, oficinas terceirizadas, financeiro e estoque de
+peças/materiais.
 
 ## Stack
 
@@ -80,6 +80,27 @@ avisar o cliente por e-mail (se ele tiver e-mail cadastrado). Configure
 para ativar o envio de verdade — sem isso, o sistema só registra no log do
 servidor que o e-mail não foi enviado, sem quebrar nada.
 
+## Estoque
+
+Peças/materiais (tinta, massa, verniz, lixa etc.) ficam em `/estoque`, com
+alerta quando a quantidade atual fica abaixo da mínima cadastrada. A baixa
+pode ser feita direto na tela da Ordem de Serviço (seção "Materiais
+utilizados") — isso desconta do estoque e fica registrado como uma
+movimentação vinculada àquela OS.
+
+## Integrações pendentes (NFS-e e WhatsApp)
+
+Ambas dependem de coisas que só você pode decidir/contratar — o código já
+está pronto para ligar quando estiver:
+
+- **NFS-e**: escolher um provedor (Focus NFe, eNotas, PlugNotas), ter
+  certificado digital A1 e confirmar o CNPJ emissor. Ver `src/lib/nfse.ts`.
+- **WhatsApp (Maytra)**: aguardando aprovação do app pela Meta. Ver
+  `src/lib/whatsapp.ts` — quando aprovado, o aviso de OS concluída passa a
+  sair também por WhatsApp, além do e-mail (`src/lib/notificacoes.ts`).
+
+Status de ambas aparece na tela de Configurações.
+
 ## Deploy (Vercel)
 
 1. Crie uma conta gratuita em [vercel.com](https://vercel.com) e conecte o
@@ -97,15 +118,33 @@ src/lib/auth.ts               Configuração do login (NextAuth)
 src/lib/prisma.ts             Cliente do Prisma
 src/lib/storage.ts             Upload de fotos (hoje: disco local)
 src/lib/mail.ts                 Envio de e-mail (aviso de OS concluída)
+src/lib/notificacoes.ts          Ponto único de aviso ao cliente (e-mail hoje, WhatsApp depois)
+src/lib/nfse.ts                  Ponto de extensão para emissão de NFS-e (ainda não ativo)
+src/lib/whatsapp.ts              Ponto de extensão para aviso por WhatsApp/Maytra (ainda não ativo)
 src/proxy.ts                  Proteção de rotas (equivalente ao "middleware" em Next 16)
 src/app/login/                Tela de login
 src/app/(app)/                Área logada:
   clientes/, orcamentos/, ordens-servico/   Módulos principais
+  estoque/                                    Peças/materiais e movimentações
   oficinas/, repasses/                       Oficinas terceirizadas e repasses
   financeiro/                                 Contas a pagar/receber e caixa
-  configuracoes/                              Dados da empresa e usuários
+  configuracoes/                              Dados da empresa, usuários e status das integrações
 src/app/imprimir/              Layouts de impressão/PDF de Orçamento e OS
 ```
+
+## Notas de desenvolvimento
+
+- **`prisma.$transaction`**: sempre passe `TX_OPTIONS` (de `src/lib/prisma.ts`)
+  como segundo argumento. O padrão do Prisma (`maxWait: 2000ms`) é curto
+  demais em dev — a primeira vez que o Next compila uma rota pode travar o
+  event loop por vários segundos e a transação estoura o prazo antes mesmo
+  de começar. `TX_OPTIONS` usa 15s.
+- **Checkbox / campo ausente do formulário**: `formData.get("x")` volta
+  `null` (não `undefined`) quando o campo não foi enviado — um checkbox
+  desmarcado, ou um input que simplesmente não existe naquele formulário.
+  Schemas do Zod para esses campos precisam de `.nullable().optional()`
+  (só `.optional()` não é suficiente e quebra em produção mesmo que os
+  tipos do TypeScript pareçam bater).
 
 ## Roadmap
 
@@ -115,5 +154,5 @@ src/app/imprimir/              Layouts de impressão/PDF de Orçamento e OS
   custo/lucro), financeiro (contas a pagar/receber, alimentado
   automaticamente por OS e repasses pendentes), fotos antes/depois nas OS,
   aviso por e-mail ao cliente quando a OS fica pronta. ✅
-- **Fase 3**: estoque de peças/materiais, integrações futuras (NFS-e,
-  WhatsApp via Maytra).
+- **Fase 3**: estoque de peças/materiais com baixa por OS e alerta de
+  mínimo, pontos de extensão prontos para NFS-e e WhatsApp (Maytra). ✅

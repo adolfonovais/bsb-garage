@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma, TX_OPTIONS } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
@@ -53,7 +53,7 @@ export async function criarOrcamento(formData: FormData) {
         },
       },
     });
-  });
+  }, TX_OPTIONS);
 
   revalidatePath("/orcamentos");
   redirect(`/orcamentos/${orcamento.id}`);
@@ -120,7 +120,7 @@ export async function converterEmOS(orcamentoId: string) {
     await tx.orcamento.update({ where: { id: orcamento.id }, data: { status: "APROVADO" } });
 
     return novaOS;
-  });
+  }, TX_OPTIONS);
 
   revalidatePath("/orcamentos");
   revalidatePath("/ordens-servico");

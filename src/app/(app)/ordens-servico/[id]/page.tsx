@@ -8,10 +8,13 @@ import {
   excluirOS,
   excluirPagamento,
   registrarPagamento,
+  removerUsoPeca,
+  usarPeca,
 } from "@/app/(app)/ordens-servico/actions";
 import { Badge, Button, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
-import { Printer, Trash2 } from "lucide-react";
+import { nfseConfigurada } from "@/lib/nfse";
+import { Printer, Receipt, Trash2 } from "lucide-react";
 
 const PROXIMO_STATUS: Record<string, { valor: string; label: string }[]> = {
   ABERTA: [
@@ -35,22 +38,27 @@ export default async function OSDetalhePage({
 }) {
   const { id } = await params;
 
-  const os = await prisma.ordemServico.findUnique({
-    where: { id },
-    include: {
-      cliente: true,
-      veiculo: true,
-      itens: { orderBy: { ordem: "asc" } },
-      pagamentos: { orderBy: { data: "asc" } },
-      fotos: { orderBy: { createdAt: "asc" } },
-    },
-  });
+  const [os, pecas] = await Promise.all([
+    prisma.ordemServico.findUnique({
+      where: { id },
+      include: {
+        cliente: true,
+        veiculo: true,
+        itens: { orderBy: { ordem: "asc" } },
+        pagamentos: { orderBy: { data: "asc" } },
+        fotos: { orderBy: { createdAt: "asc" } },
+        movEstoque: { orderBy: { data: "desc" }, include: { peca: true } },
+      },
+    }),
+    prisma.peca.findMany({ orderBy: { nome: "asc" } }),
+  ]);
 
   if (!os) notFound();
 
   const totalRecebido = os.pagamentos.reduce((soma, p) => soma + paraNumero(p.valor), 0);
   const aReceber = Math.max(paraNumero(os.valorTotal) - totalRecebido, 0);
   const registrarPagamentoComId = registrarPagamento.bind(null, os.id);
+  const usarPecaComId = usarPeca.bind(null, os.id);
   const excluirComId = excluirOS.bind(null, os.id);
 
   return (
@@ -64,6 +72,14 @@ export default async function OSDetalhePage({
             <LinkButton href={`/imprimir/os/${os.id}`} variant="secondary">
               <Printer className="h-4 w-4" /> Imprimir / PDF
             </LinkButton>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!nfseConfigurada()}
+              title="Emissão de NFS-e ainda não configurada — ver Configurações"
+            >
+              <Receipt className="h-4 w-4" /> Emitir NFS-e
+            </Button>
           </>
         }
       />
@@ -170,6 +186,65 @@ export default async function OSDetalhePage({
             excluirFotoComId={excluirFoto.bind(null, os.id)}
           />
         </div>
+      </Card>
+
+      <Card>
+        <div className="border-b border-slate-200 px-4 py-3">
+          <h2 className="text-sm font-semibold text-slate-900">Materiais utilizados</h2>
+        </div>
+        {os.movEstoque.length === 0 ? (
+          <p className="p-4 text-sm text-slate-500">Nenhum material dado baixa nesta OS ainda.</p>
+        ) : (
+          <table className="w-full text-left text-sm">
+            <tbody className="divide-y divide-slate-100">
+              {os.movEstoque.map((mov) => (
+                <tr key={mov.id}>
+                  <td className="px-4 py-2">{mov.peca.nome}</td>
+                  <td className="px-4 py-2">
+                    {paraNumero(mov.quantidade)} {mov.peca.unidade}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    <form action={removerUsoPeca.bind(null, os.id, mov.id)}>
+                      <button type="submit" className="text-slate-400 hover:text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {pecas.length === 0 ? (
+          <p className="border-t border-slate-200 p-4 text-xs text-slate-500">
+            Nenhum item cadastrado no <LinkButton href="/estoque" variant="ghost" className="px-1 py-0 underline">estoque</LinkButton> ainda.
+          </p>
+        ) : (
+          <form action={usarPecaComId} className="flex flex-wrap items-end gap-2 border-t border-slate-200 p-4">
+            <div className="min-w-[160px] flex-1">
+              <Field label="Peça/material">
+                <Select name="pecaId" required defaultValue="">
+                  <option value="" disabled>
+                    Selecione...
+                  </option>
+                  {pecas.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome} ({paraNumero(p.quantidadeAtual)} {p.unidade} em estoque)
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="w-28">
+              <Field label="Qtd.">
+                <Input name="quantidade" type="number" step="0.01" min="0" required defaultValue={1} />
+              </Field>
+            </div>
+            <Button type="submit" variant="secondary">
+              Dar baixa
+            </Button>
+          </form>
+        )}
       </Card>
 
       <Card>
