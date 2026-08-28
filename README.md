@@ -1,8 +1,8 @@
 # BSB Garage Martelinho de Ouro — Sistema de Gestão
 
 Sistema web para a oficina BSB Garage Martelinho de Ouro: orçamentos, ordens de
-serviço, clientes/veículos e (nas próximas fases) oficinas terceirizadas,
-financeiro e estoque.
+serviço, clientes/veículos, oficinas terceirizadas, financeiro e (na próxima
+fase) estoque.
 
 ## Stack
 
@@ -10,6 +10,7 @@ financeiro e estoque.
 - [Prisma](https://www.prisma.io) + PostgreSQL
 - [NextAuth.js (Auth.js) v5](https://authjs.dev) — login com e-mail/senha
 - Tailwind CSS
+- [Nodemailer](https://nodemailer.com) — aviso por e-mail ao cliente
 
 ## Rodando localmente
 
@@ -31,7 +32,7 @@ financeiro e estoque.
    ```
 
    O seed imprime no terminal o e-mail e a senha inicial do usuário admin.
-   Troque a senha assim que possível (tela de Configurações, em breve).
+   Troque a senha assim que possível (tela de Configurações).
 
 4. Suba o servidor de desenvolvimento:
 
@@ -61,6 +62,24 @@ Para colocar o sistema no ar, acessível de qualquer lugar:
 4. Rode `npx prisma migrate deploy` apontando para o banco do Supabase (ou
    deixe isso automatizado no pipeline de deploy).
 
+## Fotos das Ordens de Serviço
+
+Hoje as fotos (antes/depois) ficam salvas em disco, em `public/uploads`
+(pasta ignorada pelo git — são dados do usuário, não código). Isso funciona
+bem rodando localmente ou num servidor próprio, mas **não sobrevive a um
+deploy na Vercel** (o sistema de arquivos lá é efêmero). Antes de ir para
+produção, troque a implementação de `src/lib/storage.ts` para usar o
+[Supabase Storage](https://supabase.com/docs/guides/storage) — o resto do
+app (formulários, banco) não precisa mudar.
+
+## E-mail ao cliente
+
+Quando uma Ordem de Serviço é marcada como "Concluída", o sistema tenta
+avisar o cliente por e-mail (se ele tiver e-mail cadastrado). Configure
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` e `SMTP_FROM` no `.env`
+para ativar o envio de verdade — sem isso, o sistema só registra no log do
+servidor que o e-mail não foi enviado, sem quebrar nada.
+
 ## Deploy (Vercel)
 
 1. Crie uma conta gratuita em [vercel.com](https://vercel.com) e conecte o
@@ -76,16 +95,25 @@ prisma/schema.prisma        Modelo do banco de dados
 prisma/seed.ts               Dados iniciais (admin, catálogo de serviços, etc.)
 src/lib/auth.ts               Configuração do login (NextAuth)
 src/lib/prisma.ts             Cliente do Prisma
+src/lib/storage.ts             Upload de fotos (hoje: disco local)
+src/lib/mail.ts                 Envio de e-mail (aviso de OS concluída)
 src/proxy.ts                  Proteção de rotas (equivalente ao "middleware" em Next 16)
 src/app/login/                Tela de login
-src/app/(app)/                Área logada (dashboard, clientes, orçamentos, OS, configurações)
+src/app/(app)/                Área logada:
+  clientes/, orcamentos/, ordens-servico/   Módulos principais
+  oficinas/, repasses/                       Oficinas terceirizadas e repasses
+  financeiro/                                 Contas a pagar/receber e caixa
+  configuracoes/                              Dados da empresa e usuários
 src/app/imprimir/              Layouts de impressão/PDF de Orçamento e OS
 ```
 
 ## Roadmap
 
-- **Fase 1 (atual)**: login, clientes/veículos, orçamentos, ordens de serviço,
-  conversão orçamento → OS, impressão/PDF, dashboard.
-- **Fase 2**: oficinas terceirizadas, financeiro, fotos antes/depois, aviso por
-  e-mail ao cliente.
-- **Fase 3**: estoque de peças/materiais, integrações futuras (NFS-e, WhatsApp).
+- **Fase 1**: login, clientes/veículos, orçamentos, ordens de serviço,
+  conversão orçamento → OS, impressão/PDF, dashboard. ✅
+- **Fase 2**: oficinas terceirizadas + repasses (com cálculo automático de
+  custo/lucro), financeiro (contas a pagar/receber, alimentado
+  automaticamente por OS e repasses pendentes), fotos antes/depois nas OS,
+  aviso por e-mail ao cliente quando a OS fica pronta. ✅
+- **Fase 3**: estoque de peças/materiais, integrações futuras (NFS-e,
+  WhatsApp via Maytra).

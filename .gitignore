@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# fotos enviadas pelos usuários (armazenamento local — ver src/lib/storage.ts)
+/public/uploads
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

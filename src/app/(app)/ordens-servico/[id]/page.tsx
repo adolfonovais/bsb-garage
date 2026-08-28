@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import {
+  adicionarFoto,
   atualizarStatusOS,
+  excluirFoto,
   excluirOS,
   excluirPagamento,
   registrarPagamento,
@@ -40,6 +42,7 @@ export default async function OSDetalhePage({
       veiculo: true,
       itens: { orderBy: { ordem: "asc" } },
       pagamentos: { orderBy: { data: "asc" } },
+      fotos: { orderBy: { createdAt: "asc" } },
     },
   });
 
@@ -149,6 +152,26 @@ export default async function OSDetalhePage({
         </div>
       </Card>
 
+      <Card className="p-4">
+        <h2 className="mb-3 text-sm font-semibold text-slate-900">Fotos do veículo</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FotoGrupo
+            titulo="Antes"
+            tipo="ANTES"
+            fotos={os.fotos.filter((f) => f.tipo === "ANTES")}
+            adicionarFotoComTipo={adicionarFoto.bind(null, os.id)}
+            excluirFotoComId={excluirFoto.bind(null, os.id)}
+          />
+          <FotoGrupo
+            titulo="Depois"
+            tipo="DEPOIS"
+            fotos={os.fotos.filter((f) => f.tipo === "DEPOIS")}
+            adicionarFotoComTipo={adicionarFoto.bind(null, os.id)}
+            excluirFotoComId={excluirFoto.bind(null, os.id)}
+          />
+        </div>
+      </Card>
+
       <Card>
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-900">Controle de pagamentos</h2>
@@ -229,6 +252,60 @@ export default async function OSDetalhePage({
           </Button>
         </form>
       </Card>
+    </div>
+  );
+}
+
+type Foto = { id: string; url: string; tipo: string };
+
+function FotoGrupo({
+  titulo,
+  tipo,
+  fotos,
+  adicionarFotoComTipo,
+  excluirFotoComId,
+}: {
+  titulo: string;
+  tipo: "ANTES" | "DEPOIS";
+  fotos: Foto[];
+  adicionarFotoComTipo: (formData: FormData) => void;
+  excluirFotoComId: (fotoId: string, formData: FormData) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-xs font-semibold uppercase text-slate-500">{titulo}</p>
+      {fotos.length > 0 && (
+        <div className="mb-3 grid grid-cols-3 gap-2">
+          {fotos.map((foto) => (
+            <div key={foto.id} className="group relative aspect-square overflow-hidden rounded-md border border-slate-200">
+              {/* eslint-disable-next-line @next/next/no-img-element -- fotos enviadas pelo usuário, sem otimização necessária em dev local */}
+              <img src={foto.url} alt={`Foto ${titulo.toLowerCase()}`} className="h-full w-full object-cover" />
+              <form action={excluirFotoComId.bind(null, foto.id)} className="absolute right-1 top-1">
+                <button
+                  type="submit"
+                  className="rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  title="Remover foto"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </form>
+            </div>
+          ))}
+        </div>
+      )}
+      <form action={adicionarFotoComTipo} className="flex items-center gap-2">
+        <input type="hidden" name="tipo" value={tipo} />
+        <input
+          type="file"
+          name="foto"
+          accept="image/*"
+          required
+          className="block w-full text-xs text-slate-500 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+        />
+        <Button type="submit" variant="secondary" className="shrink-0 px-3 py-1.5 text-xs">
+          Enviar
+        </Button>
+      </form>
     </div>
   );
 }

@@ -9,6 +9,9 @@ import {
   Wrench,
   Settings,
   Car,
+  Factory,
+  ArrowLeftRight,
+  Wallet,
 } from "lucide-react";
 
 const links = [
@@ -16,6 +19,9 @@ const links = [
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/ordens-servico", label: "Ordens de Serviço", icon: Wrench },
+  { href: "/oficinas", label: "Oficinas terceirizadas", icon: Factory },
+  { href: "/repasses", label: "Repasses", icon: ArrowLeftRight },
+  { href: "/financeiro", label: "Financeiro", icon: Wallet },
 ];
 
 export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
@@ -63,7 +69,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
         )}
       </nav>
       <div className="border-t border-neutral-800 px-4 py-3 text-xs text-neutral-500">
-        Módulos de Oficinas terceirizadas, Financeiro e Estoque chegam na próxima fase.
+        Estoque de peças chega na próxima fase.
       </div>
     </aside>
   );

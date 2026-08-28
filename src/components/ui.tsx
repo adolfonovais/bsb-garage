@@ -109,6 +109,7 @@ const badgeColors: Record<string, string> = {
   PAGA: "bg-emerald-100 text-emerald-800",
   ATRASADA: "bg-red-100 text-red-800",
   PAGO: "bg-emerald-100 text-emerald-800",
+  CANCELADO: "bg-red-100 text-red-800",
 };
 
 export function Badge({ status, label }: { status: string; label: string }) {

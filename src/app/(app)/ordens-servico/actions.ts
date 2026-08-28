@@ -7,7 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
-import { dataDoFormulario } from "@/lib/format";
+import { dataDoFormulario, numeroFormatado } from "@/lib/format";
+import { salvarFoto, removerFoto } from "@/lib/storage";
+import { enviarEmailOSConcluida } from "@/lib/mail";
 
 const OSSchema = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
@@ -70,15 +72,28 @@ export async function atualizarStatusOS(osId: string, status: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  await prisma.ordemServico.update({
+  const os = await prisma.ordemServico.update({
     where: { id: osId },
     data: {
       status: status as never,
       dataSaidaReal: status === "ENTREGUE" ? new Date() : undefined,
     },
+    include: { cliente: true },
   });
   revalidatePath(`/ordens-servico/${osId}`);
   revalidatePath("/ordens-servico");
+
+  // Avisa o cliente por e-mail quando o carro fica pronto (não trava a
+  // atualização de status caso o e-mail falhe — ver src/lib/mail.ts).
+  if (status === "CONCLUIDA") {
+    const empresa = await prisma.empresaConfig.findUnique({ where: { id: 1 } });
+    await enviarEmailOSConcluida({
+      paraEmail: os.cliente.email,
+      nomeCliente: os.cliente.nome,
+      numeroOS: numeroFormatado(os.numero, os.ano),
+      nomeEmpresa: empresa?.nome ?? "BSB Garage Martelinho de Ouro",
+    });
+  }
 }
 
 export async function excluirOS(osId: string) {
@@ -125,5 +140,32 @@ export async function excluirPagamento(osId: string, pagamentoId: string) {
   if (!session?.user) throw new Error("Não autenticado.");
 
   await prisma.pagamento.delete({ where: { id: pagamentoId } });
+  revalidatePath(`/ordens-servico/${osId}`);
+}
+
+export async function adicionarFoto(osId: string, formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const arquivo = formData.get("foto");
+  const tipo = formData.get("tipo");
+  if (!(arquivo instanceof File) || arquivo.size === 0) {
+    throw new Error("Selecione uma foto.");
+  }
+  if (tipo !== "ANTES" && tipo !== "DEPOIS") {
+    throw new Error("Tipo de foto inválido.");
+  }
+
+  const url = await salvarFoto(`os/${osId}`, arquivo);
+  await prisma.fotoOS.create({ data: { osId, url, tipo } });
+  revalidatePath(`/ordens-servico/${osId}`);
+}
+
+export async function excluirFoto(osId: string, fotoId: string) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const foto = await prisma.fotoOS.delete({ where: { id: fotoId } });
+  await removerFoto(foto.url);
   revalidatePath(`/ordens-servico/${osId}`);
 }

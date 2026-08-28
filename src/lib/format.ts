@@ -87,6 +87,11 @@ export const STATUS_REPASSE_LABEL: Record<string, string> = {
   CANCELADO: "Cancelado",
 };
 
+export const STATUS_PAGAMENTO_OFICINA_LABEL: Record<string, string> = {
+  PENDENTE: "Pendente",
+  PAGO: "Pago",
+};
+
 export function numeroFormatado(numero: number, ano: number): string {
   return `${ano}-${String(numero).padStart(4, "0")}`;
 }
