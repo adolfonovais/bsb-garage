@@ -7,7 +7,7 @@ import {
   excluirOrcamento,
 } from "@/app/(app)/orcamentos/actions";
 import { Badge, Button, Card, LinkButton, PageHeader } from "@/components/ui";
-import { formatarData, formatarMoeda, numeroFormatado, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
+import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
 import { Printer, Trash2 } from "lucide-react";
 
 export default async function OrcamentoDetalhePage({
@@ -64,7 +64,7 @@ export default async function OrcamentoDetalhePage({
           <div>
             <p className="text-xs uppercase text-slate-500">Veículo</p>
             <p className="font-medium text-slate-900">
-              {orcamento.veiculo ? `${orcamento.veiculo.modelo} - ${orcamento.veiculo.placa ?? "sem placa"}` : "-"}
+              {formatarVeiculo(orcamento.veiculo)}
             </p>
           </div>
         </div>

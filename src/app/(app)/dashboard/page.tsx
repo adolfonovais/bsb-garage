@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatarMoeda, formatarData, STATUS_OS_LABEL, numeroFormatado } from "@/lib/format";
+import { formatarMoeda, formatarData, formatarVeiculo, STATUS_OS_LABEL, numeroFormatado } from "@/lib/format";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { FileText, Wrench, Clock, Wallet } from "lucide-react";
 
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-2">{os.cliente?.nome}</td>
-                    <td className="px-4 py-2">{os.veiculo?.modelo ?? "-"}</td>
+                    <td className="px-4 py-2">{formatarVeiculo(os.veiculo)}</td>
                     <td className="px-4 py-2">{formatarData(os.dataEntrada)}</td>
                     <td className="px-4 py-2">{formatarMoeda(os.valorTotal)}</td>
                     <td className="px-4 py-2">

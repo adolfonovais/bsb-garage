@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Badge, Card, EmptyState, LinkButton, PageHeader } from "@/components/ui";
-import { formatarData, formatarMoeda, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
+import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
 
 const STATUS_TABS = [
   { value: undefined, label: "Todas" },
@@ -74,7 +74,7 @@ export default async function OrdensServicoPage({
                       </Link>
                     </td>
                     <td className="px-4 py-2">{os.cliente?.nome}</td>
-                    <td className="px-4 py-2">{os.veiculo?.modelo ?? "-"}</td>
+                    <td className="px-4 py-2">{formatarVeiculo(os.veiculo)}</td>
                     <td className="px-4 py-2">{formatarData(os.dataEntrada)}</td>
                     <td className="px-4 py-2">{formatarMoeda(os.valorTotal)}</td>
                     <td className="px-4 py-2">

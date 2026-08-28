@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card, EmptyState, Input, LinkButton, PageHeader } from "@/components/ui";
+import { formatarVeiculo } from "@/lib/format";
 import { Search } from "lucide-react";
 
 export default async function ClientesPage({
@@ -72,7 +73,7 @@ export default async function ClientesPage({
                     <td className="px-4 py-2">
                       {cliente.veiculos.length === 0
                         ? "-"
-                        : cliente.veiculos.map((v) => v.placa || v.modelo).join(", ")}
+                        : cliente.veiculos.map((v) => formatarVeiculo(v)).join(", ")}
                     </td>
                   </tr>
                 ))}

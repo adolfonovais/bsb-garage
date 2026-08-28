@@ -90,3 +90,11 @@ export const STATUS_REPASSE_LABEL: Record<string, string> = {
 export function numeroFormatado(numero: number, ano: number): string {
   return `${ano}-${String(numero).padStart(4, "0")}`;
 }
+
+type VeiculoResumo = { modelo: string; placa?: string | null } | null | undefined;
+
+/** Exibe "Modelo · PLACA" (ou só o modelo, se não houver placa cadastrada). */
+export function formatarVeiculo(veiculo: VeiculoResumo): string {
+  if (!veiculo) return "-";
+  return veiculo.placa ? `${veiculo.modelo} · ${veiculo.placa}` : veiculo.modelo;
+}

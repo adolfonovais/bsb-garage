@@ -17,7 +17,7 @@ import {
   PageHeader,
   Textarea,
 } from "@/components/ui";
-import { formatarData, formatarMoeda, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
+import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
 import { Trash2 } from "lucide-react";
 
 export default async function ClienteDetalhePage({
@@ -163,7 +163,7 @@ export default async function ClienteDetalhePage({
                         {numeroFormatado(os.numero, os.ano)}
                       </Link>
                     </td>
-                    <td className="px-4 py-2">{os.veiculo?.modelo ?? "-"}</td>
+                    <td className="px-4 py-2">{formatarVeiculo(os.veiculo)}</td>
                     <td className="px-4 py-2">{formatarData(os.dataEntrada)}</td>
                     <td className="px-4 py-2">{formatarMoeda(os.valorTotal)}</td>
                     <td className="px-4 py-2">

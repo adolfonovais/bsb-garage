@@ -8,7 +8,7 @@ import {
   registrarPagamento,
 } from "@/app/(app)/ordens-servico/actions";
 import { Badge, Button, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
-import { formatarData, formatarMoeda, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
+import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { Printer, Trash2 } from "lucide-react";
 
 const PROXIMO_STATUS: Record<string, { valor: string; label: string }[]> = {
@@ -79,7 +79,7 @@ export default async function OSDetalhePage({
           <div>
             <p className="text-xs uppercase text-slate-500">Veículo</p>
             <p className="font-medium text-slate-900">
-              {os.veiculo ? `${os.veiculo.modelo} - ${os.veiculo.placa ?? "sem placa"}` : "-"}
+              {formatarVeiculo(os.veiculo)}
             </p>
           </div>
           <div>
