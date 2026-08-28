@@ -1,0 +1,71 @@
+import { prisma } from "@/lib/prisma";
+import { criarOS } from "@/app/(app)/ordens-servico/actions";
+import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
+import { ItensEditor } from "@/components/ItensEditor";
+
+const FORMAS_PAGAMENTO = [
+  "Dinheiro",
+  "PIX",
+  "Débito",
+  "Crédito 1x",
+  "Crédito 2x",
+  "Crédito 3x",
+  "Crédito 4x",
+  "Transferência",
+];
+
+export default async function NovaOSPage() {
+  const [clientes, tiposServico] = await Promise.all([
+    prisma.cliente.findMany({
+      orderBy: { nome: "asc" },
+      select: { id: true, nome: true, veiculos: { select: { id: true, modelo: true, placa: true } } },
+    }),
+    prisma.tipoServico.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
+  ]);
+
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  return (
+    <div className="max-w-3xl">
+      <PageHeader title="Nova Ordem de Serviço" subtitle="Para orçamentos já aprovados, use o botão 'Converter em OS' na tela do orçamento." />
+      <Card className="p-6">
+        <form action={criarOS} className="space-y-6">
+          <ClienteVeiculoPicker clientes={clientes} />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Field label="Data de entrada">
+              <Input name="dataEntrada" type="date" defaultValue={hoje} />
+            </Field>
+            <Field label="Previsão de saída">
+              <Input name="dataSaidaPrevista" type="date" />
+            </Field>
+            <Field label="Forma de pagamento">
+              <Select name="formaPagamento" defaultValue="">
+                <option value="">Selecione...</option>
+                {FORMAS_PAGAMENTO.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+
+          <div>
+            <h2 className="mb-2 text-sm font-semibold text-slate-900">Itens de serviço</h2>
+            <ItensEditor tiposServico={tiposServico} />
+          </div>
+
+          <Field label="Observações">
+            <Textarea name="observacoes" rows={3} />
+          </Field>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="submit">Salvar Ordem de Serviço</Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+}

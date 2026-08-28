@@ -1,0 +1,43 @@
+import { prisma } from "@/lib/prisma";
+import { criarOrcamento } from "@/app/(app)/orcamentos/actions";
+import { Button, Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
+import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
+import { ItensEditor } from "@/components/ItensEditor";
+
+export default async function NovoOrcamentoPage() {
+  const [clientes, tiposServico] = await Promise.all([
+    prisma.cliente.findMany({
+      orderBy: { nome: "asc" },
+      select: { id: true, nome: true, veiculos: { select: { id: true, modelo: true, placa: true } } },
+    }),
+    prisma.tipoServico.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
+  ]);
+
+  return (
+    <div className="max-w-3xl">
+      <PageHeader title="Novo orçamento" />
+      <Card className="p-6">
+        <form action={criarOrcamento} className="space-y-6">
+          <ClienteVeiculoPicker clientes={clientes} />
+
+          <Field label="Validade (dias)">
+            <Input name="validadeDias" type="number" defaultValue={30} className="max-w-[150px]" />
+          </Field>
+
+          <div>
+            <h2 className="mb-2 text-sm font-semibold text-slate-900">Itens do orçamento</h2>
+            <ItensEditor tiposServico={tiposServico} />
+          </div>
+
+          <Field label="Observações">
+            <Textarea name="observacoes" rows={3} />
+          </Field>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="submit">Salvar orçamento</Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+}

@@ -1,0 +1,342 @@
+// Schema do banco de dados do sistema BSB Garage Martelinho de Ouro.
+// Rodar `npx prisma migrate dev` após configurar DATABASE_URL no .env
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// A partir do Prisma 7, a URL de conexão não fica mais aqui — ela é configurada
+// em prisma.config.ts (para o CLI) e via driver adapter no PrismaClient (ver src/lib/prisma.ts).
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Usuários / Auth ----------
+
+enum PapelUsuario {
+  ADMIN
+  FUNCIONARIO
+}
+
+model Usuario {
+  id           String       @id @default(cuid())
+  nome         String
+  email        String       @unique
+  senhaHash    String
+  papel        PapelUsuario @default(FUNCIONARIO)
+  ativo        Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+
+  orcamentos     Orcamento[]
+  ordensServico  OrdemServico[]
+}
+
+// ---------- Clientes / Veículos ----------
+
+model Cliente {
+  id        String   @id @default(cuid())
+  nome      String
+  telefone  String?
+  email     String?
+  endereco  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  veiculos      Veiculo[]
+  orcamentos    Orcamento[]
+  ordensServico OrdemServico[]
+
+  @@index([nome])
+}
+
+model Veiculo {
+  id        String   @id @default(cuid())
+  clienteId String
+  cliente   Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  modelo    String
+  placa     String?
+  cor       String?
+  ano       Int?
+  createdAt DateTime @default(now())
+
+  orcamentos    Orcamento[]
+  ordensServico OrdemServico[]
+
+  @@index([placa])
+  @@index([clienteId])
+}
+
+// ---------- Catálogo de serviços ----------
+
+model TipoServico {
+  id         String   @id @default(cuid())
+  nome       String   @unique
+  precoBase  Decimal? @db.Decimal(10, 2)
+  ativo      Boolean  @default(true)
+
+  itensOrcamento OrcamentoItem[]
+  itensOS        OrdemServicoItem[]
+}
+
+// ---------- Numeração sequencial (Orçamento / OS) ----------
+
+model Contador {
+  id     String @id @default(cuid())
+  chave  String // "ORCAMENTO" | "OS"
+  ano    Int
+  ultimo Int    @default(0)
+
+  @@unique([chave, ano])
+}
+
+// ---------- Orçamento ----------
+
+enum StatusOrcamento {
+  PENDENTE
+  APROVADO
+  RECUSADO
+  EXPIRADO
+}
+
+model Orcamento {
+  id            String          @id @default(cuid())
+  numero        Int
+  ano           Int
+  clienteId     String
+  cliente       Cliente         @relation(fields: [clienteId], references: [id])
+  veiculoId     String?
+  veiculo       Veiculo?        @relation(fields: [veiculoId], references: [id])
+  data          DateTime        @default(now())
+  validadeDias  Int             @default(30)
+  status        StatusOrcamento @default(PENDENTE)
+  observacoes   String?
+  valorTotal    Decimal         @default(0) @db.Decimal(10, 2)
+  criadoPorId   String?
+  criadoPor     Usuario?        @relation(fields: [criadoPorId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  itens         OrcamentoItem[]
+  ordensServico OrdemServico[]
+
+  @@unique([ano, numero])
+}
+
+model OrcamentoItem {
+  id            String       @id @default(cuid())
+  orcamentoId   String
+  orcamento     Orcamento    @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  tipoServicoId String?
+  tipoServico   TipoServico? @relation(fields: [tipoServicoId], references: [id])
+  descricao     String
+  quantidade    Decimal      @default(1) @db.Decimal(10, 2)
+  valorUnit     Decimal      @db.Decimal(10, 2)
+  valorTotal    Decimal      @db.Decimal(10, 2)
+  ordem         Int          @default(0)
+}
+
+// ---------- Ordem de Serviço ----------
+
+enum StatusOS {
+  ABERTA
+  EM_ANDAMENTO
+  AGUARDANDO_PECA
+  CONCLUIDA
+  ENTREGUE
+  CANCELADA
+}
+
+enum TipoFoto {
+  ANTES
+  DEPOIS
+}
+
+model OrdemServico {
+  id                    String        @id @default(cuid())
+  numero                Int
+  ano                   Int
+  origemOrcamentoId     String?
+  origemOrcamento       Orcamento?    @relation(fields: [origemOrcamentoId], references: [id])
+  clienteId             String
+  cliente               Cliente       @relation(fields: [clienteId], references: [id])
+  veiculoId             String?
+  veiculo               Veiculo?      @relation(fields: [veiculoId], references: [id])
+  dataEntrada           DateTime      @default(now())
+  dataSaidaPrevista     DateTime?
+  dataSaidaReal         DateTime?
+  status                StatusOS      @default(ABERTA)
+  formaPagamento        String?
+  valorTotal            Decimal       @default(0) @db.Decimal(10, 2)
+  oficinaTerceirizadaId String?
+  oficinaTerceirizada   OficinaTerceirizada? @relation(fields: [oficinaTerceirizadaId], references: [id])
+  observacoes           String?
+  criadoPorId           String?
+  criadoPor             Usuario?      @relation(fields: [criadoPorId], references: [id])
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  itens       OrdemServicoItem[]
+  pagamentos  Pagamento[]
+  fotos       FotoOS[]
+  contas      ContaFinanceira[]
+  repasses    RepasseOficina[]
+  movEstoque  MovimentacaoEstoque[]
+
+  @@unique([ano, numero])
+}
+
+model OrdemServicoItem {
+  id            String       @id @default(cuid())
+  osId          String
+  os            OrdemServico @relation(fields: [osId], references: [id], onDelete: Cascade)
+  tipoServicoId String?
+  tipoServico   TipoServico? @relation(fields: [tipoServicoId], references: [id])
+  descricao     String // parte do carro / descrição do serviço
+  quantidade    Decimal      @default(1) @db.Decimal(10, 2)
+  valorUnit     Decimal      @db.Decimal(10, 2)
+  valorTotal    Decimal      @db.Decimal(10, 2)
+  ordem         Int          @default(0)
+}
+
+model Pagamento {
+  id             String       @id @default(cuid())
+  osId           String
+  os             OrdemServico @relation(fields: [osId], references: [id], onDelete: Cascade)
+  data           DateTime     @default(now())
+  descricao      String?
+  valor          Decimal      @db.Decimal(10, 2)
+  formaPagamento String?
+  createdAt      DateTime     @default(now())
+}
+
+model FotoOS {
+  id        String   @id @default(cuid())
+  osId      String
+  os        OrdemServico @relation(fields: [osId], references: [id], onDelete: Cascade)
+  url       String
+  tipo      TipoFoto
+  createdAt DateTime @default(now())
+}
+
+// ---------- Oficinas terceirizadas ----------
+
+enum StatusRepasse {
+  EM_ANDAMENTO
+  ENTREGUE
+  CANCELADO
+}
+
+enum StatusPagamentoOficina {
+  PENDENTE
+  PAGO
+}
+
+model OficinaTerceirizada {
+  id       String  @id @default(cuid())
+  nome     String  @unique
+  contato  String?
+  telefone String?
+  ativo    Boolean @default(true)
+
+  ordensServico OrdemServico[]
+  repasses      RepasseOficina[]
+}
+
+model RepasseOficina {
+  id                     String                  @id @default(cuid())
+  oficinaId              String
+  oficina                OficinaTerceirizada     @relation(fields: [oficinaId], references: [id])
+  osId                   String?
+  os                     OrdemServico?           @relation(fields: [osId], references: [id])
+  dataEntrada            DateTime
+  dataSaida              DateTime?
+  carro                  String
+  placa                  String?
+  tipoServico            String
+  qtdPecas               Int                     @default(1)
+  servicoAdicional       String?
+  valorCobrado           Decimal                 @db.Decimal(10, 2) // cobrado do cliente
+  custoOficina           Decimal                 @db.Decimal(10, 2) // pago à oficina
+  outrosCustos           Decimal?                @db.Decimal(10, 2)
+  polimento              Boolean                 @default(false)
+  custoTotal             Decimal                 @db.Decimal(10, 2) // custoOficina + outrosCustos
+  lucro                  Decimal                 @db.Decimal(10, 2) // valorCobrado - custoTotal
+  status                 StatusRepasse           @default(EM_ANDAMENTO)
+  statusPagamentoOficina StatusPagamentoOficina  @default(PENDENTE)
+  createdAt              DateTime                @default(now())
+
+  contas ContaFinanceira[]
+}
+
+// ---------- Estoque ----------
+
+enum TipoMovimentoEstoque {
+  ENTRADA
+  SAIDA
+}
+
+model Peca {
+  id               String  @id @default(cuid())
+  nome             String  @unique
+  unidade          String  @default("un")
+  quantidadeAtual  Decimal @default(0) @db.Decimal(10, 2)
+  quantidadeMinima Decimal @default(0) @db.Decimal(10, 2)
+  custoUnitario    Decimal? @db.Decimal(10, 2)
+
+  movimentacoes MovimentacaoEstoque[]
+}
+
+model MovimentacaoEstoque {
+  id          String               @id @default(cuid())
+  pecaId      String
+  peca        Peca                 @relation(fields: [pecaId], references: [id])
+  tipo        TipoMovimentoEstoque
+  quantidade  Decimal              @db.Decimal(10, 2)
+  data        DateTime             @default(now())
+  osId        String?
+  os          OrdemServico?        @relation(fields: [osId], references: [id])
+  observacao  String?
+}
+
+// ---------- Financeiro ----------
+
+enum TipoConta {
+  PAGAR
+  RECEBER
+}
+
+enum StatusConta {
+  ABERTA
+  PAGA
+  ATRASADA
+  CANCELADA
+}
+
+model ContaFinanceira {
+  id              String      @id @default(cuid())
+  tipo            TipoConta
+  descricao       String
+  valor           Decimal     @db.Decimal(10, 2)
+  dataVencimento  DateTime
+  dataPagamento   DateTime?
+  status          StatusConta @default(ABERTA)
+  categoria       String?
+  osId            String?
+  os              OrdemServico? @relation(fields: [osId], references: [id])
+  repasseId       String?
+  repasse         RepasseOficina? @relation(fields: [repasseId], references: [id])
+  createdAt       DateTime    @default(now())
+}
+
+// ---------- Configuração da empresa ----------
+
+model EmpresaConfig {
+  id           Int     @id @default(1)
+  nome         String  @default("BSB Garage Martelinho de Ouro")
+  razaoSocial  String?
+  cnpj         String?
+  ie           String?
+  telefones    String?
+  endereco     String?
+  cidadeUf     String  @default("Brasília - DF")
+}
