@@ -46,21 +46,44 @@ peças/materiais.
 
 ### Desenvolvimento local
 
-Durante o desenvolvimento inicial, um PostgreSQL local (instalado neste PC) é
-usado. A `DATABASE_URL` no `.env` aponta para ele.
+Um PostgreSQL local (instalado neste PC, ver `pg_ctl` em `C:\Users\adolf\pgsql`)
+pode ser usado pra testar offline. Descomente a linha correspondente no `.env`.
 
-### Produção (Supabase)
+### Produção (Supabase — banco compartilhado)
 
-Para colocar o sistema no ar, acessível de qualquer lugar:
+O banco de produção é o projeto Supabase **"Vila Maytrea Gestão"** (não um
+projeto dedicado) — a conta já tinha os 2 projetos gratuitos disponíveis
+ocupados por outros sistemas. Pra não misturar dados, todo o BSB Garage vive
+isolado no schema Postgres **`bsb_garage`** (o `public` desse projeto continua
+sendo só da Vila Maytrea — ver o comentário no topo de `prisma/schema.prisma`
+e o `datasource.schemas` lá). Isso usa o recurso `multiSchema` do Prisma.
 
-1. Crie uma conta gratuita em [supabase.com](https://supabase.com) e um novo
-   projeto.
-2. Em **Project Settings > Database > Connection string**, copie a URI (use a
-   versão "Transaction pooler" para a aplicação).
-3. Configure essa URL como `DATABASE_URL` nas variáveis de ambiente do seu
-   deploy (Vercel).
-4. Rode `npx prisma migrate deploy` apontando para o banco do Supabase (ou
-   deixe isso automatizado no pipeline de deploy).
+Se um dia sobrar um projeto Supabase dedicado (upgrade de plano, ou algum dos
+outros projetos for descontinuado), dá pra migrar: criar o projeto novo, tirar
+`schemas = ["bsb_garage"]`/`@@schema(...)` do `prisma/schema.prisma`, rodar
+`prisma migrate dev` do zero lá, e restaurar os dados com `pg_dump`/`pg_restore`
+filtrando pelo schema `bsb_garage`.
+
+**Rodando migrations nesse tipo de banco compartilhado**, duas pegadinhas do
+Supabase que já mordemos:
+
+- **`migrate dev` não funciona pelo pooler** (porta 6543): esse comando
+  precisa criar um "shadow database" temporário, e o pooler em modo
+  transaction não permite `CREATE DATABASE`. Gere a migration localmente
+  (`prisma migrate dev` contra o Postgres local) e depois aplique no Supabase
+  com `prisma migrate deploy` (não precisa de shadow database).
+- **A porta 5432 "Direct connection" costuma ser só IPv6**: se o ambiente não
+  tiver saída IPv6, o Prisma (Node) não conecta nela mesmo que `psql` consiga.
+  Use a URL do **"Session pooler"** (mesmo host do pooler, porta 5432 em vez
+  de 6543) pra rodar `migrate deploy`/`db push` — ela é IPv4 e suporta os
+  locks que essas operações precisam, ao contrário do transaction pooler.
+- **Primeira aplicação num banco que já tem outras tabelas (de outro
+  projeto)**: `migrate deploy` recusa com erro `P3005` ("database schema is
+  not empty"), mesmo com o schema `bsb_garage` genuinamente vazio — ele olha
+  o banco inteiro, não só o schema alvo. Nesse caso, use `prisma db push`
+  pra criar as tabelas direto, seguido de `prisma migrate resolve --applied
+  <nome_da_migration>` pra estabelecer a baseline do histórico de migrations
+  (depois disso, `migrate deploy` funciona normalmente).
 
 ## Fotos das Ordens de Serviço
 

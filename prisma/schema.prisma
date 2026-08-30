@@ -1,5 +1,11 @@
 // Schema do banco de dados do sistema BSB Garage Martelinho de Ouro.
 // Rodar `npx prisma migrate dev` após configurar DATABASE_URL no .env
+//
+// Este banco é compartilhado com outro projeto (Supabase "Vila Maytrea
+// Gestão", da pousada) — por isso todo model/enum vive isolado no schema
+// Postgres "bsb_garage" (não no "public"), via multiSchema do Prisma. Isso
+// não tem nenhum contato com as tabelas do outro projeto, só compartilha a
+// mesma instância/armazenamento em disco.
 
 generator client {
   provider = "prisma-client-js"
@@ -9,6 +15,7 @@ generator client {
 // em prisma.config.ts (para o CLI) e via driver adapter no PrismaClient (ver src/lib/prisma.ts).
 datasource db {
   provider = "postgresql"
+  schemas  = ["bsb_garage"]
 }
 
 // ---------- Usuários / Auth ----------
@@ -16,6 +23,8 @@ datasource db {
 enum PapelUsuario {
   ADMIN
   FUNCIONARIO
+
+  @@schema("bsb_garage")
 }
 
 model Usuario {
@@ -29,6 +38,8 @@ model Usuario {
 
   orcamentos     Orcamento[]
   ordensServico  OrdemServico[]
+
+  @@schema("bsb_garage")
 }
 
 // ---------- Clientes / Veículos ----------
@@ -47,6 +58,7 @@ model Cliente {
   ordensServico OrdemServico[]
 
   @@index([nome])
+  @@schema("bsb_garage")
 }
 
 model Veiculo {
@@ -64,6 +76,7 @@ model Veiculo {
 
   @@index([placa])
   @@index([clienteId])
+  @@schema("bsb_garage")
 }
 
 // ---------- Catálogo de serviços ----------
@@ -76,6 +89,8 @@ model TipoServico {
 
   itensOrcamento OrcamentoItem[]
   itensOS        OrdemServicoItem[]
+
+  @@schema("bsb_garage")
 }
 
 // ---------- Numeração sequencial (Orçamento / OS) ----------
@@ -87,6 +102,7 @@ model Contador {
   ultimo Int    @default(0)
 
   @@unique([chave, ano])
+  @@schema("bsb_garage")
 }
 
 // ---------- Orçamento ----------
@@ -96,6 +112,8 @@ enum StatusOrcamento {
   APROVADO
   RECUSADO
   EXPIRADO
+
+  @@schema("bsb_garage")
 }
 
 model Orcamento {
@@ -120,6 +138,7 @@ model Orcamento {
   ordensServico OrdemServico[]
 
   @@unique([ano, numero])
+  @@schema("bsb_garage")
 }
 
 model OrcamentoItem {
@@ -133,6 +152,8 @@ model OrcamentoItem {
   valorUnit     Decimal      @db.Decimal(10, 2)
   valorTotal    Decimal      @db.Decimal(10, 2)
   ordem         Int          @default(0)
+
+  @@schema("bsb_garage")
 }
 
 // ---------- Ordem de Serviço ----------
@@ -144,11 +165,15 @@ enum StatusOS {
   CONCLUIDA
   ENTREGUE
   CANCELADA
+
+  @@schema("bsb_garage")
 }
 
 enum TipoFoto {
   ANTES
   DEPOIS
+
+  @@schema("bsb_garage")
 }
 
 model OrdemServico {
@@ -183,6 +208,7 @@ model OrdemServico {
   movEstoque  MovimentacaoEstoque[]
 
   @@unique([ano, numero])
+  @@schema("bsb_garage")
 }
 
 model OrdemServicoItem {
@@ -196,6 +222,8 @@ model OrdemServicoItem {
   valorUnit     Decimal      @db.Decimal(10, 2)
   valorTotal    Decimal      @db.Decimal(10, 2)
   ordem         Int          @default(0)
+
+  @@schema("bsb_garage")
 }
 
 model Pagamento {
@@ -207,6 +235,8 @@ model Pagamento {
   valor          Decimal      @db.Decimal(10, 2)
   formaPagamento String?
   createdAt      DateTime     @default(now())
+
+  @@schema("bsb_garage")
 }
 
 model FotoOS {
@@ -216,6 +246,8 @@ model FotoOS {
   url       String
   tipo      TipoFoto
   createdAt DateTime @default(now())
+
+  @@schema("bsb_garage")
 }
 
 // ---------- Oficinas terceirizadas ----------
@@ -224,11 +256,15 @@ enum StatusRepasse {
   EM_ANDAMENTO
   ENTREGUE
   CANCELADO
+
+  @@schema("bsb_garage")
 }
 
 enum StatusPagamentoOficina {
   PENDENTE
   PAGO
+
+  @@schema("bsb_garage")
 }
 
 model OficinaTerceirizada {
@@ -240,6 +276,8 @@ model OficinaTerceirizada {
 
   ordensServico OrdemServico[]
   repasses      RepasseOficina[]
+
+  @@schema("bsb_garage")
 }
 
 model RepasseOficina {
@@ -266,6 +304,8 @@ model RepasseOficina {
   createdAt              DateTime                @default(now())
 
   contas ContaFinanceira[]
+
+  @@schema("bsb_garage")
 }
 
 // ---------- Estoque ----------
@@ -273,6 +313,8 @@ model RepasseOficina {
 enum TipoMovimentoEstoque {
   ENTRADA
   SAIDA
+
+  @@schema("bsb_garage")
 }
 
 model Peca {
@@ -284,6 +326,8 @@ model Peca {
   custoUnitario    Decimal? @db.Decimal(10, 2)
 
   movimentacoes MovimentacaoEstoque[]
+
+  @@schema("bsb_garage")
 }
 
 model MovimentacaoEstoque {
@@ -296,6 +340,8 @@ model MovimentacaoEstoque {
   osId        String?
   os          OrdemServico?        @relation(fields: [osId], references: [id])
   observacao  String?
+
+  @@schema("bsb_garage")
 }
 
 // ---------- Financeiro ----------
@@ -303,6 +349,8 @@ model MovimentacaoEstoque {
 enum TipoConta {
   PAGAR
   RECEBER
+
+  @@schema("bsb_garage")
 }
 
 enum StatusConta {
@@ -310,6 +358,8 @@ enum StatusConta {
   PAGA
   ATRASADA
   CANCELADA
+
+  @@schema("bsb_garage")
 }
 
 model ContaFinanceira {
@@ -326,6 +376,8 @@ model ContaFinanceira {
   repasseId       String?
   repasse         RepasseOficina? @relation(fields: [repasseId], references: [id])
   createdAt       DateTime    @default(now())
+
+  @@schema("bsb_garage")
 }
 
 // ---------- Configuração da empresa ----------
@@ -339,4 +391,6 @@ model EmpresaConfig {
   telefones    String?
   endereco     String?
   cidadeUf     String  @default("Brasília - DF")
+
+  @@schema("bsb_garage")
 }
