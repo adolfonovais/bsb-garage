@@ -1,7 +1,17 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatarData, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
+import { formatarData, formatarMoeda, nomeArquivoImpressao, numeroFormatado, paraNumero } from "@/lib/format";
 import { DocumentoImprimivel } from "@/components/DocumentoImprimivel";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const os = await prisma.ordemServico.findUnique({
+    where: { id },
+    select: { numero: true, ano: true, veiculo: true, cliente: { select: { nome: true } } },
+  });
+  if (!os) return {};
+  return { title: nomeArquivoImpressao(os.numero, os.ano, os.veiculo, os.cliente.nome) };
+}
 
 export default async function ImprimirOSPage({
   params,

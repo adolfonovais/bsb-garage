@@ -1,7 +1,17 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { numeroFormatado } from "@/lib/format";
+import { nomeArquivoImpressao, numeroFormatado } from "@/lib/format";
 import { DocumentoImprimivel } from "@/components/DocumentoImprimivel";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const orcamento = await prisma.orcamento.findUnique({
+    where: { id },
+    select: { numero: true, ano: true, veiculo: true, cliente: { select: { nome: true } } },
+  });
+  if (!orcamento) return {};
+  return { title: nomeArquivoImpressao(orcamento.numero, orcamento.ano, orcamento.veiculo, orcamento.cliente.nome) };
+}
 
 export default async function ImprimirOrcamentoPage({
   params,

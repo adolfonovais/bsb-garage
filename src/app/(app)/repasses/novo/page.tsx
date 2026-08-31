@@ -13,7 +13,7 @@ export default async function NovoRepassePage({
   const [oficinas, ordens] = await Promise.all([
     prisma.oficinaTerceirizada.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
     prisma.ordemServico.findMany({
-      where: { status: { notIn: ["ENTREGUE", "CANCELADA"] } },
+      where: { status: { not: "CANCELADA" } },
       include: { cliente: true, veiculo: true },
       orderBy: { createdAt: "desc" },
       take: 100,

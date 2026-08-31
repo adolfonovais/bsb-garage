@@ -103,3 +103,22 @@ export function formatarVeiculo(veiculo: VeiculoResumo): string {
   if (!veiculo) return "-";
   return veiculo.placa ? `${veiculo.modelo} · ${veiculo.placa}` : veiculo.modelo;
 }
+
+/**
+ * Nome sugerido pro arquivo ao imprimir/salvar em PDF um Orçamento ou OS —
+ * usado como <title> da página, que é o que o navegador propõe como nome
+ * do arquivo na hora de salvar. Formato: "número - modelo - placa - cliente".
+ */
+export function nomeArquivoImpressao(
+  numero: number,
+  ano: number,
+  veiculo: VeiculoResumo,
+  clienteNome: string
+): string {
+  const partes = [numeroFormatado(numero, ano)];
+  if (veiculo?.modelo) partes.push(veiculo.modelo);
+  if (veiculo?.placa) partes.push(veiculo.placa);
+  partes.push(clienteNome);
+  // Remove caracteres inválidos em nome de arquivo no Windows.
+  return partes.join(" - ").replace(/[\\/:*?"<>|]/g, "");
+}
