@@ -27,7 +27,10 @@ export default async function EditarOSPage({
   const [os, clientes, tiposServico] = await Promise.all([
     prisma.ordemServico.findUnique({
       where: { id },
-      include: { itens: { orderBy: { ordem: "asc" } } },
+      include: {
+        itens: { orderBy: { ordem: "asc" } },
+        origemOrcamento: { select: { numero: true, ano: true } },
+      },
     }),
     prisma.cliente.findMany({
       orderBy: { nome: "asc" },
@@ -52,6 +55,12 @@ export default async function EditarOSPage({
         title={`Editar OS ${numeroFormatado(os.numero, os.ano)}`}
         subtitle="Alterações não mudam o número da OS nem o histórico de fotos/pagamentos."
       />
+      {os.origemOrcamento && (
+        <p className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Essa OS veio do orçamento {numeroFormatado(os.origemOrcamento.numero, os.origemOrcamento.ano)} — salvar
+          aqui atualiza os itens/observações dele também.
+        </p>
+      )}
       <Card className="p-6">
         <form action={atualizarComId} className="space-y-6">
           <ClienteVeiculoPicker

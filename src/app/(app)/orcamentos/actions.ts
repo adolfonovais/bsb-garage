@@ -72,7 +72,7 @@ export async function atualizarOrcamento(orcamentoId: string, formData: FormData
   const itens = parseItens(formData);
   const total = somaItens(itens);
 
-  await prisma.$transaction(async (tx) => {
+  const osVinculadaId = await prisma.$transaction(async (tx) => {
     await tx.orcamentoItem.deleteMany({ where: { orcamentoId } });
     await tx.orcamento.update({
       where: { id: orcamentoId },
@@ -94,10 +94,42 @@ export async function atualizarOrcamento(orcamentoId: string, formData: FormData
         },
       },
     });
+
+    // Se esse orçamento já foi convertido em OS, propaga a edição pra ela
+    // também — os dois devem representar o mesmo serviço.
+    const osVinculada = await tx.ordemServico.findFirst({ where: { origemOrcamentoId: orcamentoId } });
+    if (osVinculada) {
+      await tx.ordemServicoItem.deleteMany({ where: { osId: osVinculada.id } });
+      await tx.ordemServico.update({
+        where: { id: osVinculada.id },
+        data: {
+          clienteId: dados.clienteId,
+          veiculoId: dados.veiculoId || null,
+          observacoes: dados.observacoes || null,
+          valorTotal: total,
+          itens: {
+            create: itens.map((item) => ({
+              descricao: item.descricao,
+              quantidade: item.quantidade,
+              valorUnit: item.valorUnit,
+              valorTotal: item.valorTotal,
+              ordem: item.ordem,
+              tipoServicoId: item.tipoServicoId,
+            })),
+          },
+        },
+      });
+    }
+
+    return osVinculada?.id ?? null;
   }, TX_OPTIONS);
 
   revalidatePath(`/orcamentos/${orcamentoId}`);
   revalidatePath("/orcamentos");
+  if (osVinculadaId) {
+    revalidatePath(`/ordens-servico/${osVinculadaId}`);
+    revalidatePath("/ordens-servico");
+  }
   redirect(`/orcamentos/${orcamentoId}`);
 }
 

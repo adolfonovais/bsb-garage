@@ -16,7 +16,10 @@ export default async function EditarOrcamentoPage({
   const [orcamento, clientes, tiposServico] = await Promise.all([
     prisma.orcamento.findUnique({
       where: { id },
-      include: { itens: { orderBy: { ordem: "asc" } } },
+      include: {
+        itens: { orderBy: { ordem: "asc" } },
+        ordensServico: { select: { id: true, numero: true, ano: true } },
+      },
     }),
     prisma.cliente.findMany({
       orderBy: { nome: "asc" },
@@ -38,6 +41,13 @@ export default async function EditarOrcamentoPage({
   return (
     <div className="max-w-3xl">
       <PageHeader title={`Editar orçamento ${numeroFormatado(orcamento.numero, orcamento.ano)}`} />
+      {orcamento.ordensServico.length > 0 && (
+        <p className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Esse orçamento já foi convertido na OS{" "}
+          {numeroFormatado(orcamento.ordensServico[0].numero, orcamento.ordensServico[0].ano)} — salvar aqui
+          atualiza os itens/observações dela também.
+        </p>
+      )}
       <Card className="p-6">
         <form action={atualizarComId} className="space-y-6">
           <ClienteVeiculoPicker
