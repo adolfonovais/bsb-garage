@@ -14,7 +14,7 @@ import {
 import { Badge, Button, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { nfseConfigurada } from "@/lib/nfse";
-import { Printer, Receipt, Trash2 } from "lucide-react";
+import { Pencil, Printer, Receipt, Trash2 } from "lucide-react";
 
 const PROXIMO_STATUS: Record<string, { valor: string; label: string }[]> = {
   ABERTA: [
@@ -69,6 +69,9 @@ export default async function OSDetalhePage({
         actions={
           <>
             <Badge status={os.status} label={STATUS_OS_LABEL[os.status]} />
+            <LinkButton href={`/ordens-servico/${os.id}/editar`} variant="secondary">
+              <Pencil className="h-4 w-4" /> Editar
+            </LinkButton>
             <LinkButton href={`/imprimir/os/${os.id}`} variant="secondary">
               <Printer className="h-4 w-4" /> Imprimir / PDF
             </LinkButton>

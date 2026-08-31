@@ -68,6 +68,52 @@ export async function criarOS(formData: FormData) {
   redirect(`/ordens-servico/${os.id}`);
 }
 
+export async function atualizarOS(osId: string, formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const dados = OSSchema.parse({
+    clienteId: formData.get("clienteId"),
+    veiculoId: formData.get("veiculoId"),
+    dataEntrada: formData.get("dataEntrada"),
+    dataSaidaPrevista: formData.get("dataSaidaPrevista"),
+    formaPagamento: formData.get("formaPagamento"),
+    observacoes: formData.get("observacoes"),
+  });
+  const itens = parseItens(formData);
+  const total = somaItens(itens);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.ordemServicoItem.deleteMany({ where: { osId } });
+    await tx.ordemServico.update({
+      where: { id: osId },
+      data: {
+        clienteId: dados.clienteId,
+        veiculoId: dados.veiculoId || null,
+        dataEntrada: dataDoFormulario(dados.dataEntrada) ?? new Date(),
+        dataSaidaPrevista: dataDoFormulario(dados.dataSaidaPrevista),
+        formaPagamento: dados.formaPagamento || null,
+        observacoes: dados.observacoes || null,
+        valorTotal: total,
+        itens: {
+          create: itens.map((item) => ({
+            descricao: item.descricao,
+            quantidade: item.quantidade,
+            valorUnit: item.valorUnit,
+            valorTotal: item.valorTotal,
+            ordem: item.ordem,
+            tipoServicoId: item.tipoServicoId,
+          })),
+        },
+      },
+    });
+  }, TX_OPTIONS);
+
+  revalidatePath(`/ordens-servico/${osId}`);
+  revalidatePath("/ordens-servico");
+  redirect(`/ordens-servico/${osId}`);
+}
+
 export async function atualizarStatusOS(osId: string, status: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");

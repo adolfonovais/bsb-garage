@@ -1,7 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { atualizarEmpresa, alternarAtivoUsuario, criarUsuario } from "@/app/(app)/configuracoes/actions";
+import {
+  atualizarEmpresa,
+  alternarAtivoUsuario,
+  criarUsuario,
+  redefinirSenhaUsuario,
+} from "@/app/(app)/configuracoes/actions";
 import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
 import { nfseConfigurada } from "@/lib/nfse";
 import { whatsappConfigurado } from "@/lib/whatsapp";
@@ -58,18 +63,38 @@ export default async function ConfiguracoesPage() {
         <h2 className="mb-4 text-sm font-semibold text-slate-900">Usuários</h2>
         <div className="mb-4 space-y-2">
           {usuarios.map((u) => (
-            <div key={u.id} className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm">
-              <div>
-                <p className="font-medium text-slate-900">{u.nome}</p>
-                <p className="text-xs text-slate-500">
-                  {u.email} · {u.papel === "ADMIN" ? "Administrador" : "Funcionário"}
-                </p>
+            <div key={u.id} className="rounded-md border border-slate-200 px-3 py-2 text-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-slate-900">{u.nome}</p>
+                  <p className="text-xs text-slate-500">
+                    {u.email} · {u.papel === "ADMIN" ? "Administrador" : "Funcionário"}
+                  </p>
+                </div>
+                <form action={alternarAtivoUsuario.bind(null, u.id, !u.ativo)}>
+                  <Button type="submit" variant={u.ativo ? "secondary" : "primary"}>
+                    {u.ativo ? "Desativar" : "Ativar"}
+                  </Button>
+                </form>
               </div>
-              <form action={alternarAtivoUsuario.bind(null, u.id, !u.ativo)}>
-                <Button type="submit" variant={u.ativo ? "secondary" : "primary"}>
-                  {u.ativo ? "Desativar" : "Ativar"}
-                </Button>
-              </form>
+              <details className="mt-2">
+                <summary className="cursor-pointer text-xs font-medium text-amber-700">
+                  Redefinir senha
+                </summary>
+                <form
+                  action={redefinirSenhaUsuario.bind(null, u.id)}
+                  className="mt-2 flex flex-wrap items-end gap-2"
+                >
+                  <div className="min-w-[160px] flex-1">
+                    <Field label="Nova senha *">
+                      <Input name="senha" type="password" required minLength={6} />
+                    </Field>
+                  </div>
+                  <Button type="submit" variant="secondary">
+                    Salvar
+                  </Button>
+                </form>
+              </details>
             </div>
           ))}
         </div>

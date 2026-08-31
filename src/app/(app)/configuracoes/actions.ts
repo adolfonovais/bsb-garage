@@ -79,3 +79,17 @@ export async function alternarAtivoUsuario(usuarioId: string, ativo: boolean) {
   await prisma.usuario.update({ where: { id: usuarioId }, data: { ativo } });
   revalidatePath("/configuracoes");
 }
+
+const RedefinirSenhaSchema = z.object({
+  senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+});
+
+export async function redefinirSenhaUsuario(usuarioId: string, formData: FormData) {
+  await exigirAdmin();
+
+  const dados = RedefinirSenhaSchema.parse({ senha: formData.get("senha") });
+  const senhaHash = await bcrypt.hash(dados.senha, 10);
+
+  await prisma.usuario.update({ where: { id: usuarioId }, data: { senhaHash } });
+  revalidatePath("/configuracoes");
+}

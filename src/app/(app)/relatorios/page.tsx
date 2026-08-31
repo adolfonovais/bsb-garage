@@ -58,22 +58,25 @@ export default async function RelatoriosPage({
 
   return (
     <div className="max-w-4xl space-y-6">
-      {gerado && <PrintButton />}
-
-      <PageHeader
-        title="Relatórios"
-        subtitle="Escolha o período e o que deve entrar no relatório"
-        actions={
-          gerado ? (
-            <a
-              href={exportHref}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-300 transition-colors hover:bg-slate-50 print:hidden"
-            >
-              <Download className="h-4 w-4" /> Exportar Excel
-            </a>
-          ) : undefined
-        }
-      />
+      <div className="print:hidden">
+        <PageHeader
+          title="Relatórios"
+          subtitle="Escolha o período e o que deve entrar no relatório"
+          actions={
+            gerado ? (
+              <div className="flex flex-col items-stretch gap-2">
+                <a
+                  href={exportHref}
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-300 transition-colors hover:bg-slate-50"
+                >
+                  <Download className="h-4 w-4" /> Exportar Excel
+                </a>
+                <PrintButton inline />
+              </div>
+            ) : undefined
+          }
+        />
+      </div>
 
       <Card className="p-6 print:hidden">
         <form action="/relatorios" method="get" className="space-y-4">
@@ -115,11 +118,17 @@ export default async function RelatoriosPage({
 
       {gerado && (
         <div className="space-y-6">
-          <header className="border-b-2 border-slate-900 pb-3 text-center">
-            <h1 className="text-xl font-extrabold">{empresa?.nome ?? "BSB Garage Martelinho de Ouro"}</h1>
-            <p className="text-sm text-slate-600">
-              Relatório de {formatarData(inicio)} até {formatarData(fim)}
-            </p>
+          <header className="flex items-center gap-4 border-b-2 border-slate-900 pb-3">
+            {/* eslint-disable-next-line @next/next/no-img-element -- logo estática, precisa renderizar igual na impressão/PDF */}
+            <img src="/brand/logo.png" alt="" className="h-16 w-16 shrink-0" />
+            <div className="flex-1 text-center">
+              <h1 className="text-xl font-extrabold">{empresa?.nome ?? "BSB Garage Martelinho de Ouro"}</h1>
+              <p className="text-sm text-slate-600">
+                Relatório de {formatarData(inicio)} até {formatarData(fim)}
+              </p>
+            </div>
+            {/* espaçador pra manter o texto centralizado apesar da logo à esquerda */}
+            <div className="h-16 w-16 shrink-0" aria-hidden />
           </header>
 
           {financeiro && (
