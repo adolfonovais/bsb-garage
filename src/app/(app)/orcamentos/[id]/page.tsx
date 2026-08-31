@@ -8,7 +8,7 @@ import {
 } from "@/app/(app)/orcamentos/actions";
 import { Badge, Button, Card, LinkButton, PageHeader } from "@/components/ui";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
-import { Printer, Trash2 } from "lucide-react";
+import { Pencil, Printer, Trash2 } from "lucide-react";
 
 export default async function OrcamentoDetalhePage({
   params,
@@ -43,6 +43,9 @@ export default async function OrcamentoDetalhePage({
         actions={
           <>
             <Badge status={orcamento.status} label={STATUS_ORCAMENTO_LABEL[orcamento.status]} />
+            <LinkButton href={`/orcamentos/${orcamento.id}/editar`} variant="secondary">
+              <Pencil className="h-4 w-4" /> Editar
+            </LinkButton>
             <LinkButton href={`/imprimir/orcamento/${orcamento.id}`} variant="secondary">
               <Printer className="h-4 w-4" /> Imprimir / PDF
             </LinkButton>

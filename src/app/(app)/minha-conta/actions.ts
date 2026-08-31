@@ -2,8 +2,36 @@
 
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+const NomeSchema = z.object({
+  nome: z.string().trim().min(2, "Informe seu nome completo."),
+});
+
+export type AlterarNomeState = { erro?: string; sucesso?: boolean } | undefined;
+
+export async function alterarMeuNome(
+  _prevState: AlterarNomeState,
+  formData: FormData
+): Promise<AlterarNomeState> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const resultado = NomeSchema.safeParse({ nome: formData.get("nome") });
+  if (!resultado.success) {
+    return { erro: resultado.error.issues[0]?.message ?? "Dados inválidos." };
+  }
+
+  await prisma.usuario.update({
+    where: { id: session.user.id },
+    data: { nome: resultado.data.nome },
+  });
+  revalidatePath("/minha-conta");
+
+  return { sucesso: true };
+}
 
 const AlterarSenhaSchema = z
   .object({

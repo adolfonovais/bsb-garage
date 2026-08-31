@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 import {
   atualizarEmpresa,
   alternarAtivoUsuario,
+  atualizarUsuario,
   criarUsuario,
-  redefinirSenhaUsuario,
 } from "@/app/(app)/configuracoes/actions";
 import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
 import { nfseConfigurada } from "@/lib/nfse";
@@ -79,15 +79,20 @@ export default async function ConfiguracoesPage() {
               </div>
               <details className="mt-2">
                 <summary className="cursor-pointer text-xs font-medium text-amber-700">
-                  Redefinir senha
+                  Editar usuário
                 </summary>
                 <form
-                  action={redefinirSenhaUsuario.bind(null, u.id)}
+                  action={atualizarUsuario.bind(null, u.id)}
                   className="mt-2 flex flex-wrap items-end gap-2"
                 >
                   <div className="min-w-[160px] flex-1">
-                    <Field label="Nova senha *">
-                      <Input name="senha" type="password" required minLength={6} />
+                    <Field label="Nome *">
+                      <Input name="nome" defaultValue={u.nome} required minLength={2} />
+                    </Field>
+                  </div>
+                  <div className="min-w-[160px] flex-1">
+                    <Field label="Nova senha">
+                      <Input name="novaSenha" type="password" placeholder="Deixe em branco pra manter" minLength={6} />
                     </Field>
                   </div>
                   <Button type="submit" variant="secondary">

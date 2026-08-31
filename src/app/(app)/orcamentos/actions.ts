@@ -59,6 +59,48 @@ export async function criarOrcamento(formData: FormData) {
   redirect(`/orcamentos/${orcamento.id}`);
 }
 
+export async function atualizarOrcamento(orcamentoId: string, formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const dados = OrcamentoSchema.parse({
+    clienteId: formData.get("clienteId"),
+    veiculoId: formData.get("veiculoId"),
+    validadeDias: formData.get("validadeDias"),
+    observacoes: formData.get("observacoes"),
+  });
+  const itens = parseItens(formData);
+  const total = somaItens(itens);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.orcamentoItem.deleteMany({ where: { orcamentoId } });
+    await tx.orcamento.update({
+      where: { id: orcamentoId },
+      data: {
+        clienteId: dados.clienteId,
+        veiculoId: dados.veiculoId || null,
+        validadeDias: dados.validadeDias ? Number(dados.validadeDias) : 30,
+        observacoes: dados.observacoes || null,
+        valorTotal: total,
+        itens: {
+          create: itens.map((item) => ({
+            descricao: item.descricao,
+            quantidade: item.quantidade,
+            valorUnit: item.valorUnit,
+            valorTotal: item.valorTotal,
+            ordem: item.ordem,
+            tipoServicoId: item.tipoServicoId,
+          })),
+        },
+      },
+    });
+  }, TX_OPTIONS);
+
+  revalidatePath(`/orcamentos/${orcamentoId}`);
+  revalidatePath("/orcamentos");
+  redirect(`/orcamentos/${orcamentoId}`);
+}
+
 export async function atualizarStatusOrcamento(orcamentoId: string, status: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");

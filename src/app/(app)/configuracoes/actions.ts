@@ -80,16 +80,32 @@ export async function alternarAtivoUsuario(usuarioId: string, ativo: boolean) {
   revalidatePath("/configuracoes");
 }
 
-const RedefinirSenhaSchema = z.object({
-  senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+const EditarUsuarioSchema = z.object({
+  nome: z.string().trim().min(2, "Informe o nome."),
+  // Campo opcional: só troca a senha se algo for digitado. FormData.get()
+  // volta null (não undefined) quando o campo vem vazio.
+  novaSenha: z.string().trim().nullable().optional(),
 });
 
-export async function redefinirSenhaUsuario(usuarioId: string, formData: FormData) {
+export async function atualizarUsuario(usuarioId: string, formData: FormData) {
   await exigirAdmin();
 
-  const dados = RedefinirSenhaSchema.parse({ senha: formData.get("senha") });
-  const senhaHash = await bcrypt.hash(dados.senha, 10);
+  const dados = EditarUsuarioSchema.parse({
+    nome: formData.get("nome"),
+    novaSenha: formData.get("novaSenha"),
+  });
 
-  await prisma.usuario.update({ where: { id: usuarioId }, data: { senhaHash } });
+  const novaSenha = dados.novaSenha?.trim();
+  if (novaSenha && novaSenha.length < 6) {
+    throw new Error("A nova senha deve ter pelo menos 6 caracteres.");
+  }
+
+  await prisma.usuario.update({
+    where: { id: usuarioId },
+    data: {
+      nome: dados.nome,
+      ...(novaSenha ? { senhaHash: await bcrypt.hash(novaSenha, 10) } : {}),
+    },
+  });
   revalidatePath("/configuracoes");
 }
