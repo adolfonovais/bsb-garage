@@ -51,7 +51,9 @@ const UsuarioSchema = z.object({
   papel: z.enum(["ADMIN", "FUNCIONARIO"]),
 });
 
-export async function criarUsuario(formData: FormData) {
+export type EstadoFormulario = { sucesso?: boolean; erro?: string } | undefined;
+
+export async function criarUsuario(_prevState: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirAdmin();
 
   const dados = UsuarioSchema.parse({
@@ -72,6 +74,7 @@ export async function criarUsuario(formData: FormData) {
     },
   });
   revalidatePath("/configuracoes");
+  return { sucesso: true };
 }
 
 export async function alternarAtivoUsuario(usuarioId: string, ativo: boolean) {
@@ -87,7 +90,11 @@ const EditarUsuarioSchema = z.object({
   novaSenha: z.string().trim().nullable().optional(),
 });
 
-export async function atualizarUsuario(usuarioId: string, formData: FormData) {
+export async function atualizarUsuario(
+  usuarioId: string,
+  _prevState: EstadoFormulario,
+  formData: FormData
+): Promise<EstadoFormulario> {
   await exigirAdmin();
 
   const dados = EditarUsuarioSchema.parse({
@@ -108,4 +115,5 @@ export async function atualizarUsuario(usuarioId: string, formData: FormData) {
     },
   });
   revalidatePath("/configuracoes");
+  return { sucesso: true };
 }

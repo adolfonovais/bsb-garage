@@ -97,7 +97,13 @@ const MovimentacaoSchema = z.object({
   observacao: z.string().trim().optional(),
 });
 
-export async function registrarMovimentacao(pecaId: string, formData: FormData) {
+export type EstadoFormulario = { sucesso?: boolean } | undefined;
+
+export async function registrarMovimentacao(
+  pecaId: string,
+  _prevState: EstadoFormulario,
+  formData: FormData
+): Promise<EstadoFormulario> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -129,6 +135,7 @@ export async function registrarMovimentacao(pecaId: string, formData: FormData) 
 
   revalidatePath(`/estoque/${pecaId}`);
   revalidatePath("/estoque");
+  return { sucesso: true };
 }
 
 export async function excluirMovimentacao(pecaId: string, movimentacaoId: string) {

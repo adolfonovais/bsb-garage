@@ -8,6 +8,7 @@ import {
   criarUsuario,
 } from "@/app/(app)/configuracoes/actions";
 import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { DetailsForm } from "@/components/DetailsForm";
 import { nfseConfigurada } from "@/lib/nfse";
 import { whatsappConfigurado } from "@/lib/whatsapp";
 import { CheckCircle2, Circle } from "lucide-react";
@@ -77,56 +78,56 @@ export default async function ConfiguracoesPage() {
                   </Button>
                 </form>
               </div>
-              <details className="mt-2">
-                <summary className="cursor-pointer text-xs font-medium text-amber-700">
-                  Editar usuário
-                </summary>
-                <form
-                  action={atualizarUsuario.bind(null, u.id)}
-                  className="mt-2 flex flex-wrap items-end gap-2"
-                >
-                  <div className="min-w-[160px] flex-1">
-                    <Field label="Nome *">
-                      <Input name="nome" defaultValue={u.nome} required minLength={2} />
-                    </Field>
-                  </div>
-                  <div className="min-w-[160px] flex-1">
-                    <Field label="Nova senha">
-                      <Input name="novaSenha" type="password" placeholder="Deixe em branco pra manter" minLength={6} />
-                    </Field>
-                  </div>
-                  <Button type="submit" variant="secondary">
-                    Salvar
-                  </Button>
-                </form>
-              </details>
+              <DetailsForm
+                resumo="Editar usuário"
+                detailsClassName="mt-2"
+                action={atualizarUsuario.bind(null, u.id)}
+                formClassName="mt-2 flex flex-wrap items-end gap-2"
+              >
+                <div className="min-w-[160px] flex-1">
+                  <Field label="Nome *">
+                    <Input name="nome" defaultValue={u.nome} required minLength={2} />
+                  </Field>
+                </div>
+                <div className="min-w-[160px] flex-1">
+                  <Field label="Nova senha">
+                    <Input name="novaSenha" type="password" placeholder="Deixe em branco pra manter" minLength={6} />
+                  </Field>
+                </div>
+                <Button type="submit" variant="secondary">
+                  Salvar
+                </Button>
+              </DetailsForm>
             </div>
           ))}
         </div>
 
-        <details className="rounded-md border border-dashed border-slate-300 p-3">
-          <summary className="cursor-pointer text-sm font-medium text-amber-700">+ Novo usuário</summary>
-          <form action={criarUsuario} className="mt-3 grid grid-cols-2 gap-3">
-            <Field label="Nome *">
-              <Input name="nome" required />
-            </Field>
-            <Field label="E-mail *">
-              <Input name="email" type="email" required />
-            </Field>
-            <Field label="Senha inicial *">
-              <Input name="senha" type="password" required minLength={6} />
-            </Field>
-            <Field label="Papel *">
-              <Select name="papel" defaultValue="FUNCIONARIO">
-                <option value="FUNCIONARIO">Funcionário</option>
-                <option value="ADMIN">Administrador</option>
-              </Select>
-            </Field>
-            <div className="col-span-2 flex justify-end">
-              <Button type="submit">Criar usuário</Button>
-            </div>
-          </form>
-        </details>
+        <DetailsForm
+          resumo="+ Novo usuário"
+          detailsClassName="rounded-md border border-dashed border-slate-300 p-3"
+          action={criarUsuario}
+          formClassName="mt-3 grid grid-cols-2 gap-3"
+          limparAoSalvar
+        >
+          <Field label="Nome *">
+            <Input name="nome" required />
+          </Field>
+          <Field label="E-mail *">
+            <Input name="email" type="email" required />
+          </Field>
+          <Field label="Senha inicial *">
+            <Input name="senha" type="password" required minLength={6} />
+          </Field>
+          <Field label="Papel *">
+            <Select name="papel" defaultValue="FUNCIONARIO">
+              <option value="FUNCIONARIO">Funcionário</option>
+              <option value="ADMIN">Administrador</option>
+            </Select>
+          </Field>
+          <div className="col-span-2 flex justify-end">
+            <Button type="submit">Criar usuário</Button>
+          </div>
+        </DetailsForm>
       </Card>
 
       <Card className="p-6">

@@ -14,7 +14,9 @@ const ContaSchema = z.object({
   categoria: z.string().trim().optional(),
 });
 
-export async function criarConta(formData: FormData) {
+export type EstadoFormulario = { sucesso?: boolean } | undefined;
+
+export async function criarConta(_prevState: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -36,6 +38,7 @@ export async function criarConta(formData: FormData) {
     },
   });
   revalidatePath("/financeiro");
+  return { sucesso: true };
 }
 
 export async function marcarContaPaga(contaId: string) {

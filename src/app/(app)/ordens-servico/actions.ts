@@ -192,7 +192,13 @@ const PagamentoSchema = z.object({
   formaPagamento: z.string().optional(),
 });
 
-export async function registrarPagamento(osId: string, formData: FormData) {
+export type EstadoFormulario = { sucesso?: boolean } | undefined;
+
+export async function registrarPagamento(
+  osId: string,
+  _prevState: EstadoFormulario,
+  formData: FormData
+): Promise<EstadoFormulario> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -213,6 +219,7 @@ export async function registrarPagamento(osId: string, formData: FormData) {
     },
   });
   revalidatePath(`/ordens-servico/${osId}`);
+  return { sucesso: true };
 }
 
 export async function excluirPagamento(osId: string, pagamentoId: string) {

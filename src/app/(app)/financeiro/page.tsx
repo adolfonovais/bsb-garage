@@ -3,6 +3,7 @@ import type { ContaFinanceira } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { criarConta, excluirConta, marcarContaPaga, reabrirConta } from "@/app/(app)/financeiro/actions";
 import { Badge, Button, Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
+import { DetailsForm } from "@/components/DetailsForm";
 import {
   formatarData,
   formatarMoeda,
@@ -213,31 +214,34 @@ function ContasCard({
         </ul>
       )}
 
-      <details className="border-t border-slate-200 p-4">
-        <summary className="cursor-pointer text-sm font-medium text-amber-700">+ Nova conta</summary>
-        <form action={criarConta} className="mt-3 grid grid-cols-2 gap-3">
-          <input type="hidden" name="tipo" value={tipo} />
-          <div className="col-span-2">
-            <Field label="Descrição *">
-              <Input name="descricao" required placeholder={tipo === "PAGAR" ? "Ex: Aluguel, luz, insumos..." : "Ex: Adiantamento de cliente..."} />
-            </Field>
-          </div>
-          <Field label="Categoria">
-            <Input name="categoria" placeholder="Opcional" />
+      <DetailsForm
+        resumo="+ Nova conta"
+        detailsClassName="border-t border-slate-200 p-4"
+        action={criarConta}
+        formClassName="mt-3 grid grid-cols-2 gap-3"
+        limparAoSalvar
+      >
+        <input type="hidden" name="tipo" value={tipo} />
+        <div className="col-span-2">
+          <Field label="Descrição *">
+            <Input name="descricao" required placeholder={tipo === "PAGAR" ? "Ex: Aluguel, luz, insumos..." : "Ex: Adiantamento de cliente..."} />
           </Field>
-          <Field label="Vencimento *">
-            <Input name="dataVencimento" type="date" required defaultValue={new Date().toISOString().slice(0, 10)} />
+        </div>
+        <Field label="Categoria">
+          <Input name="categoria" placeholder="Opcional" />
+        </Field>
+        <Field label="Vencimento *">
+          <Input name="dataVencimento" type="date" required defaultValue={new Date().toISOString().slice(0, 10)} />
+        </Field>
+        <div className="col-span-2">
+          <Field label="Valor *">
+            <Input name="valor" type="number" step="0.01" min="0" required />
           </Field>
-          <div className="col-span-2">
-            <Field label="Valor *">
-              <Input name="valor" type="number" step="0.01" min="0" required />
-            </Field>
-          </div>
-          <div className="col-span-2 flex justify-end">
-            <Button type="submit">Adicionar</Button>
-          </div>
-        </form>
-      </details>
+        </div>
+        <div className="col-span-2 flex justify-end">
+          <Button type="submit">Adicionar</Button>
+        </div>
+      </DetailsForm>
     </Card>
   );
 }

@@ -10,6 +10,9 @@ export default function NovoClientePage() {
           <Field label="Nome *">
             <Input name="nome" required autoFocus />
           </Field>
+          <Field label="CPF">
+            <Input name="cpf" placeholder="000.000.000-00" />
+          </Field>
           <Field label="Telefone">
             <Input name="telefone" placeholder="(61) 90000-0000" />
           </Field>

@@ -12,6 +12,7 @@ import {
   usarPeca,
 } from "@/app/(app)/ordens-servico/actions";
 import { Badge, Button, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
+import { DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { nfseConfigurada } from "@/lib/nfse";
 import { Pencil, Printer, Receipt, Trash2 } from "lucide-react";
@@ -292,35 +293,36 @@ export default async function OSDetalhePage({
           </table>
         )}
 
-        <details className="border-t border-slate-200 p-4">
-          <summary className="cursor-pointer text-sm font-medium text-amber-700">
-            + Registrar pagamento
-          </summary>
-          <form action={registrarPagamentoComId} className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Field label="Data">
-              <Input name="data" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
-            </Field>
-            <Field label="Descrição">
-              <Input name="descricao" placeholder="Ex: Entrada, 1ª parcela..." />
-            </Field>
-            <Field label="Forma">
-              <Select name="formaPagamento" defaultValue="">
-                <option value="">-</option>
-                <option>Dinheiro</option>
-                <option>PIX</option>
-                <option>Débito</option>
-                <option>Crédito</option>
-                <option>Transferência</option>
-              </Select>
-            </Field>
-            <Field label="Valor *">
-              <Input name="valor" type="number" step="0.01" min="0" required />
-            </Field>
-            <div className="col-span-2 sm:col-span-4 flex justify-end">
-              <Button type="submit">Registrar</Button>
-            </div>
-          </form>
-        </details>
+        <DetailsForm
+          resumo="+ Registrar pagamento"
+          detailsClassName="border-t border-slate-200 p-4"
+          action={registrarPagamentoComId}
+          formClassName="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4"
+          limparAoSalvar
+        >
+          <Field label="Data">
+            <Input name="data" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
+          </Field>
+          <Field label="Descrição">
+            <Input name="descricao" placeholder="Ex: Entrada, 1ª parcela..." />
+          </Field>
+          <Field label="Forma">
+            <Select name="formaPagamento" defaultValue="">
+              <option value="">-</option>
+              <option>Dinheiro</option>
+              <option>PIX</option>
+              <option>Débito</option>
+              <option>Crédito</option>
+              <option>Transferência</option>
+            </Select>
+          </Field>
+          <Field label="Valor *">
+            <Input name="valor" type="number" step="0.01" min="0" required />
+          </Field>
+          <div className="col-span-2 sm:col-span-4 flex justify-end">
+            <Button type="submit">Registrar</Button>
+          </div>
+        </DetailsForm>
       </Card>
 
       <Card className="flex justify-end p-4">

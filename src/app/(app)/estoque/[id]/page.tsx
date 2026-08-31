@@ -9,6 +9,7 @@ import {
 } from "@/app/(app)/estoque/actions";
 import { Button, Card, EmptyState, Field, Input, PageHeader, Select } from "@/components/ui";
 import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
+import { DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
 import { AlertTriangle, Trash2 } from "lucide-react";
 
@@ -168,29 +169,32 @@ export default async function PecaDetalhePage({
           </table>
         )}
 
-        <details className="border-t border-slate-200 p-4">
-          <summary className="cursor-pointer text-sm font-medium text-amber-700">+ Registrar movimentação</summary>
-          <form action={registrarComId} className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Field label="Tipo *">
-              <Select name="tipo" defaultValue="ENTRADA">
-                <option value="ENTRADA">Entrada (compra)</option>
-                <option value="SAIDA">Saída (uso avulso)</option>
-              </Select>
-            </Field>
-            <Field label="Quantidade *">
-              <Input name="quantidade" type="number" step="0.01" min="0" required />
-            </Field>
-            <Field label="Data">
-              <Input name="data" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
-            </Field>
-            <Field label="Observação">
-              <Input name="observacao" placeholder="Opcional" />
-            </Field>
-            <div className="col-span-2 sm:col-span-4 flex justify-end">
-              <Button type="submit">Registrar</Button>
-            </div>
-          </form>
-        </details>
+        <DetailsForm
+          resumo="+ Registrar movimentação"
+          detailsClassName="border-t border-slate-200 p-4"
+          action={registrarComId}
+          formClassName="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4"
+          limparAoSalvar
+        >
+          <Field label="Tipo *">
+            <Select name="tipo" defaultValue="ENTRADA">
+              <option value="ENTRADA">Entrada (compra)</option>
+              <option value="SAIDA">Saída (uso avulso)</option>
+            </Select>
+          </Field>
+          <Field label="Quantidade *">
+            <Input name="quantidade" type="number" step="0.01" min="0" required />
+          </Field>
+          <Field label="Data">
+            <Input name="data" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
+          </Field>
+          <Field label="Observação">
+            <Input name="observacao" placeholder="Opcional" />
+          </Field>
+          <div className="col-span-2 sm:col-span-4 flex justify-end">
+            <Button type="submit">Registrar</Button>
+          </div>
+        </DetailsForm>
       </Card>
 
       {peca.custoUnitario && (

@@ -19,8 +19,9 @@ import {
   Textarea,
 } from "@/components/ui";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
-import { Pencil, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
+import { EditarVeiculoForm, NovoVeiculoForm } from "@/components/VeiculoForms";
 
 export default async function ClienteDetalhePage({
   params,
@@ -71,6 +72,10 @@ export default async function ClienteDetalhePage({
                   <p className="text-slate-900">{cliente.nome}</p>
                 </div>
                 <div>
+                  <p className="text-xs uppercase text-slate-500">CPF</p>
+                  <p className="text-slate-900">{cliente.cpf || "-"}</p>
+                </div>
+                <div>
                   <p className="text-xs uppercase text-slate-500">Telefone</p>
                   <p className="text-slate-900">{cliente.telefone || "-"}</p>
                 </div>
@@ -88,6 +93,9 @@ export default async function ClienteDetalhePage({
               <form action={atualizarComId} className="space-y-4">
                 <Field label="Nome *">
                   <Input name="nome" defaultValue={cliente.nome} required />
+                </Field>
+                <Field label="CPF">
+                  <Input name="cpf" defaultValue={cliente.cpf ?? ""} placeholder="000.000.000-00" />
                 </Field>
                 <Field label="Telefone">
                   <Input name="telefone" defaultValue={cliente.telefone ?? ""} />
@@ -115,41 +123,17 @@ export default async function ClienteDetalhePage({
             )}
             {cliente.veiculos.map((veiculo) => (
               <div key={veiculo.id} className="rounded-md border border-slate-200 px-3 py-2 text-sm">
-                <details>
-                  <summary className="flex cursor-pointer list-none items-center justify-between">
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        {veiculo.modelo} {veiculo.cor ? `· ${veiculo.cor}` : ""}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {veiculo.placa ?? "sem placa"} {veiculo.ano ? `· ${veiculo.ano}` : ""}
-                      </p>
-                    </div>
-                    <Pencil className="h-4 w-4 shrink-0 text-slate-400" />
-                  </summary>
-                  <form
-                    action={atualizarVeiculo.bind(null, cliente.id, veiculo.id)}
-                    className="mt-3 grid grid-cols-2 gap-3"
-                  >
-                    <div className="col-span-2">
-                      <Field label="Modelo *">
-                        <Input name="modelo" defaultValue={veiculo.modelo} required />
-                      </Field>
-                    </div>
-                    <Field label="Placa">
-                      <Input name="placa" defaultValue={veiculo.placa ?? ""} className="uppercase" />
-                    </Field>
-                    <Field label="Cor">
-                      <Input name="cor" defaultValue={veiculo.cor ?? ""} />
-                    </Field>
-                    <Field label="Ano">
-                      <Input name="ano" type="number" defaultValue={veiculo.ano ?? ""} />
-                    </Field>
-                    <div className="col-span-2 flex justify-end">
-                      <Button type="submit">Salvar</Button>
-                    </div>
-                  </form>
-                </details>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900">
+                      {veiculo.modelo} {veiculo.cor ? `· ${veiculo.cor}` : ""}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {veiculo.placa ?? "sem placa"} {veiculo.ano ? `· ${veiculo.ano}` : ""}
+                    </p>
+                  </div>
+                  <EditarVeiculoForm veiculo={veiculo} atualizarVeiculo={atualizarVeiculo.bind(null, cliente.id, veiculo.id)} />
+                </div>
                 <form action={excluirVeiculo.bind(null, cliente.id, veiculo.id)} className="mt-1 flex justify-end">
                   <button
                     type="submit"
@@ -163,30 +147,7 @@ export default async function ClienteDetalhePage({
             ))}
           </div>
 
-          <details className="rounded-md border border-dashed border-slate-300 p-3">
-            <summary className="cursor-pointer text-sm font-medium text-amber-700">
-              + Adicionar veículo
-            </summary>
-            <form action={criarVeiculoComId} className="mt-3 grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <Field label="Modelo *">
-                  <Input name="modelo" required />
-                </Field>
-              </div>
-              <Field label="Placa">
-                <Input name="placa" className="uppercase" />
-              </Field>
-              <Field label="Cor">
-                <Input name="cor" />
-              </Field>
-              <Field label="Ano">
-                <Input name="ano" type="number" />
-              </Field>
-              <div className="col-span-2 flex justify-end">
-                <Button type="submit">Adicionar</Button>
-              </div>
-            </form>
-          </details>
+          <NovoVeiculoForm criarVeiculo={criarVeiculoComId} />
         </Card>
       </div>
 

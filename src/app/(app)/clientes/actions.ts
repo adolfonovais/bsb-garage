@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 
 const ClienteSchema = z.object({
   nome: z.string().trim().min(2, "Informe o nome do cliente."),
+  cpf: z.string().trim().optional(),
   telefone: z.string().trim().optional(),
   email: z.string().trim().optional(),
   endereco: z.string().trim().optional(),
@@ -19,6 +20,7 @@ export async function criarCliente(formData: FormData) {
 
   const dados = ClienteSchema.parse({
     nome: formData.get("nome"),
+    cpf: formData.get("cpf"),
     telefone: formData.get("telefone"),
     email: formData.get("email"),
     endereco: formData.get("endereco"),
@@ -35,6 +37,7 @@ export async function atualizarCliente(clienteId: string, formData: FormData) {
 
   const dados = ClienteSchema.parse({
     nome: formData.get("nome"),
+    cpf: formData.get("cpf"),
     telefone: formData.get("telefone"),
     email: formData.get("email"),
     endereco: formData.get("endereco"),
@@ -61,7 +64,13 @@ const VeiculoSchema = z.object({
   ano: z.string().trim().optional(),
 });
 
-export async function criarVeiculo(clienteId: string, formData: FormData) {
+export type VeiculoState = { sucesso?: boolean } | undefined;
+
+export async function criarVeiculo(
+  clienteId: string,
+  _prevState: VeiculoState,
+  formData: FormData
+): Promise<VeiculoState> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -82,9 +91,15 @@ export async function criarVeiculo(clienteId: string, formData: FormData) {
     },
   });
   revalidatePath(`/clientes/${clienteId}`);
+  return { sucesso: true };
 }
 
-export async function atualizarVeiculo(clienteId: string, veiculoId: string, formData: FormData) {
+export async function atualizarVeiculo(
+  clienteId: string,
+  veiculoId: string,
+  _prevState: VeiculoState,
+  formData: FormData
+): Promise<VeiculoState> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -105,6 +120,7 @@ export async function atualizarVeiculo(clienteId: string, veiculoId: string, for
     },
   });
   revalidatePath(`/clientes/${clienteId}`);
+  return { sucesso: true };
 }
 
 export async function excluirVeiculo(clienteId: string, veiculoId: string) {
