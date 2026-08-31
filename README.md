@@ -87,13 +87,20 @@ Supabase que já mordemos:
 
 ## Fotos das Ordens de Serviço
 
-Hoje as fotos (antes/depois) ficam salvas em disco, em `public/uploads`
-(pasta ignorada pelo git — são dados do usuário, não código). Isso funciona
-bem rodando localmente ou num servidor próprio, mas **não sobrevive a um
-deploy na Vercel** (o sistema de arquivos lá é efêmero). Antes de ir para
-produção, troque a implementação de `src/lib/storage.ts` para usar o
-[Supabase Storage](https://supabase.com/docs/guides/storage) — o resto do
-app (formulários, banco) não precisa mudar.
+As fotos (antes/depois) ficam salvas no [Supabase Storage](https://supabase.com/docs/guides/storage),
+no bucket público `bsb-garage-fotos` (criado automaticamente no primeiro
+upload, dentro do mesmo projeto Supabase usado pelo banco). Isso funciona
+igual local e em produção — diferente de disco local, que não sobrevive a
+um deploy na Vercel (filesystem efêmero).
+
+Para funcionar, preencha no `.env` (e nas variáveis de ambiente da Vercel):
+
+- `NEXT_PUBLIC_SUPABASE_URL` — `https://<ref-do-projeto>.supabase.co`
+  (o `<ref-do-projeto>` é o mesmo trecho que aparece no `DATABASE_URL`,
+  entre `postgres.` e `:`).
+- `SUPABASE_SERVICE_ROLE_KEY` — em Project Settings → API → "service_role"
+  (chave secreta, nunca exponha no front-end nem commite no git). É usada
+  só no servidor (`src/lib/storage.ts`), nunca chega ao navegador.
 
 ## E-mail ao cliente
 
@@ -139,7 +146,7 @@ prisma/schema.prisma        Modelo do banco de dados
 prisma/seed.ts               Dados iniciais (admin, catálogo de serviços, etc.)
 src/lib/auth.ts               Configuração do login (NextAuth)
 src/lib/prisma.ts             Cliente do Prisma
-src/lib/storage.ts             Upload de fotos (hoje: disco local)
+src/lib/storage.ts             Upload de fotos (Supabase Storage)
 src/lib/mail.ts                 Envio de e-mail (aviso de OS concluída)
 src/lib/notificacoes.ts          Ponto único de aviso ao cliente (e-mail hoje, WhatsApp depois)
 src/lib/nfse.ts                  Ponto de extensão para emissão de NFS-e (ainda não ativo)
