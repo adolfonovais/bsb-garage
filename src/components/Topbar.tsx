@@ -3,7 +3,7 @@ import { LogOut } from "lucide-react";
 
 export function Topbar({ nome, papel }: { nome: string; papel: string }) {
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:px-6">
+    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:px-6 print:hidden">
       <div className="md:hidden">
         <p className="text-sm font-bold text-slate-900">BSB Garage Martelinho de Ouro</p>
       </div>

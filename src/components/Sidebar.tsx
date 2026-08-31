@@ -12,6 +12,7 @@ import {
   ArrowLeftRight,
   Wallet,
   Boxes,
+  BarChart3,
 } from "lucide-react";
 
 const links = [
@@ -23,13 +24,14 @@ const links = [
   { href: "/oficinas", label: "Oficinas terceirizadas", icon: Factory },
   { href: "/repasses", label: "Repasses", icon: ArrowLeftRight },
   { href: "/financeiro", label: "Financeiro", icon: Wallet },
+  { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
 ];
 
 export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-neutral-800 bg-black text-neutral-100 md:flex">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-neutral-800 bg-black text-neutral-100 md:flex print:hidden">
       <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
         {/* eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev */}
         <img
