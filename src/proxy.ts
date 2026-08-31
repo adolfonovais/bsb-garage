@@ -22,6 +22,8 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Roda em todas as rotas exceto assets estáticos do Next.js.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Roda em todas as rotas exceto assets estáticos do Next.js e arquivos
+  // públicos (logo em /brand, fotos das OS em /uploads) — sem isso, a
+  // própria logo da tela de login era redirecionada pro login (loop).
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|brand/|uploads/).*)"],
 };
