@@ -8,6 +8,7 @@ import {
   registrarMovimentacao,
 } from "@/app/(app)/estoque/actions";
 import { Button, Card, EmptyState, Field, Input, PageHeader, Select } from "@/components/ui";
+import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
 import { formatarData, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
 import { AlertTriangle, Trash2 } from "lucide-react";
 
@@ -51,37 +52,68 @@ export default async function PecaDetalhePage({
       )}
 
       <Card className="p-6">
-        <form action={atualizarComId} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Field label="Nome *">
-              <Input name="nome" defaultValue={peca.nome} required />
-            </Field>
-          </div>
-          <Field label="Unidade *">
-            <Select name="unidade" defaultValue={peca.unidade} required>
-              {UNIDADES.map((u) => (
-                <option key={u} value={u}>
-                  {u}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Quantidade mínima">
-            <Input name="quantidadeMinima" type="number" step="0.01" min="0" defaultValue={String(peca.quantidadeMinima)} />
-          </Field>
-          <Field label="Custo unitário">
-            <Input
-              name="custoUnitario"
-              type="number"
-              step="0.01"
-              min="0"
-              defaultValue={peca.custoUnitario ? String(peca.custoUnitario) : ""}
-            />
-          </Field>
-          <div className="sm:col-span-2 flex justify-end">
-            <Button type="submit">Salvar alterações</Button>
-          </div>
-        </form>
+        <EdicaoInline
+          visualizacao={
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <p className="text-xs uppercase text-slate-500">Nome</p>
+                <p className="text-slate-900">{peca.nome}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase text-slate-500">Unidade</p>
+                <p className="text-slate-900">{peca.unidade}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase text-slate-500">Quantidade mínima</p>
+                <p className="text-slate-900">{paraNumero(peca.quantidadeMinima)}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase text-slate-500">Custo unitário</p>
+                <p className="text-slate-900">{peca.custoUnitario ? formatarMoeda(peca.custoUnitario) : "-"}</p>
+              </div>
+            </div>
+          }
+          formulario={
+            <form action={atualizarComId} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Field label="Nome *">
+                  <Input name="nome" defaultValue={peca.nome} required />
+                </Field>
+              </div>
+              <Field label="Unidade *">
+                <Select name="unidade" defaultValue={peca.unidade} required>
+                  {UNIDADES.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Quantidade mínima">
+                <Input
+                  name="quantidadeMinima"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={String(peca.quantidadeMinima)}
+                />
+              </Field>
+              <Field label="Custo unitário">
+                <Input
+                  name="custoUnitario"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={peca.custoUnitario ? String(peca.custoUnitario) : ""}
+                />
+              </Field>
+              <div className="sm:col-span-2 flex justify-end gap-2">
+                <BotaoCancelarEdicao />
+                <Button type="submit">Salvar</Button>
+              </div>
+            </form>
+          }
+        />
       </Card>
 
       <Card>

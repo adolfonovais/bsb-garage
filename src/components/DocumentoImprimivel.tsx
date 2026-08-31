@@ -1,4 +1,6 @@
 import type { Prisma } from "@prisma/client";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { formatarData, formatarMoeda, paraNumero } from "@/lib/format";
 import { PrintButton } from "@/components/PrintButton";
 
@@ -31,6 +33,7 @@ export function DocumentoImprimivel({
   total,
   observacoes,
   rodape,
+  voltarHref,
 }: {
   empresa: Empresa;
   titulo: string;
@@ -42,9 +45,18 @@ export function DocumentoImprimivel({
   total: Numerico;
   observacoes?: string | null;
   rodape?: React.ReactNode;
+  voltarHref?: string;
 }) {
   return (
     <div className="mx-auto max-w-3xl bg-white p-10 text-slate-900 print:p-0">
+      {voltarHref && (
+        <Link
+          href={voltarHref}
+          className="print:hidden fixed left-6 top-6 flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-lg hover:bg-slate-50"
+        >
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </Link>
+      )}
       <PrintButton />
 
       <header className="mb-6 flex items-center gap-4 border-b-2 border-slate-900 pb-4">

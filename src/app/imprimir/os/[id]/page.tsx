@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     select: { numero: true, ano: true, veiculo: true, cliente: { select: { nome: true } } },
   });
   if (!os) return {};
-  return { title: nomeArquivoImpressao(os.numero, os.ano, os.veiculo, os.cliente.nome) };
+  return { title: nomeArquivoImpressao("OS", os.numero, os.ano, os.veiculo, os.cliente.nome) };
 }
 
 export default async function ImprimirOSPage({
@@ -40,6 +40,7 @@ export default async function ImprimirOSPage({
 
   return (
     <DocumentoImprimivel
+      voltarHref={`/ordens-servico/${os.id}`}
       empresa={
         empresa ?? {
           nome: "BSB Garage Martelinho de Ouro",

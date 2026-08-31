@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { atualizarOS } from "@/app/(app)/ordens-servico/actions";
-import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { Button, Card, Field, Input, LinkButton, PageHeader, Select, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
 import { numeroFormatado, paraNumero } from "@/lib/format";
@@ -102,6 +102,9 @@ export default async function EditarOSPage({
           </Field>
 
           <div className="flex justify-end gap-2 pt-2">
+            <LinkButton href={`/ordens-servico/${os.id}`} variant="secondary">
+              Cancelar
+            </LinkButton>
             <Button type="submit">Salvar alterações</Button>
           </div>
         </form>

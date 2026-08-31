@@ -107,15 +107,16 @@ export function formatarVeiculo(veiculo: VeiculoResumo): string {
 /**
  * Nome sugerido pro arquivo ao imprimir/salvar em PDF um Orçamento ou OS —
  * usado como <title> da página, que é o que o navegador propõe como nome
- * do arquivo na hora de salvar. Formato: "número - modelo - placa - cliente".
+ * do arquivo na hora de salvar. Formato: "prefixo número - modelo - placa - cliente".
  */
 export function nomeArquivoImpressao(
+  prefixo: "OS" | "Orçamento",
   numero: number,
   ano: number,
   veiculo: VeiculoResumo,
   clienteNome: string
 ): string {
-  const partes = [numeroFormatado(numero, ano)];
+  const partes = [`${prefixo} ${numeroFormatado(numero, ano)}`];
   if (veiculo?.modelo) partes.push(veiculo.modelo);
   if (veiculo?.placa) partes.push(veiculo.placa);
   partes.push(clienteNome);

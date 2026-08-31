@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import {
   atualizarCliente,
+  atualizarVeiculo,
   criarVeiculo,
   excluirCliente,
   excluirVeiculo,
@@ -18,7 +19,8 @@ import {
   Textarea,
 } from "@/components/ui";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
 
 export default async function ClienteDetalhePage({
   params,
@@ -61,23 +63,48 @@ export default async function ClienteDetalhePage({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="p-6">
           <h2 className="mb-4 text-sm font-semibold text-slate-900">Dados do cliente</h2>
-          <form action={atualizarComId} className="space-y-4">
-            <Field label="Nome *">
-              <Input name="nome" defaultValue={cliente.nome} required />
-            </Field>
-            <Field label="Telefone">
-              <Input name="telefone" defaultValue={cliente.telefone ?? ""} />
-            </Field>
-            <Field label="E-mail">
-              <Input type="email" name="email" defaultValue={cliente.email ?? ""} />
-            </Field>
-            <Field label="Endereço">
-              <Textarea name="endereco" rows={2} defaultValue={cliente.endereco ?? ""} />
-            </Field>
-            <div className="flex justify-end">
-              <Button type="submit">Salvar alterações</Button>
-            </div>
-          </form>
+          <EdicaoInline
+            visualizacao={
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="text-xs uppercase text-slate-500">Nome</p>
+                  <p className="text-slate-900">{cliente.nome}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-slate-500">Telefone</p>
+                  <p className="text-slate-900">{cliente.telefone || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-slate-500">E-mail</p>
+                  <p className="text-slate-900">{cliente.email || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-slate-500">Endereço</p>
+                  <p className="whitespace-pre-line text-slate-900">{cliente.endereco || "-"}</p>
+                </div>
+              </div>
+            }
+            formulario={
+              <form action={atualizarComId} className="space-y-4">
+                <Field label="Nome *">
+                  <Input name="nome" defaultValue={cliente.nome} required />
+                </Field>
+                <Field label="Telefone">
+                  <Input name="telefone" defaultValue={cliente.telefone ?? ""} />
+                </Field>
+                <Field label="E-mail">
+                  <Input type="email" name="email" defaultValue={cliente.email ?? ""} />
+                </Field>
+                <Field label="Endereço">
+                  <Textarea name="endereco" rows={2} defaultValue={cliente.endereco ?? ""} />
+                </Field>
+                <div className="flex justify-end gap-2">
+                  <BotaoCancelarEdicao />
+                  <Button type="submit">Salvar</Button>
+                </div>
+              </form>
+            }
+          />
         </Card>
 
         <Card className="p-6">
@@ -87,21 +114,49 @@ export default async function ClienteDetalhePage({
               <p className="text-sm text-slate-500">Nenhum veículo cadastrado.</p>
             )}
             {cliente.veiculos.map((veiculo) => (
-              <div
-                key={veiculo.id}
-                className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm"
-              >
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {veiculo.modelo} {veiculo.cor ? `· ${veiculo.cor}` : ""}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {veiculo.placa ?? "sem placa"} {veiculo.ano ? `· ${veiculo.ano}` : ""}
-                  </p>
-                </div>
-                <form action={excluirVeiculo.bind(null, cliente.id, veiculo.id)}>
-                  <button type="submit" className="text-slate-400 hover:text-red-600" title="Remover veículo">
-                    <Trash2 className="h-4 w-4" />
+              <div key={veiculo.id} className="rounded-md border border-slate-200 px-3 py-2 text-sm">
+                <details>
+                  <summary className="flex cursor-pointer list-none items-center justify-between">
+                    <div>
+                      <p className="font-medium text-slate-900">
+                        {veiculo.modelo} {veiculo.cor ? `· ${veiculo.cor}` : ""}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {veiculo.placa ?? "sem placa"} {veiculo.ano ? `· ${veiculo.ano}` : ""}
+                      </p>
+                    </div>
+                    <Pencil className="h-4 w-4 shrink-0 text-slate-400" />
+                  </summary>
+                  <form
+                    action={atualizarVeiculo.bind(null, cliente.id, veiculo.id)}
+                    className="mt-3 grid grid-cols-2 gap-3"
+                  >
+                    <div className="col-span-2">
+                      <Field label="Modelo *">
+                        <Input name="modelo" defaultValue={veiculo.modelo} required />
+                      </Field>
+                    </div>
+                    <Field label="Placa">
+                      <Input name="placa" defaultValue={veiculo.placa ?? ""} className="uppercase" />
+                    </Field>
+                    <Field label="Cor">
+                      <Input name="cor" defaultValue={veiculo.cor ?? ""} />
+                    </Field>
+                    <Field label="Ano">
+                      <Input name="ano" type="number" defaultValue={veiculo.ano ?? ""} />
+                    </Field>
+                    <div className="col-span-2 flex justify-end">
+                      <Button type="submit">Salvar</Button>
+                    </div>
+                  </form>
+                </details>
+                <form action={excluirVeiculo.bind(null, cliente.id, veiculo.id)} className="mt-1 flex justify-end">
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-600"
+                    title="Remover veículo"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Remover
                   </button>
                 </form>
               </div>

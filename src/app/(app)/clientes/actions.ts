@@ -84,6 +84,29 @@ export async function criarVeiculo(clienteId: string, formData: FormData) {
   revalidatePath(`/clientes/${clienteId}`);
 }
 
+export async function atualizarVeiculo(clienteId: string, veiculoId: string, formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const dados = VeiculoSchema.parse({
+    modelo: formData.get("modelo"),
+    placa: formData.get("placa"),
+    cor: formData.get("cor"),
+    ano: formData.get("ano"),
+  });
+
+  await prisma.veiculo.update({
+    where: { id: veiculoId },
+    data: {
+      modelo: dados.modelo,
+      placa: dados.placa?.toUpperCase() || null,
+      cor: dados.cor || null,
+      ano: dados.ano ? Number(dados.ano) : null,
+    },
+  });
+  revalidatePath(`/clientes/${clienteId}`);
+}
+
 export async function excluirVeiculo(clienteId: string, veiculoId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");

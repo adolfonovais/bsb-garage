@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { criarRepasse } from "@/app/(app)/repasses/actions";
-import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
-import { formatarVeiculo, numeroFormatado } from "@/lib/format";
+import { Button, Card, Field, Input, LinkButton, PageHeader, Select, Textarea } from "@/components/ui";
+import { RepasseVeiculoCampos } from "@/components/RepasseVeiculoCampos";
 
 export default async function NovoRepassePage({
   searchParams,
@@ -38,26 +38,7 @@ export default async function NovoRepassePage({
                 ))}
               </Select>
             </Field>
-            <Field label="Vincular a uma OS (opcional)" hint="Preenche carro/placa automaticamente ao salvar, se deixado em branco.">
-              <Select name="osId" defaultValue="">
-                <option value="">Nenhuma</option>
-                {ordens.map((os) => (
-                  <option key={os.id} value={os.id}>
-                    {numeroFormatado(os.numero, os.ano)} — {os.cliente.nome}
-                    {os.veiculo ? ` (${formatarVeiculo(os.veiculo)})` : ""}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Carro *">
-              <Input name="carro" required placeholder="Ex: Discovery Sport" />
-            </Field>
-            <Field label="Placa">
-              <Input name="placa" className="uppercase" />
-            </Field>
+            <RepasseVeiculoCampos ordens={ordens} />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -97,6 +78,9 @@ export default async function NovoRepassePage({
           </label>
 
           <div className="flex justify-end gap-2 pt-2">
+            <LinkButton href="/repasses" variant="secondary">
+              Cancelar
+            </LinkButton>
             <Button type="submit">Salvar repasse</Button>
           </div>
         </form>

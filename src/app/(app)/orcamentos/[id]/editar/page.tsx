@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { atualizarOrcamento } from "@/app/(app)/orcamentos/actions";
-import { Button, Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
+import { Button, Card, Field, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
 import { numeroFormatado, paraNumero } from "@/lib/format";
@@ -70,6 +70,9 @@ export default async function EditarOrcamentoPage({
           </Field>
 
           <div className="flex justify-end gap-2 pt-2">
+            <LinkButton href={`/orcamentos/${orcamento.id}`} variant="secondary">
+              Cancelar
+            </LinkButton>
             <Button type="submit">Salvar alterações</Button>
           </div>
         </form>

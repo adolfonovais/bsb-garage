@@ -10,7 +10,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     select: { numero: true, ano: true, veiculo: true, cliente: { select: { nome: true } } },
   });
   if (!orcamento) return {};
-  return { title: nomeArquivoImpressao(orcamento.numero, orcamento.ano, orcamento.veiculo, orcamento.cliente.nome) };
+  return {
+    title: nomeArquivoImpressao("Orçamento", orcamento.numero, orcamento.ano, orcamento.veiculo, orcamento.cliente.nome),
+  };
 }
 
 export default async function ImprimirOrcamentoPage({
@@ -32,6 +34,7 @@ export default async function ImprimirOrcamentoPage({
 
   return (
     <DocumentoImprimivel
+      voltarHref={`/orcamentos/${orcamento.id}`}
       empresa={
         empresa ?? {
           nome: "BSB Garage Martelinho de Ouro",

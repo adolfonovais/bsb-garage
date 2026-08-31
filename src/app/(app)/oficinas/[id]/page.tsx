@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { atualizarOficina, alternarAtivoOficina } from "@/app/(app)/oficinas/actions";
 import { Badge, Button, Card, EmptyState, Field, Input, LinkButton, PageHeader } from "@/components/ui";
+import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
 import {
   formatarData,
   formatarMoeda,
@@ -70,20 +71,41 @@ export default async function OficinaDetalhePage({
 
       <Card className="p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-900">Dados da oficina</h2>
-        <form action={atualizarComId} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="Nome *">
-            <Input name="nome" defaultValue={oficina.nome} required />
-          </Field>
-          <Field label="Contato">
-            <Input name="contato" defaultValue={oficina.contato ?? ""} />
-          </Field>
-          <Field label="Telefone">
-            <Input name="telefone" defaultValue={oficina.telefone ?? ""} />
-          </Field>
-          <div className="sm:col-span-3 flex justify-end">
-            <Button type="submit">Salvar alterações</Button>
-          </div>
-        </form>
+        <EdicaoInline
+          visualizacao={
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
+              <div>
+                <p className="text-xs uppercase text-slate-500">Nome</p>
+                <p className="text-slate-900">{oficina.nome}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase text-slate-500">Contato</p>
+                <p className="text-slate-900">{oficina.contato || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase text-slate-500">Telefone</p>
+                <p className="text-slate-900">{oficina.telefone || "-"}</p>
+              </div>
+            </div>
+          }
+          formulario={
+            <form action={atualizarComId} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Field label="Nome *">
+                <Input name="nome" defaultValue={oficina.nome} required />
+              </Field>
+              <Field label="Contato">
+                <Input name="contato" defaultValue={oficina.contato ?? ""} />
+              </Field>
+              <Field label="Telefone">
+                <Input name="telefone" defaultValue={oficina.telefone ?? ""} />
+              </Field>
+              <div className="sm:col-span-3 flex justify-end gap-2">
+                <BotaoCancelarEdicao />
+                <Button type="submit">Salvar</Button>
+              </div>
+            </form>
+          }
+        />
       </Card>
 
       <Card>
