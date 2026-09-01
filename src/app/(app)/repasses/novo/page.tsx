@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { criarRepasse } from "@/app/(app)/repasses/actions";
-import { Button, Card, Field, Input, LinkButton, PageHeader, Select, Textarea } from "@/components/ui";
+import { Card, Field, Input, LinkButton, PageHeader, Select, Textarea } from "@/components/ui";
 import { RepasseVeiculoCampos } from "@/components/RepasseVeiculoCampos";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function NovoRepassePage({
   searchParams,
@@ -81,7 +82,7 @@ export default async function NovoRepassePage({
             <LinkButton href="/repasses" variant="secondary">
               Cancelar
             </LinkButton>
-            <Button type="submit">Salvar repasse</Button>
+            <SubmitButton>Salvar repasse</SubmitButton>
           </div>
         </form>
       </Card>

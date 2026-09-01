@@ -1,5 +1,6 @@
 import { criarPeca } from "@/app/(app)/estoque/actions";
-import { Button, Card, Field, Input, PageHeader, Select } from "@/components/ui";
+import { Card, Field, Input, PageHeader, Select } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 const UNIDADES = ["un", "m", "m²", "m³", "vb", "kg", "l"];
 
@@ -35,7 +36,7 @@ export default function NovaPecaPage() {
             </Field>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="submit">Salvar</Button>
+            <SubmitButton>Salvar</SubmitButton>
           </div>
         </form>
       </Card>

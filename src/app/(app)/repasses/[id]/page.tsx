@@ -7,7 +7,7 @@ import {
   atualizarStatusRepasse,
   excluirRepasse,
 } from "@/app/(app)/repasses/actions";
-import { Badge, Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { Badge, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
 import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
 import {
   formatarData,
@@ -18,6 +18,7 @@ import {
   STATUS_REPASSE_LABEL,
 } from "@/lib/format";
 import { Trash2 } from "lucide-react";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function RepasseDetalhePage({
   params,
@@ -67,28 +68,28 @@ export default async function RepasseDetalhePage({
         <span className="text-sm font-medium text-slate-700">Status do serviço:</span>
         {repasse.status !== "ENTREGUE" && (
           <form action={atualizarStatusRepasse.bind(null, repasse.id, "ENTREGUE")}>
-            <Button type="submit" variant="secondary">
+            <SubmitButton variant="secondary">
               Marcar entregue
-            </Button>
+            </SubmitButton>
           </form>
         )}
         {repasse.status !== "CANCELADO" && (
           <form action={atualizarStatusRepasse.bind(null, repasse.id, "CANCELADO")}>
-            <Button type="submit" variant="ghost">
+            <SubmitButton variant="ghost">
               Cancelar
-            </Button>
+            </SubmitButton>
           </form>
         )}
         <span className="ml-4 text-sm font-medium text-slate-700">Pagamento à oficina:</span>
         {repasse.statusPagamentoOficina !== "PAGO" ? (
           <form action={atualizarStatusPagamentoOficina.bind(null, repasse.id, "PAGO")}>
-            <Button type="submit">Marcar como pago</Button>
+            <SubmitButton>Marcar como pago</SubmitButton>
           </form>
         ) : (
           <form action={atualizarStatusPagamentoOficina.bind(null, repasse.id, "PENDENTE")}>
-            <Button type="submit" variant="secondary">
+            <SubmitButton variant="secondary">
               Marcar como pendente
-            </Button>
+            </SubmitButton>
           </form>
         )}
       </Card>
@@ -248,7 +249,7 @@ export default async function RepasseDetalhePage({
                 </span>
                 <div className="flex gap-2">
                   <BotaoCancelarEdicao />
-                  <Button type="submit">Salvar</Button>
+                  <SubmitButton>Salvar</SubmitButton>
                 </div>
               </div>
             </form>
@@ -258,9 +259,9 @@ export default async function RepasseDetalhePage({
 
       <Card className="flex justify-end p-4">
         <form action={excluirRepasse.bind(null, repasse.id)}>
-          <Button type="submit" variant="ghost">
+          <SubmitButton variant="ghost">
             <Trash2 className="h-4 w-4" /> Excluir repasse
-          </Button>
+          </SubmitButton>
         </form>
       </Card>
     </div>

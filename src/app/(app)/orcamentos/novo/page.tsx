@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { criarOrcamento } from "@/app/(app)/orcamentos/actions";
-import { Button, Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
+import { Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function NovoOrcamentoPage() {
   const [clientes, tiposServico] = await Promise.all([
@@ -21,7 +22,7 @@ export default async function NovoOrcamentoPage() {
           <ClienteVeiculoPicker clientes={clientes} />
 
           <Field label="Validade (dias)">
-            <Input name="validadeDias" type="number" defaultValue={30} className="max-w-[150px]" />
+            <Input name="validadeDias" type="number" defaultValue={60} className="max-w-[150px]" />
           </Field>
 
           <div>
@@ -34,7 +35,7 @@ export default async function NovoOrcamentoPage() {
           </Field>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="submit">Salvar orçamento</Button>
+            <SubmitButton>Salvar orçamento</SubmitButton>
           </div>
         </form>
       </Card>

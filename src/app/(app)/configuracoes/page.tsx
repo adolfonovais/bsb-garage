@@ -7,11 +7,12 @@ import {
   atualizarUsuario,
   criarUsuario,
 } from "@/app/(app)/configuracoes/actions";
-import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
 import { DetailsForm } from "@/components/DetailsForm";
 import { nfseConfigurada } from "@/lib/nfse";
 import { whatsappConfigurado } from "@/lib/whatsapp";
 import { CheckCircle2, Circle } from "lucide-react";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function ConfiguracoesPage() {
   const session = await auth();
@@ -55,7 +56,7 @@ export default async function ConfiguracoesPage() {
             <Input name="cidadeUf" defaultValue={empresa?.cidadeUf ?? "Brasília - DF"} required />
           </Field>
           <div className="flex justify-end">
-            <Button type="submit">Salvar</Button>
+            <SubmitButton>Salvar</SubmitButton>
           </div>
         </form>
       </Card>
@@ -73,9 +74,9 @@ export default async function ConfiguracoesPage() {
                   </p>
                 </div>
                 <form action={alternarAtivoUsuario.bind(null, u.id, !u.ativo)}>
-                  <Button type="submit" variant={u.ativo ? "secondary" : "primary"}>
+                  <SubmitButton variant={u.ativo ? "secondary" : "primary"}>
                     {u.ativo ? "Desativar" : "Ativar"}
-                  </Button>
+                  </SubmitButton>
                 </form>
               </div>
               <DetailsForm
@@ -94,9 +95,9 @@ export default async function ConfiguracoesPage() {
                     <Input name="novaSenha" type="password" placeholder="Deixe em branco pra manter" minLength={6} />
                   </Field>
                 </div>
-                <Button type="submit" variant="secondary">
+                <SubmitButton variant="secondary">
                   Salvar
-                </Button>
+                </SubmitButton>
               </DetailsForm>
             </div>
           ))}
@@ -125,7 +126,7 @@ export default async function ConfiguracoesPage() {
             </Select>
           </Field>
           <div className="col-span-2 flex justify-end">
-            <Button type="submit">Criar usuário</Button>
+            <SubmitButton>Criar usuário</SubmitButton>
           </div>
         </DetailsForm>
       </Card>

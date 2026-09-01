@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { criarOS } from "@/app/(app)/ordens-servico/actions";
-import { Button, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
+import { SubmitButton } from "@/components/SubmitButton";
 
 const FORMAS_PAGAMENTO = [
   "Dinheiro",
@@ -62,7 +63,7 @@ export default async function NovaOSPage() {
           </Field>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="submit">Salvar Ordem de Serviço</Button>
+            <SubmitButton>Salvar Ordem de Serviço</SubmitButton>
           </div>
         </form>
       </Card>

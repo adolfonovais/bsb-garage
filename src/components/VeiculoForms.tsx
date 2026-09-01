@@ -1,6 +1,7 @@
 import { Pencil } from "lucide-react";
-import { Button, Field, Input } from "@/components/ui";
+import { Field, Input } from "@/components/ui";
 import { DetailsForm, type EstadoSimples } from "@/components/DetailsForm";
+import { SubmitButton } from "@/components/SubmitButton";
 
 type VeiculoAction = (prevState: EstadoSimples, formData: FormData) => Promise<EstadoSimples>;
 
@@ -32,7 +33,7 @@ export function EditarVeiculoForm({
         <Input name="ano" type="number" defaultValue={veiculo.ano ?? ""} />
       </Field>
       <div className="col-span-2 flex justify-end">
-        <Button type="submit">Salvar</Button>
+        <SubmitButton>Salvar</SubmitButton>
       </div>
     </DetailsForm>
   );
@@ -62,7 +63,7 @@ export function NovoVeiculoForm({ criarVeiculo }: { criarVeiculo: VeiculoAction 
         <Input name="ano" type="number" />
       </Field>
       <div className="col-span-2 flex justify-end">
-        <Button type="submit">Adicionar</Button>
+        <SubmitButton>Adicionar</SubmitButton>
       </div>
     </DetailsForm>
   );

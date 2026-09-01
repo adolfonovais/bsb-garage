@@ -10,7 +10,6 @@ import {
 } from "@/app/(app)/clientes/actions";
 import {
   Badge,
-  Button,
   Card,
   EmptyState,
   Field,
@@ -22,6 +21,7 @@ import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_O
 import { Trash2 } from "lucide-react";
 import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
 import { EditarVeiculoForm, NovoVeiculoForm } from "@/components/VeiculoForms";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function ClienteDetalhePage({
   params,
@@ -54,9 +54,9 @@ export default async function ClienteDetalhePage({
         subtitle="Dados do cliente, veículos e histórico de serviços"
         actions={
           <form action={excluirComId}>
-            <Button variant="danger" type="submit">
+            <SubmitButton variant="danger">
               <Trash2 className="h-4 w-4" /> Excluir cliente
-            </Button>
+            </SubmitButton>
           </form>
         }
       />
@@ -108,7 +108,7 @@ export default async function ClienteDetalhePage({
                 </Field>
                 <div className="flex justify-end gap-2">
                   <BotaoCancelarEdicao />
-                  <Button type="submit">Salvar</Button>
+                  <SubmitButton>Salvar</SubmitButton>
                 </div>
               </form>
             }

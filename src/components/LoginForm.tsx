@@ -2,10 +2,11 @@
 
 import { useActionState } from "react";
 import { autenticar, type LoginState } from "@/app/login/actions";
-import { Button, Field, Input } from "@/components/ui";
+import { Field, Input } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
-  const [state, action, pending] = useActionState<LoginState, FormData>(autenticar, undefined);
+  const [state, action] = useActionState<LoginState, FormData>(autenticar, undefined);
 
   return (
     <form action={action} className="space-y-4">
@@ -19,9 +20,9 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       {state?.erro && (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.erro}</p>
       )}
-      <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Entrando..." : "Entrar"}
-      </Button>
+      <SubmitButton pendingLabel="Entrando..." className="w-full">
+        Entrar
+      </SubmitButton>
     </form>
   );
 }

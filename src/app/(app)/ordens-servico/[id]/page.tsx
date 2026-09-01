@@ -16,6 +16,7 @@ import { DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { nfseConfigurada } from "@/lib/nfse";
 import { Pencil, Printer, Receipt, Trash2 } from "lucide-react";
+import { SubmitButton } from "@/components/SubmitButton";
 
 const PROXIMO_STATUS: Record<string, { valor: string; label: string }[]> = {
   ABERTA: [
@@ -161,9 +162,9 @@ export default async function OSDetalhePage({
         <div className="flex flex-wrap gap-2">
           {PROXIMO_STATUS[os.status]?.map((opcao) => (
             <form key={opcao.valor} action={atualizarStatusOS.bind(null, os.id, opcao.valor)}>
-              <Button type="submit" variant={opcao.valor === "CANCELADA" ? "danger" : "primary"}>
+              <SubmitButton variant={opcao.valor === "CANCELADA" ? "danger" : "primary"}>
                 {opcao.label}
-              </Button>
+              </SubmitButton>
             </form>
           ))}
           {(!PROXIMO_STATUS[os.status] || PROXIMO_STATUS[os.status].length === 0) && (
@@ -244,9 +245,9 @@ export default async function OSDetalhePage({
                 <Input name="quantidade" type="number" step="0.01" min="0" required defaultValue={1} />
               </Field>
             </div>
-            <Button type="submit" variant="secondary">
+            <SubmitButton variant="secondary">
               Dar baixa
-            </Button>
+            </SubmitButton>
           </form>
         )}
       </Card>
@@ -320,16 +321,16 @@ export default async function OSDetalhePage({
             <Input name="valor" type="number" step="0.01" min="0" required />
           </Field>
           <div className="col-span-2 sm:col-span-4 flex justify-end">
-            <Button type="submit">Registrar</Button>
+            <SubmitButton>Registrar</SubmitButton>
           </div>
         </DetailsForm>
       </Card>
 
       <Card className="flex justify-end p-4">
         <form action={excluirComId}>
-          <Button type="submit" variant="ghost">
+          <SubmitButton variant="ghost">
             <Trash2 className="h-4 w-4" /> Excluir OS
-          </Button>
+          </SubmitButton>
         </form>
       </Card>
     </div>
@@ -382,9 +383,9 @@ function FotoGrupo({
           required
           className="block w-full text-xs text-slate-500 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
         />
-        <Button type="submit" variant="secondary" className="shrink-0 px-3 py-1.5 text-xs">
+        <SubmitButton variant="secondary" className="shrink-0 px-3 py-1.5 text-xs">
           Enviar
-        </Button>
+        </SubmitButton>
       </form>
     </div>
   );

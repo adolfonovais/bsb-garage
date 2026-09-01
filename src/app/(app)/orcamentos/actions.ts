@@ -37,7 +37,7 @@ export async function criarOrcamento(formData: FormData) {
         ano,
         clienteId: dados.clienteId,
         veiculoId: dados.veiculoId || null,
-        validadeDias: dados.validadeDias ? Number(dados.validadeDias) : 30,
+        validadeDias: dados.validadeDias ? Number(dados.validadeDias) : 60,
         observacoes: dados.observacoes || null,
         valorTotal: total,
         criadoPorId: session.user.id,
@@ -79,7 +79,7 @@ export async function atualizarOrcamento(orcamentoId: string, formData: FormData
       data: {
         clienteId: dados.clienteId,
         veiculoId: dados.veiculoId || null,
-        validadeDias: dados.validadeDias ? Number(dados.validadeDias) : 30,
+        validadeDias: dados.validadeDias ? Number(dados.validadeDias) : 60,
         observacoes: dados.observacoes || null,
         valorTotal: total,
         itens: {

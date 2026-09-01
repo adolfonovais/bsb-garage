@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { atualizarOficina, alternarAtivoOficina } from "@/app/(app)/oficinas/actions";
-import { Badge, Button, Card, EmptyState, Field, Input, LinkButton, PageHeader } from "@/components/ui";
+import { Badge, Card, EmptyState, Field, Input, LinkButton, PageHeader } from "@/components/ui";
 import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
+import { SubmitButton } from "@/components/SubmitButton";
 import {
   formatarData,
   formatarMoeda,
@@ -42,9 +43,9 @@ export default async function OficinaDetalhePage({
           <>
             <LinkButton href={`/repasses/novo?oficinaId=${oficina.id}`}>Novo repasse</LinkButton>
             <form action={alternarAtivoOficina.bind(null, oficina.id, !oficina.ativo)}>
-              <Button type="submit" variant="secondary">
+              <SubmitButton variant="secondary">
                 {oficina.ativo ? "Desativar" : "Ativar"}
-              </Button>
+              </SubmitButton>
             </form>
           </>
         }
@@ -101,7 +102,7 @@ export default async function OficinaDetalhePage({
               </Field>
               <div className="sm:col-span-3 flex justify-end gap-2">
                 <BotaoCancelarEdicao />
-                <Button type="submit">Salvar</Button>
+                <SubmitButton>Salvar</SubmitButton>
               </div>
             </form>
           }

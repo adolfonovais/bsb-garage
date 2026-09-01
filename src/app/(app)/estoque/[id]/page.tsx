@@ -7,11 +7,12 @@ import {
   excluirPeca,
   registrarMovimentacao,
 } from "@/app/(app)/estoque/actions";
-import { Button, Card, EmptyState, Field, Input, PageHeader, Select } from "@/components/ui";
+import { Card, EmptyState, Field, Input, PageHeader, Select } from "@/components/ui";
 import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
 import { DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
 import { AlertTriangle, Trash2 } from "lucide-react";
+import { SubmitButton } from "@/components/SubmitButton";
 
 const UNIDADES = ["un", "m", "m²", "m³", "vb", "kg", "l"];
 
@@ -110,7 +111,7 @@ export default async function PecaDetalhePage({
               </Field>
               <div className="sm:col-span-2 flex justify-end gap-2">
                 <BotaoCancelarEdicao />
-                <Button type="submit">Salvar</Button>
+                <SubmitButton>Salvar</SubmitButton>
               </div>
             </form>
           }
@@ -192,7 +193,7 @@ export default async function PecaDetalhePage({
             <Input name="observacao" placeholder="Opcional" />
           </Field>
           <div className="col-span-2 sm:col-span-4 flex justify-end">
-            <Button type="submit">Registrar</Button>
+            <SubmitButton>Registrar</SubmitButton>
           </div>
         </DetailsForm>
       </Card>
@@ -205,9 +206,9 @@ export default async function PecaDetalhePage({
 
       <Card className="flex justify-end p-4">
         <form action={excluirPeca.bind(null, peca.id)}>
-          <Button type="submit" variant="ghost">
+          <SubmitButton variant="ghost">
             <Trash2 className="h-4 w-4" /> Excluir item
-          </Button>
+          </SubmitButton>
         </form>
       </Card>
     </div>

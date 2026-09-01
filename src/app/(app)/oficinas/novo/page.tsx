@@ -1,5 +1,6 @@
 import { criarOficina } from "@/app/(app)/oficinas/actions";
-import { Button, Card, Field, Input, PageHeader } from "@/components/ui";
+import { Card, Field, Input, PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default function NovaOficinaPage() {
   return (
@@ -17,7 +18,7 @@ export default function NovaOficinaPage() {
             <Input name="telefone" placeholder="(61) 90000-0000" />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="submit">Salvar</Button>
+            <SubmitButton>Salvar</SubmitButton>
           </div>
         </form>
       </Card>

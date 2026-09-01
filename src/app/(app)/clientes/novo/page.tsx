@@ -1,5 +1,6 @@
 import { criarCliente } from "@/app/(app)/clientes/actions";
-import { Button, Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
+import { Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default function NovoClientePage() {
   return (
@@ -23,7 +24,7 @@ export default function NovoClientePage() {
             <Textarea name="endereco" rows={2} />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="submit">Salvar</Button>
+            <SubmitButton>Salvar</SubmitButton>
           </div>
         </form>
       </Card>

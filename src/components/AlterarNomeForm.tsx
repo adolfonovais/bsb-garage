@@ -2,10 +2,11 @@
 
 import { useActionState } from "react";
 import { alterarMeuNome, type AlterarNomeState } from "@/app/(app)/minha-conta/actions";
-import { Button, Field, Input } from "@/components/ui";
+import { Field, Input } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export function AlterarNomeForm({ nomeAtual }: { nomeAtual: string }) {
-  const [state, action, pending] = useActionState<AlterarNomeState, FormData>(alterarMeuNome, undefined);
+  const [state, action] = useActionState<AlterarNomeState, FormData>(alterarMeuNome, undefined);
 
   return (
     <form action={action} className="space-y-4">
@@ -20,9 +21,7 @@ export function AlterarNomeForm({ nomeAtual }: { nomeAtual: string }) {
           Nome atualizado com sucesso. O topo da tela atualiza no próximo login.
         </p>
       )}
-      <Button type="submit" disabled={pending}>
-        {pending ? "Salvando..." : "Salvar nome"}
-      </Button>
+      <SubmitButton pendingLabel="Salvando...">Salvar nome</SubmitButton>
     </form>
   );
 }

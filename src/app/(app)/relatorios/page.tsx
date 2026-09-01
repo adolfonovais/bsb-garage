@@ -9,10 +9,11 @@ import {
   SECOES_RELATORIO,
   type SecaoRelatorio,
 } from "@/lib/relatorios";
-import { Button, Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
+import { Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
 import { formatarData, formatarMoeda, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
 import { PrintButton } from "@/components/PrintButton";
 import { Download } from "lucide-react";
+import { SubmitButton } from "@/components/SubmitButton";
 
 function inicioDoMes(): string {
   const d = new Date();
@@ -111,7 +112,7 @@ export default async function RelatoriosPage({
             )}
           </div>
           <div className="flex justify-end">
-            <Button type="submit">Gerar relatório</Button>
+            <SubmitButton>Gerar relatório</SubmitButton>
           </div>
         </form>
       </Card>

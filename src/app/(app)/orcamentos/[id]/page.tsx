@@ -6,9 +6,10 @@ import {
   converterEmOS,
   excluirOrcamento,
 } from "@/app/(app)/orcamentos/actions";
-import { Badge, Button, Card, LinkButton, PageHeader } from "@/components/ui";
+import { Badge, Card, LinkButton, PageHeader } from "@/components/ui";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
 import { Pencil, Printer, Trash2 } from "lucide-react";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function OrcamentoDetalhePage({
   params,
@@ -117,20 +118,20 @@ export default async function OrcamentoDetalhePage({
         {orcamento.status === "PENDENTE" && (
           <>
             <form action={aprovarAction}>
-              <Button type="submit">Aprovar</Button>
+              <SubmitButton>Aprovar</SubmitButton>
             </form>
             <form action={recusarAction}>
-              <Button type="submit" variant="secondary">
+              <SubmitButton variant="secondary">
                 Recusar
-              </Button>
+              </SubmitButton>
             </form>
           </>
         )}
         {!jaConvertido ? (
           <form action={converterAction}>
-            <Button type="submit" variant="primary">
+            <SubmitButton variant="primary">
               Converter em Ordem de Serviço
-            </Button>
+            </SubmitButton>
           </form>
         ) : (
           <LinkButton href={`/ordens-servico/${orcamento.ordensServico[0].id}`} variant="secondary">
@@ -138,9 +139,9 @@ export default async function OrcamentoDetalhePage({
           </LinkButton>
         )}
         <form action={excluirAction} className="ml-auto">
-          <Button type="submit" variant="ghost">
+          <SubmitButton variant="ghost">
             <Trash2 className="h-4 w-4" /> Excluir
-          </Button>
+          </SubmitButton>
         </form>
       </Card>
     </div>

@@ -2,10 +2,11 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { alterarMinhaSenha, type AlterarSenhaState } from "@/app/(app)/minha-conta/actions";
-import { Button, Field, Input } from "@/components/ui";
+import { Field, Input } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export function AlterarSenhaForm() {
-  const [state, action, pending] = useActionState<AlterarSenhaState, FormData>(alterarMinhaSenha, undefined);
+  const [state, action] = useActionState<AlterarSenhaState, FormData>(alterarMinhaSenha, undefined);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -31,9 +32,7 @@ export function AlterarSenhaForm() {
           Senha alterada com sucesso.
         </p>
       )}
-      <Button type="submit" disabled={pending}>
-        {pending ? "Salvando..." : "Alterar senha"}
-      </Button>
+      <SubmitButton pendingLabel="Salvando...">Alterar senha</SubmitButton>
     </form>
   );
 }

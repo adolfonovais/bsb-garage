@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ContaFinanceira } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { criarConta, excluirConta, marcarContaPaga, reabrirConta } from "@/app/(app)/financeiro/actions";
-import { Badge, Button, Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
+import { Badge, Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
 import { DetailsForm } from "@/components/DetailsForm";
 import {
   formatarData,
@@ -12,6 +12,7 @@ import {
   STATUS_CONTA_LABEL,
 } from "@/lib/format";
 import { Trash2, Wallet, TrendingDown, TrendingUp } from "lucide-react";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function FinanceiroPage() {
   const inicioMes = new Date();
@@ -239,7 +240,7 @@ function ContasCard({
           </Field>
         </div>
         <div className="col-span-2 flex justify-end">
-          <Button type="submit">Adicionar</Button>
+          <SubmitButton>Adicionar</SubmitButton>
         </div>
       </DetailsForm>
     </Card>

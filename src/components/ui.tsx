@@ -43,7 +43,7 @@ export function Field({
   );
 }
 
-const buttonVariants = {
+export const buttonVariants = {
   primary: "bg-amber-500 text-slate-900 hover:bg-amber-400 focus-visible:outline-amber-500",
   secondary: "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50",
   danger: "bg-red-600 text-white hover:bg-red-500",

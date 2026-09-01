@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { atualizarOrcamento } from "@/app/(app)/orcamentos/actions";
-import { Button, Card, Field, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
+import { Card, Field, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
 import { numeroFormatado, paraNumero } from "@/lib/format";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function EditarOrcamentoPage({
   params,
@@ -73,7 +74,7 @@ export default async function EditarOrcamentoPage({
             <LinkButton href={`/orcamentos/${orcamento.id}`} variant="secondary">
               Cancelar
             </LinkButton>
-            <Button type="submit">Salvar alterações</Button>
+            <SubmitButton>Salvar alterações</SubmitButton>
           </div>
         </form>
       </Card>
