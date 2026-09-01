@@ -1,11 +1,24 @@
+"use client";
+
 import Link from "next/link";
-import { signOut } from "@/lib/auth";
-import { LogOut } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
+import { useMobileMenu } from "@/components/MobileMenu";
+import { sairAction } from "@/components/topbar-actions";
 
 export function Topbar({ nome, papel }: { nome: string; papel: string }) {
+  const { setAberto } = useMobileMenu();
+
   return (
     <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:px-6 print:hidden">
-      <div className="md:hidden">
+      <div className="flex items-center gap-3 md:hidden">
+        <button
+          type="button"
+          onClick={() => setAberto(true)}
+          className="text-slate-600 hover:text-slate-900"
+          aria-label="Abrir menu"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
         <p className="text-sm font-bold text-slate-900">BSB Garage Martelinho de Ouro</p>
       </div>
       <div className="ml-auto flex items-center gap-4">
@@ -13,12 +26,7 @@ export function Topbar({ nome, papel }: { nome: string; papel: string }) {
           <p className="text-sm font-medium text-slate-900">{nome}</p>
           <p className="text-xs text-slate-500">{papel === "ADMIN" ? "Administrador" : "Funcionário"}</p>
         </Link>
-        <form
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/login" });
-          }}
-        >
+        <form action={sairAction}>
           <button
             type="submit"
             className="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"

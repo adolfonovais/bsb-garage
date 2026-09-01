@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -13,7 +14,9 @@ import {
   Wallet,
   Boxes,
   BarChart3,
+  X,
 } from "lucide-react";
+import { useMobileMenu } from "@/components/MobileMenu";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -29,24 +32,51 @@ const links = [
 
 export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
+  const { aberto, setAberto } = useMobileMenu();
+
+  // Fecha o menu mobile sozinho quando o usuário navega pra outra página.
+  useEffect(() => {
+    setAberto(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-neutral-800 bg-black text-neutral-100 md:flex print:hidden">
-      <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
-        {/* eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev */}
-        <img
-          src="/brand/logo.png"
-          alt="Logo BSB Garage Martelinho de Ouro"
-          width={44}
-          height={44}
-          className="shrink-0"
+    <>
+      {aberto && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden print:hidden"
+          onClick={() => setAberto(false)}
+          aria-hidden="true"
         />
-        <div>
-          <p className="text-sm font-bold leading-tight">BSB Garage</p>
-          <p className="text-xs text-neutral-400 leading-tight">Martelinho de Ouro</p>
+      )}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-neutral-800 bg-black text-neutral-100 transition-transform duration-200 md:static md:translate-x-0 md:flex print:hidden ${
+          aberto ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
+          {/* eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev */}
+          <img
+            src="/brand/logo.png"
+            alt="Logo BSB Garage Martelinho de Ouro"
+            width={44}
+            height={44}
+            className="shrink-0"
+          />
+          <div className="flex-1">
+            <p className="text-sm font-bold leading-tight">BSB Garage</p>
+            <p className="text-xs text-neutral-400 leading-tight">Martelinho de Ouro</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAberto(false)}
+            className="text-neutral-400 hover:text-white md:hidden"
+            aria-label="Fechar menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-      </div>
-      <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
@@ -78,9 +108,10 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
           </Link>
         )}
       </nav>
-      <div className="border-t border-neutral-800 px-4 py-3 text-xs text-neutral-500">
-        NFS-e e WhatsApp chegam em breve — ver Configurações.
-      </div>
-    </aside>
+        <div className="border-t border-neutral-800 px-4 py-3 text-xs text-neutral-500">
+          NFS-e e WhatsApp chegam em breve — ver Configurações.
+        </div>
+      </aside>
+    </>
   );
 }
