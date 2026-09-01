@@ -1,18 +1,21 @@
 // Ponto de extensão para emissão de Nota Fiscal de Serviço (NFS-e).
 //
-// Isso ainda não está implementado porque depende de decisões e cadastros
-// que só você pode fazer:
-//   1. Escolher um provedor de emissão (ex: Focus NFe, eNotas, PlugNotas) e
-//      criar uma conta lá.
-//   2. Ter um certificado digital A1 da empresa que vai emitir a nota.
-//   3. Confirmar qual CNPJ vai emitir (o do Garage, hoje "ADOLFO DE NOVAIS
-//      PINTO NETO ME" — não confundir com o CNPJ novo que está sendo aberto
-//      para a pousada).
+// Decisão tomada em 31/08/2026: emissão via webservice/API GRATUITA do
+// governo (Distrito Federal e/ou padrão NFS-e Nacional), não via provedor
+// pago — em vez de Focus NFe/eNotas/PlugNotas. Empresa emitente: PRIMEA
+// GESTÃO DE SERVIÇOS LTDA, CNPJ 64.531.214/0001-77 (Simples Nacional,
+// Brasília-DF) — não confundir com o CNPJ da pousada, que é outro,
+// separado (ver memória "maytra-pousada-cnpj-separado").
 //
-// Quando isso estiver definido, esta função passa a chamar a API do
-// provedor escolhido (token, URL etc. em variáveis de ambiente, como já
-// fazemos com SMTP em src/lib/mail.ts) e o botão "Emitir NFS-e" na tela da
-// Ordem de Serviço deixa de ficar desabilitado.
+// Ainda falta:
+//   1. Certificado digital A1 (e-CNPJ) da Primea — usuário vai comprar.
+//   2. Confirmar/implementar a integração real com o webservice do DF
+//      (iss.fazenda.df.gov.br) e/ou a API NFS-e Nacional (nfse.gov.br).
+//
+// Quando isso estiver pronto, esta função assina e envia o XML/payload
+// pro webservice correto (certificado em variável de ambiente/arquivo
+// seguro, como já fazemos com outras credenciais) e o botão "Emitir
+// NFS-e" na tela da Ordem de Serviço deixa de ficar desabilitado.
 
 export function nfseConfigurada(): boolean {
   return Boolean(process.env.NFSE_PROVEDOR && process.env.NFSE_TOKEN);

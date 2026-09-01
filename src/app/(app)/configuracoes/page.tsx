@@ -146,8 +146,8 @@ export default async function ConfiguracoesPage() {
             <div>
               <p className="font-medium text-slate-900">Emissão de NFS-e</p>
               <p className="text-xs text-slate-500">
-                Pendente: escolher um provedor (Focus NFe, eNotas ou PlugNotas), obter certificado
-                digital A1 da empresa e confirmar o CNPJ emissor.
+                Pendente: certificado digital A1 da Primea Gestão de Serviços LTDA (CNPJ
+                64.531.214/0001-77) e a integração com o webservice gratuito do governo (DF/Nacional).
               </p>
             </div>
           </li>
