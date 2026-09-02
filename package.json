@@ -18,6 +18,7 @@
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@supabase/supabase-js": "^2.112.4",
+    "@xmldom/xmldom": "^0.9.12",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.4.0",
     "exceljs": "^4.4.0",
@@ -30,6 +31,8 @@
     "prisma": "^7.10.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "xml-crypto": "^6.1.2",
+    "xpath": "^0.0.34",
     "zod": "^4.4.3"
   },
   "devDependencies": {
