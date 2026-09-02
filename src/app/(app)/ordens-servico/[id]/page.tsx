@@ -17,6 +17,7 @@ import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNume
 import { nfseConfigurada } from "@/lib/nfse";
 import { Pencil, Printer, Receipt, Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
+import { EmitirNfseButton } from "@/components/EmitirNfseButton";
 
 const PROXIMO_STATUS: Record<string, { valor: string; label: string }[]> = {
   ABERTA: [
@@ -77,14 +78,23 @@ export default async function OSDetalhePage({
             <LinkButton href={`/imprimir/os/${os.id}`} variant="secondary">
               <Printer className="h-4 w-4" /> Imprimir / PDF
             </LinkButton>
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={!nfseConfigurada()}
-              title="Emissão de NFS-e ainda não configurada — ver Configurações"
-            >
-              <Receipt className="h-4 w-4" /> Emitir NFS-e
-            </Button>
+            {os.nfseChaveAcesso ? (
+              <Badge
+                status="ENTREGUE"
+                label={`NFS-e emitida${os.nfseAmbiente === "homologacao" ? " (teste)" : ""}`}
+              />
+            ) : nfseConfigurada() ? (
+              <EmitirNfseButton osId={os.id} />
+            ) : (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled
+                title="Emissão de NFS-e ainda não configurada — ver Configurações"
+              >
+                <Receipt className="h-4 w-4" /> Emitir NFS-e
+              </Button>
+            )}
           </>
         }
       />
@@ -119,6 +129,13 @@ export default async function OSDetalhePage({
           <p className="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-600">
             <span className="font-medium">Observações: </span>
             {os.observacoes}
+          </p>
+        )}
+        {os.nfseChaveAcesso && (
+          <p className="mt-4 border-t border-slate-200 pt-4 text-xs text-slate-500">
+            <span className="font-medium text-slate-600">Chave de acesso da NFS-e: </span>
+            <span className="font-mono">{os.nfseChaveAcesso}</span>
+            {os.nfseEmitidaEm && ` · emitida em ${formatarData(os.nfseEmitidaEm)}`}
           </p>
         )}
       </Card>

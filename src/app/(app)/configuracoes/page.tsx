@@ -147,8 +147,9 @@ export default async function ConfiguracoesPage() {
             <div>
               <p className="font-medium text-slate-900">Emissão de NFS-e</p>
               <p className="text-xs text-slate-500">
-                Pendente: certificado digital A1 da Primea Gestão de Serviços LTDA (CNPJ
-                64.531.214/0001-77) e a integração com o webservice gratuito do governo (DF/Nacional).
+                {nfseConfigurada()
+                  ? `Certificado A1 da Primea Gestão de Serviços LTDA (CNPJ 64.531.214/0001-77) configurado — emissão via NFS-e Nacional em ambiente de ${process.env.NFSE_AMBIENTE === "producao" ? "produção" : "homologação (teste)"}.`
+                  : "Pendente: certificado digital A1 da Primea Gestão de Serviços LTDA (CNPJ 64.531.214/0001-77)."}
               </p>
             </div>
           </li>

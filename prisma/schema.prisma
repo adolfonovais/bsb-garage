@@ -201,6 +201,16 @@ model OrdemServico {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
+  // NFS-e Nacional (ADN/SEFIN) — preenchidos quando a nota é emitida com
+  // sucesso pelo webservice do governo (ver src/lib/nfse.ts).
+  nfseChaveAcesso String?
+  nfseSerie       String?
+  nfseNumero      Int?
+  nfseXml         String?   @db.Text
+  nfseEmitidaEm   DateTime?
+  nfseAmbiente    String? // "homologacao" | "producao" — em qual ambiente saiu
+  nfseErro        String?   @db.Text
+
   itens       OrdemServicoItem[]
   pagamentos  Pagamento[]
   fotos       FotoOS[]

@@ -10,6 +10,7 @@ import { proximoNumero } from "@/lib/numero";
 import { dataDoFormulario, numeroFormatado } from "@/lib/format";
 import { salvarFoto, removerFoto } from "@/lib/storage";
 import { notificarClienteOSConcluida } from "@/lib/notificacoes";
+import { emitirNFSe } from "@/lib/nfse";
 
 const OSSchema = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
@@ -294,6 +295,65 @@ export async function usarPeca(osId: string, formData: FormData) {
 
   revalidatePath(`/ordens-servico/${osId}`);
   revalidatePath("/estoque");
+}
+
+export type EstadoEmissaoNFSe = { sucesso?: boolean; erro?: string } | undefined;
+
+export async function emitirNfseAction(
+  osId: string,
+  _prevState: EstadoEmissaoNFSe,
+  _formData: FormData
+): Promise<EstadoEmissaoNFSe> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const os = await prisma.ordemServico.findUniqueOrThrow({
+    where: { id: osId },
+    include: { cliente: true, itens: { orderBy: { ordem: "asc" } } },
+  });
+
+  if (os.nfseChaveAcesso) {
+    return { erro: "Esta OS já tem uma NFS-e emitida." };
+  }
+
+  const ano = new Date().getFullYear();
+  const numero = await proximoNumero("NFSE", ano);
+  const serie = String(ano);
+  const descricaoServico =
+    os.itens.map((item) => item.descricao).join("; ") || "Serviços automotivos";
+
+  try {
+    const resultado = await emitirNFSe({
+      serie,
+      numero,
+      valor: Number(os.valorTotal),
+      descricaoServico,
+      tomador: { cpf: os.cliente.cpf, nome: os.cliente.nome },
+    });
+
+    await prisma.ordemServico.update({
+      where: { id: osId },
+      data: {
+        nfseChaveAcesso: resultado.chaveAcesso,
+        nfseSerie: serie,
+        nfseNumero: numero,
+        nfseXml: resultado.xml,
+        nfseEmitidaEm: new Date(),
+        nfseAmbiente: resultado.ambiente,
+        nfseErro: null,
+      },
+    });
+    revalidatePath(`/ordens-servico/${osId}`);
+    return { sucesso: true };
+  } catch (err) {
+    const mensagem = err instanceof Error ? err.message : "Falha desconhecida ao emitir NFS-e.";
+    await prisma.ordemServico.update({
+      where: { id: osId },
+      data: { nfseErro: mensagem },
+    });
+    revalidatePath(`/ordens-servico/${osId}`);
+    return { erro: mensagem };
+  }
 }
 
 export async function removerUsoPeca(osId: string, movimentacaoId: string) {

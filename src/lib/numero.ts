@@ -9,7 +9,7 @@ type ClientOuTx = typeof prisma | Prisma.TransactionClient;
  * o próprio banco serializa incrementos concorrentes pela constraint única.
  */
 export async function proximoNumero(
-  chave: "ORCAMENTO" | "OS",
+  chave: "ORCAMENTO" | "OS" | "NFSE",
   ano: number,
   tx?: ClientOuTx
 ): Promise<number> {
