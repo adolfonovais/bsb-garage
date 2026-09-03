@@ -336,12 +336,14 @@ export async function emitirNfseAction(
         cpf: os.cliente.cpf,
         nome: os.cliente.nome,
         endereco:
-          os.cliente.logradouro && os.cliente.bairro && os.cliente.cep
+          os.cliente.logradouro && os.cliente.bairro && os.cliente.cep && os.cliente.cidade && os.cliente.uf
             ? {
                 logradouro: os.cliente.logradouro,
                 numero: os.cliente.numero || "S/N",
                 bairro: os.cliente.bairro,
                 cep: os.cliente.cep,
+                cidade: os.cliente.cidade,
+                uf: os.cliente.uf,
               }
             : null,
       },

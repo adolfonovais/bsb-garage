@@ -11,12 +11,13 @@ const ClienteSchema = z.object({
   cpf: z.string().trim().optional(),
   telefone: z.string().trim().optional(),
   email: z.string().trim().optional(),
-  endereco: z.string().trim().optional(),
   // Endereço estruturado — usado na emissão de NFS-e pelo webservice do DF.
   cep: z.string().trim().optional(),
   logradouro: z.string().trim().optional(),
   numero: z.string().trim().optional(),
   bairro: z.string().trim().optional(),
+  cidade: z.string().trim().optional(),
+  uf: z.string().trim().optional(),
 });
 
 export async function criarCliente(formData: FormData) {
@@ -28,11 +29,12 @@ export async function criarCliente(formData: FormData) {
     cpf: formData.get("cpf"),
     telefone: formData.get("telefone"),
     email: formData.get("email"),
-    endereco: formData.get("endereco"),
     cep: formData.get("cep"),
     logradouro: formData.get("logradouro"),
     numero: formData.get("numero"),
     bairro: formData.get("bairro"),
+    cidade: formData.get("cidade"),
+    uf: formData.get("uf"),
   });
 
   const cliente = await prisma.cliente.create({ data: dados });
@@ -49,11 +51,12 @@ export async function atualizarCliente(clienteId: string, formData: FormData) {
     cpf: formData.get("cpf"),
     telefone: formData.get("telefone"),
     email: formData.get("email"),
-    endereco: formData.get("endereco"),
     cep: formData.get("cep"),
     logradouro: formData.get("logradouro"),
     numero: formData.get("numero"),
     bairro: formData.get("bairro"),
+    cidade: formData.get("cidade"),
+    uf: formData.get("uf"),
   });
 
   await prisma.cliente.update({ where: { id: clienteId }, data: dados });

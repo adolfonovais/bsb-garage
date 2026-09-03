@@ -50,13 +50,17 @@ model Cliente {
   cpf         String?
   telefone    String?
   email       String?
-  endereco    String? // texto livre, exibido no cadastro (histórico)
   // Endereço estruturado — usado na emissão de NFS-e (o webservice do DF
-  // exige logradouro/número/bairro/CEP separados, não um texto livre).
+  // exige logradouro/número/bairro/CEP/cidade/UF separados, não um texto
+  // livre). Cidade/UF default pra "Brasília"/"DF" no formulário, mas
+  // ficam editáveis pra clientes de fora (o código do município é
+  // resolvido pela API do IBGE na hora de emitir, não fica fixo).
   cep         String?
   logradouro  String?
   numero      String?
   bairro      String?
+  cidade      String?
+  uf          String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -62,6 +62,7 @@ import forge from "node-forge";
 import { SignedXml } from "xml-crypto";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import xpath from "xpath";
+import { codigoMunicipioIBGE } from "@/lib/ibge";
 
 const PRESTADOR_CNPJ = "64531214000177";
 const PRESTADOR_NOME = "PRIMEA GESTAO DE SERVICOS LTDA";
@@ -217,6 +218,8 @@ export type DadosEmissaoNFSe = {
       numero: string;
       bairro: string;
       cep: string;
+      cidade: string;
+      uf: string;
     } | null;
   };
 };
@@ -231,11 +234,11 @@ export type DadosEmissaoNFSe = {
  * autorizado em homologação. `incluirIM` inclui a Inscrição Municipal do
  * prestador no DF — obrigatória no canal "df", ausente no "nacional".
  */
-function montarXmlDps(
+async function montarXmlDps(
   dados: DadosEmissaoNFSe,
   ambiente: Ambiente,
   opts: { incluirIM: boolean; canal: Canal }
-): { xml: string; id: string } {
+): Promise<{ xml: string; id: string }> {
   const tpAmb = TP_AMB[ambiente];
   const codMunicipio = codMunicipioEmissao(opts.canal, ambiente);
   const id = gerarIdDps(codMunicipio, dados.serie, dados.numero);
@@ -262,8 +265,9 @@ function montarXmlDps(
       );
     }
     const cepDigitos = somenteDigitos(end.cep);
+    const cMunTomador = await codigoMunicipioIBGE(end.cidade, end.uf);
     blocoEndereco =
-      `<end><endNac><cMun>${COD_MUNICIPIO}</cMun><CEP>${cepDigitos}</CEP></endNac>` +
+      `<end><endNac><cMun>${cMunTomador}</cMun><CEP>${cepDigitos}</CEP></endNac>` +
       `<xLgr>${escapeXml(end.logradouro)}</xLgr><nro>${escapeXml(end.numero)}</nro>` +
       `<xBairro>${escapeXml(end.bairro)}</xBairro></end>`;
   }
@@ -398,7 +402,7 @@ async function emitirViaNacional(
   key: string,
   cert: string
 ): Promise<ResultadoEmissaoNFSe> {
-  const { xml } = montarXmlDps(dados, ambiente, { incluirIM: false, canal: "nacional" });
+  const { xml } = await montarXmlDps(dados, ambiente, { incluirIM: false, canal: "nacional" });
   const dpsXmlGZipB64 = gzipSync(Buffer.from(xml, "utf8")).toString("base64");
   const url = `${URLS_NACIONAL[ambiente]}/nfse`;
 
@@ -473,7 +477,7 @@ async function emitirViaDF(
   key: string,
   cert: string
 ): Promise<ResultadoEmissaoNFSe> {
-  const { xml, id } = montarXmlDps(dados, ambiente, { incluirIM: true, canal: "df" });
+  const { xml, id } = await montarXmlDps(dados, ambiente, { incluirIM: true, canal: "df" });
   const dpsAssinado = assinarDps(xml, id, key, cert);
 
   // Formato do envelope confirmado contra um XML real autorizado em

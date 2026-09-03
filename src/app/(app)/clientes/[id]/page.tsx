@@ -15,7 +15,6 @@ import {
   Field,
   Input,
   PageHeader,
-  Textarea,
 } from "@/components/ui";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
 import { Trash2 } from "lucide-react";
@@ -85,13 +84,9 @@ export default async function ClienteDetalhePage({
                 </div>
                 <div>
                   <p className="text-xs uppercase text-slate-500">Endereço</p>
-                  <p className="whitespace-pre-line text-slate-900">{cliente.endereco || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase text-slate-500">Endereço detalhado (NFS-e)</p>
                   <p className="text-slate-900">
                     {cliente.logradouro
-                      ? `${cliente.logradouro}, ${cliente.numero || "S/N"} - ${cliente.bairro || ""} - CEP ${cliente.cep || ""}`
+                      ? `${cliente.logradouro}, ${cliente.numero || "S/N"} - ${cliente.bairro || ""} - ${cliente.cidade || ""}/${cliente.uf || ""} - CEP ${cliente.cep || ""}`
                       : "-"}
                   </p>
                 </div>
@@ -111,26 +106,32 @@ export default async function ClienteDetalhePage({
                 <Field label="E-mail">
                   <Input type="email" name="email" defaultValue={cliente.email ?? ""} />
                 </Field>
-                <Field label="Endereço">
-                  <Textarea name="endereco" rows={2} defaultValue={cliente.endereco ?? ""} />
-                </Field>
-                <p className="text-xs text-slate-500">
-                  Endereço detalhado abaixo — necessário pra emitir NFS-e (Nota Fiscal) pra esse cliente.
-                </p>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="CEP">
-                    <Input name="cep" defaultValue={cliente.cep ?? ""} placeholder="00000-000" />
-                  </Field>
-                  <Field label="Bairro">
-                    <Input name="bairro" defaultValue={cliente.bairro ?? ""} />
-                  </Field>
-                  <Field label="Logradouro (rua, avenida...)">
-                    <Input name="logradouro" defaultValue={cliente.logradouro ?? ""} />
-                  </Field>
-                  <Field label="Número">
-                    <Input name="numero" defaultValue={cliente.numero ?? ""} />
-                  </Field>
+
+                <div className="border-t border-slate-200 pt-4">
+                  <h3 className="mb-1 text-sm font-semibold text-slate-900">Endereço</h3>
+                  <p className="mb-3 text-xs text-slate-500">Necessário pra emitir NFS-e (Nota Fiscal) pra esse cliente.</p>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field label="Logradouro (rua, avenida...)">
+                      <Input name="logradouro" defaultValue={cliente.logradouro ?? ""} />
+                    </Field>
+                    <Field label="Número">
+                      <Input name="numero" defaultValue={cliente.numero ?? ""} />
+                    </Field>
+                    <Field label="Bairro">
+                      <Input name="bairro" defaultValue={cliente.bairro ?? ""} />
+                    </Field>
+                    <Field label="CEP">
+                      <Input name="cep" defaultValue={cliente.cep ?? ""} placeholder="00000-000" />
+                    </Field>
+                    <Field label="Cidade">
+                      <Input name="cidade" defaultValue={cliente.cidade ?? "Brasília"} />
+                    </Field>
+                    <Field label="UF">
+                      <Input name="uf" defaultValue={cliente.uf ?? "DF"} maxLength={2} />
+                    </Field>
+                  </div>
                 </div>
+
                 <div className="flex justify-end gap-2">
                   <BotaoCancelarEdicao />
                   <SubmitButton>Salvar</SubmitButton>
