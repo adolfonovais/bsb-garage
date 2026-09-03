@@ -359,6 +359,7 @@ export async function emitirNfseAction(
         nfseEmitidaEm: new Date(),
         nfseAmbiente: resultado.ambiente,
         nfseErro: null,
+        nfseUrlVisualizacao: resultado.urlVisualizacao,
       },
     });
     revalidatePath(`/ordens-servico/${osId}`);

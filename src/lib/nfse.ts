@@ -421,7 +421,7 @@ async function emitirViaNacional(
   if (status === 201) {
     const resposta = JSON.parse(body) as RespostaSucessoNacional;
     const nfseXml = gunzipSync(Buffer.from(resposta.nfseXmlGZipB64, "base64")).toString("utf8");
-    return { chaveAcesso: resposta.chaveAcesso, xml: nfseXml, ambiente, canal: "nacional" };
+    return { chaveAcesso: resposta.chaveAcesso, xml: nfseXml, ambiente, canal: "nacional", urlVisualizacao: null };
   }
 
   let mensagem = `Falha ao emitir NFS-e pelo canal nacional (HTTP ${status}).`;
@@ -547,8 +547,63 @@ async function emitirViaDF(
     textoDoNo(respostaDoc, "//*[local-name(.)='infNFSe']/*[local-name(.)='chNFSe']") ??
     (xpath.select1("//*[local-name(.)='infNFSe']/@Id", respostaDoc) as Attr | undefined)?.value ??
     "desconhecida";
+  const numeroNfse = textoDoNo(respostaDoc, "//*[local-name(.)='infNFSe']/*[local-name(.)='nNFSe']");
 
-  return { chaveAcesso, xml: nfseXml, ambiente, canal: "df" };
+  // Busca o link oficial de visualização (funciona como o "PDF" da nota —
+  // o padrão nacional não gera PDF, gera uma página oficial com QR code de
+  // verificação). Melhor esforço: se essa consulta falhar, a NFS-e já foi
+  // emitida e é válida mesmo assim — só não teremos o link agora.
+  let urlVisualizacao: string | null = null;
+  if (numeroNfse) {
+    try {
+      urlVisualizacao = await consultarUrlNfse(numeroNfse, ambiente, key, cert);
+    } catch (err) {
+      if (process.env.NFSE_DEBUG) console.error("[nfse][df] falha ao buscar URL de visualização:", err);
+    }
+  }
+
+  return { chaveAcesso, xml: nfseXml, ambiente, canal: "df", urlVisualizacao };
+}
+
+/**
+ * Consulta o link oficial (governo/prefeitura) pra visualizar uma NFS-e já
+ * emitida, pelo número dela. Usado logo após GerarNfse, mas também pode
+ * ser chamado depois pra tentar de novo se a primeira consulta falhar.
+ */
+export async function consultarUrlNfse(
+  numeroNfse: string,
+  ambiente: Ambiente,
+  key: string,
+  cert: string
+): Promise<string | null> {
+  const cabecMsg = `<cabecalho versao="1.00" xmlns="${SOAP_NS}"><versaoDados>1.00</versaoDados></cabecalho>`;
+  const dadosMsg =
+    `<ConsultarUrlNfseEnvio xmlns="${SOAP_NS}">` +
+    `<Prestador><CNPJ>${PRESTADOR_CNPJ}</CNPJ><IM>${PRESTADOR_IM_DF}</IM></Prestador>` +
+    `<NumeroNfse>${escapeXml(numeroNfse)}</NumeroNfse>` +
+    `<Pagina>1</Pagina>` +
+    `</ConsultarUrlNfseEnvio>`;
+
+  const envelope =
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:nfse="${SOAP_NS}">` +
+    `<soapenv:Header/>` +
+    `<soapenv:Body>` +
+    `<nfse:ConsultarUrlNfse>` +
+    `<nfseCabecMsg>${cabecMsg}</nfseCabecMsg>` +
+    `<nfseDadosMsg>${dadosMsg}</nfseDadosMsg>` +
+    `</nfse:ConsultarUrlNfse>` +
+    `</soapenv:Body>` +
+    `</soapenv:Envelope>`;
+
+  const url = URLS_DF[ambiente];
+  const soapAction = `"${SOAP_NS}/ConsultarUrlNfse"`;
+  const { status, body } = await postSoap(url, envelope, soapAction, key, cert);
+  if (status !== 200) return null;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(body, "text/xml") as unknown as Document;
+  return textoDoNo(doc, "//*[local-name(.)='Links']/*[local-name(.)='UrlVisualizacaoNfse']");
 }
 
 // ---------- Ponto de entrada único ----------
@@ -558,6 +613,7 @@ export type ResultadoEmissaoNFSe = {
   xml: string;
   ambiente: Ambiente;
   canal: Canal;
+  urlVisualizacao: string | null;
 };
 
 /**
@@ -576,4 +632,15 @@ export async function emitirNFSe(dados: DadosEmissaoNFSe): Promise<ResultadoEmis
   return canalAtual() === "nacional"
     ? emitirViaNacional(dados, ambiente, key, cert)
     : emitirViaDF(dados, ambiente, key, cert);
+}
+
+/**
+ * Tenta buscar de novo o link oficial de visualização de uma NFS-e já
+ * emitida (canal "df") — usado quando a busca automática logo após a
+ * emissão falhou. Carrega as credenciais sozinho, igual emitirNFSe().
+ */
+export async function buscarUrlVisualizacaoNfse(numeroNfse: string): Promise<string | null> {
+  if (!nfseConfigurada()) return null;
+  const { key, cert } = carregarCredenciais();
+  return consultarUrlNfse(numeroNfse, ambienteAtual(), key, cert);
 }

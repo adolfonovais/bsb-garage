@@ -11,11 +11,11 @@ import {
   removerUsoPeca,
   usarPeca,
 } from "@/app/(app)/ordens-servico/actions";
-import { Badge, Button, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
+import { Badge, Button, buttonVariants, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
 import { DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { nfseConfigurada } from "@/lib/nfse";
-import { Pencil, Printer, Receipt, Trash2 } from "lucide-react";
+import { Download, FileText, Pencil, Printer, Receipt, Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { EmitirNfseButton } from "@/components/EmitirNfseButton";
 
@@ -79,10 +79,25 @@ export default async function OSDetalhePage({
               <Printer className="h-4 w-4" /> Imprimir / PDF
             </LinkButton>
             {os.nfseChaveAcesso ? (
-              <Badge
-                status="ENTREGUE"
-                label={`NFS-e emitida${os.nfseAmbiente === "homologacao" ? " (teste)" : ""}`}
-              />
+              <>
+                <Badge
+                  status="ENTREGUE"
+                  label={`NFS-e emitida${os.nfseAmbiente === "homologacao" ? " (teste)" : ""}`}
+                />
+                {os.nfseUrlVisualizacao && (
+                  <a
+                    href={os.nfseUrlVisualizacao}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold shadow-sm transition-colors ${buttonVariants.secondary}`}
+                  >
+                    <FileText className="h-4 w-4" /> Ver NFS-e
+                  </a>
+                )}
+                <LinkButton href={`/api/ordens-servico/${os.id}/nfse-xml`} variant="secondary">
+                  <Download className="h-4 w-4" /> Baixar XML
+                </LinkButton>
+              </>
             ) : nfseConfigurada() ? (
               <EmitirNfseButton osId={os.id} />
             ) : (

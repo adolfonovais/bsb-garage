@@ -220,6 +220,12 @@ model OrdemServico {
   nfseEmitidaEm   DateTime?
   nfseAmbiente    String? // "homologacao" | "producao" — em qual ambiente saiu
   nfseErro        String?   @db.Text
+  // URL oficial (governo/prefeitura) pra visualizar a NFS-e — o padrão
+  // nacional não gera PDF, e sim uma página de visualização com QR code
+  // de verificação (funciona como o "PDF" da nota). Buscada via
+  // ConsultarUrlNfse logo após a emissão; pode ficar vazia se essa
+  // consulta falhar (a NFS-e em si já está emitida e válida mesmo assim).
+  nfseUrlVisualizacao String? @db.Text
 
   itens       OrdemServicoItem[]
   pagamentos  Pagamento[]
