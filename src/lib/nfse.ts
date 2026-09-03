@@ -37,6 +37,16 @@
 // do OpenSSL 3 rejeita ("Unsupported PKCS12 PFX data"). node-forge não
 // depende do OpenSSL do sistema, então funciona igual local e na Vercel.
 //
+// ATENÇÃO ao configurar NFSE_CERTIFICADO_BASE64 na Vercel (03/09/2026):
+// o valor (5344 caracteres) tem que ir com `vercel env add ... --value
+// "$b64" --no-sensitive` — NUNCA via stdin/pipe (`$b64 | vercel env add`)
+// e nem como tipo "Secret"/Sensitive, porque isso trunca silenciosamente
+// em ~4096-4100 caracteres (limite de buffer do pipe do PowerShell nesse
+// caminho, não da Vercel em si) e quebra a leitura do certificado em
+// produção com "Too few bytes to read ASN.1 value" — sem erro nenhum no
+// upload, só falha depois, na hora de emitir. Sempre conferir o tamanho
+// com `vercel env pull` depois de configurar.
+//
 // Ambiente: por padrão SEMPRE homologação, onde devemos testar à vontade
 // sem efeito fiscal real. Só muda pra produção de verdade definindo
 // NFSE_AMBIENTE=producao — troca essa só deve ser feita depois de validar
@@ -123,17 +133,7 @@ function carregarCredenciais(): { key: string; cert: string } {
   }
 
   const pfxDer = forge.util.decode64(base64);
-  let asn1;
-  try {
-    asn1 = forge.asn1.fromDer(pfxDer);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    // DIAGNÓSTICO TEMPORÁRIO — remover depois de descobrir a causa do
-    // "Too few bytes to read ASN.1 value" em produção.
-    throw new Error(
-      `Falha ao ler o certificado (diagnóstico: base64.length=${base64.length}, esperado=5344, pfxDer.length=${pfxDer.length}, esperado=4008). Erro original: ${msg}`
-    );
-  }
+  const asn1 = forge.asn1.fromDer(pfxDer);
   const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, senha);
 
   let certPem: string | null = null;
