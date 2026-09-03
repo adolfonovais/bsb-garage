@@ -43,10 +43,17 @@
 // exaustivamente em homologação, porque aí sim a nota emitida é real e
 // vale fiscalmente.
 //
-// Código de tributação nacional usado: 140101 (item 14.01 da lista da LC
-// 116/2003 — lubrificação, limpeza, revisão, recondicionamento e reparo de
-// veículos), que é exatamente o enquadramento dos serviços de martelinho de
-// ouro / funilaria / pintura vendidos pela oficina, terceirizados ou não.
+// Código de tributação nacional usado: 100901 (item 10.09 da lista da LC
+// 116/2003 — "Representação de qualquer natureza, inclusive comercial").
+// Confirmado em 02/09/2026 consultando o cadastro real da Primea na
+// Receita do DF (ConsultarDadosCadastrais): as atividades cadastradas são
+// todas de intermediação/agenciamento (item 10.x), não de reparo de
+// veículos (14.01) — reflete o modelo real do negócio: a Primea/BSB
+// Garage intermedia entre o cliente e as oficinas terceirizadas, não
+// executa o reparo ela mesma. Entre as opções cadastradas (10.02, 10.04,
+// 10.05, 10.08, 10.09, 10.10), o usuário confirmou 10.09 como a que
+// melhor descreve o serviço. Alíquota real cadastrada pra essa atividade:
+// 2,00% (cTribMun 1009).
 // Código do município (IBGE) de Brasília-DF: 5300108.
 
 import { gzipSync, gunzipSync } from "node:zlib";
@@ -60,7 +67,19 @@ const PRESTADOR_CNPJ = "64531214000177";
 const PRESTADOR_NOME = "PRIMEA GESTAO DE SERVICOS LTDA";
 const PRESTADOR_IM_DF = "0846247900116"; // Inscrição Municipal no DF, só usada no canal "df"
 const COD_MUNICIPIO = "5300108"; // Brasília - DF (IBGE)
-const C_TRIB_NAC = "140101"; // LC 116, item 14.01 — reparo/manutenção de veículos
+const C_TRIB_NAC = "100901"; // LC 116, item 10.09 — representação comercial (intermediação)
+const C_TRIB_MUN_DF = "1009"; // código municipal correspondente no cadastro real da Primea no DF
+const ALIQUOTA_ISS_DF = "2.00"; // alíquota real cadastrada pra essa atividade
+// Códigos do grupo IBSCBS (reforma tributária, obrigatório na prática pelo
+// webservice do DF a partir da DPS 1.01) pra esse cTribNac, tirados da
+// tabela oficial de correlação da Nota Control
+// (Correlacao_TribNac_NBS_cClassTribIBSCBS_CSTIBSCBS_IndOp.xlsx): cNBS
+// 102010000, CST 000, cClassTrib 000001, cIndOp 100301 ("Demais serviços,
+// em operações onerosas").
+const C_NBS = "102010000";
+const IBSCBS_CST = "000";
+const IBSCBS_CLASS_TRIB = "000001";
+const IBSCBS_IND_OP = "100301";
 
 const TP_AMB = { homologacao: 2, producao: 1 } as const;
 type Ambiente = keyof typeof TP_AMB;
@@ -191,13 +210,26 @@ export type DadosEmissaoNFSe = {
   tomador: {
     cpf?: string | null;
     nome: string;
+    // Obrigatório no canal "df" (cIndOp 100301 exige endereço do tomador
+    // conforme o schema) — não usado no canal "nacional".
+    endereco?: {
+      logradouro: string;
+      numero: string;
+      bairro: string;
+      cep: string;
+    } | null;
   };
 };
 
 /**
- * Monta a DPS (versão 1.00 — sem o grupo IBS/CBS, que só é obrigatório na
- * 1.01). `incluirIM` inclui a Inscrição Municipal do prestador no DF —
- * obrigatória no canal "df", ausente/opcional no canal "nacional".
+ * Monta a DPS. Canal "nacional" usa versão 1.00 (sem o grupo IBS/CBS —
+ * testado e aceito assim pelo governo). Canal "df" usa versão 1.01 com o
+ * grupo IBSCBS: mesmo sendo opcional no XSD publicado, o webservice do
+ * DF/ISSNet rejeita sem ele na prática (mesma discrepância entre schema
+ * publicado e validação real já documentada por outros integradores no
+ * fórum ACBr pra esse provedor) — confirmado comparando com um XML real
+ * autorizado em homologação. `incluirIM` inclui a Inscrição Municipal do
+ * prestador no DF — obrigatória no canal "df", ausente no "nacional".
  */
 function montarXmlDps(
   dados: DadosEmissaoNFSe,
@@ -208,19 +240,57 @@ function montarXmlDps(
   const codMunicipio = codMunicipioEmissao(opts.canal, ambiente);
   const id = gerarIdDps(codMunicipio, dados.serie, dados.numero);
   const dataCompetencia = new Date().toISOString().slice(0, 10);
+  const versao = opts.canal === "df" ? "1.01" : "1.00";
 
   const cpfTomador = dados.tomador.cpf ? somenteDigitos(dados.tomador.cpf) : "";
+
+  // O webservice do DF exige CPF e endereço do tomador pro nosso cIndOp
+  // (100301 está entre os códigos que disparam essa exigência no schema).
+  // Nunca inventar esses dados — se faltar, é melhor bloquear a emissão
+  // com um erro claro do que mandar dado falso num documento fiscal real.
+  if (opts.canal === "df" && cpfTomador.length !== 11) {
+    throw new Error(
+      "CPF do cliente é obrigatório pra emitir NFS-e pelo webservice do DF. Cadastre o CPF do cliente antes de emitir."
+    );
+  }
+  let blocoEndereco = "";
+  if (opts.canal === "df") {
+    const end = dados.tomador.endereco;
+    if (!end) {
+      throw new Error(
+        "Endereço do cliente é obrigatório pra emitir NFS-e pelo webservice do DF. Cadastre o endereço completo do cliente antes de emitir."
+      );
+    }
+    const cepDigitos = somenteDigitos(end.cep);
+    blocoEndereco =
+      `<end><endNac><cMun>${COD_MUNICIPIO}</cMun><CEP>${cepDigitos}</CEP></endNac>` +
+      `<xLgr>${escapeXml(end.logradouro)}</xLgr><nro>${escapeXml(end.numero)}</nro>` +
+      `<xBairro>${escapeXml(end.bairro)}</xBairro></end>`;
+  }
   const blocoTomador =
     cpfTomador.length === 11
-      ? `<CPF>${cpfTomador}</CPF><xNome>${escapeXml(dados.tomador.nome)}</xNome>`
-      : `<xNome>${escapeXml(dados.tomador.nome)}</xNome>`;
+      ? `<CPF>${cpfTomador}</CPF><xNome>${escapeXml(dados.tomador.nome)}</xNome>${blocoEndereco}`
+      : `<xNome>${escapeXml(dados.tomador.nome)}</xNome>${blocoEndereco}`;
 
   const descricao = escapeXml(dados.descricaoServico.slice(0, 2000) || "Serviços automotivos");
   const valor = dados.valor.toFixed(2);
   const blocoIM = opts.incluirIM ? `<IM>${PRESTADOR_IM_DF}</IM>` : "";
 
+  // Grupo IBSCBS (reforma tributária) — obrigatório na prática pro canal
+  // "df" a partir da versão 1.01. finNFSe=0 (NFS-e regular), indDest=1
+  // (consumidor final), cIndOp conforme tabela de correlação oficial.
+  const blocoIBSCBS =
+    opts.canal === "df"
+      ? `<IBSCBS><finNFSe>0</finNFSe><cIndOp>${IBSCBS_IND_OP}</cIndOp><indDest>1</indDest>` +
+        `<valores><trib><gIBSCBS><CST>${IBSCBS_CST}</CST><cClassTrib>${IBSCBS_CLASS_TRIB}</cClassTrib></gIBSCBS></trib></valores>` +
+        `</IBSCBS>`
+      : "";
+  const cNBS = opts.canal === "df" ? `<cNBS>${C_NBS}</cNBS>` : "";
+  const cTribMun = opts.canal === "df" ? `<cTribMun>${C_TRIB_MUN_DF}</cTribMun>` : "";
+  const pAliq = opts.canal === "df" ? `<pAliq>${ALIQUOTA_ISS_DF}</pAliq>` : "";
+
   const xml =
-    `<DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.00">` +
+    `<DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="${versao}">` +
     `<infDPS Id="${id}">` +
     `<tpAmb>${tpAmb}</tpAmb>` +
     `<dhEmi>${dataHoraEmissao()}</dhEmi>` +
@@ -243,16 +313,17 @@ function montarXmlDps(
     `<toma>${blocoTomador}</toma>` +
     `<serv>` +
     `<locPrest><cLocPrestacao>${COD_MUNICIPIO}</cLocPrestacao></locPrest>` +
-    `<cServ><cTribNac>${C_TRIB_NAC}</cTribNac><xDescServ>${descricao}</xDescServ></cServ>` +
+    `<cServ><cTribNac>${C_TRIB_NAC}</cTribNac>${cTribMun}<xDescServ>${descricao}</xDescServ>${cNBS}</cServ>` +
     `</serv>` +
     `<valores>` +
     `<vServPrest><vServ>${valor}</vServ></vServPrest>` +
     `<trib>` +
-    `<tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>1</tpRetISSQN></tribMun>` +
+    `<tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>1</tpRetISSQN>${pAliq}</tribMun>` +
     `<tribFed><piscofins><CST>08</CST></piscofins></tribFed>` +
-    `<totTrib><indTotTrib>0</indTotTrib></totTrib>` +
+    `<totTrib>${opts.canal === "df" ? "<pTotTribSN>0.00</pTotTribSN>" : "<indTotTrib>0</indTotTrib>"}</totTrib>` +
     `</trib>` +
     `</valores>` +
+    `${blocoIBSCBS}` +
     `</infDPS>` +
     `</DPS>`;
 
@@ -405,39 +476,43 @@ async function emitirViaDF(
   const { xml, id } = montarXmlDps(dados, ambiente, { incluirIM: true, canal: "df" });
   const dpsAssinado = assinarDps(xml, id, key, cert);
 
-  const xmlDecl = `<?xml version="1.0" encoding="UTF-8"?>`;
-  const cabecMsg = `${xmlDecl}<cabecalho versao="1.00" xmlns="${SOAP_NS}"><versaoDados>1.00</versaoDados></cabecalho>`;
-  const dadosMsg = `${xmlDecl}<GerarNfseEnvio xmlns="${SOAP_NS}">${dpsAssinado}</GerarNfseEnvio>`;
+  // Formato do envelope confirmado contra um XML real autorizado em
+  // homologação (não é suposição): nfseCabecMsg/nfseDadosMsg levam o XML
+  // embutido CRU (sem escapar entidades nem usar CDATA, apesar do WSDL
+  // tipar como xsd:string), o envelope declara o prefixo "nfse:" na raiz
+  // em vez de xmlns solto no elemento da operação, e inclui um
+  // <soapenv:Header/> vazio explícito.
+  const cabecMsg = `<cabecalho versao="1.00" xmlns="${SOAP_NS}"><versaoDados>1.00</versaoDados></cabecalho>`;
+  const dadosMsg = `<GerarNfseEnvio xmlns="${SOAP_NS}">${dpsAssinado}</GerarNfseEnvio>`;
 
   const envelope =
-    `<?xml version="1.0" encoding="utf-8"?>` +
-    `<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">` +
-    `<soap:Body>` +
-    `<GerarNfse xmlns="${SOAP_NS}">` +
-    `<nfseCabecMsg>${escapeXml(cabecMsg)}</nfseCabecMsg>` +
-    `<nfseDadosMsg>${escapeXml(dadosMsg)}</nfseDadosMsg>` +
-    `</GerarNfse>` +
-    `</soap:Body>` +
-    `</soap:Envelope>`;
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:nfse="${SOAP_NS}">` +
+    `<soapenv:Header/>` +
+    `<soapenv:Body>` +
+    `<nfse:GerarNfse>` +
+    `<nfseCabecMsg>${cabecMsg}</nfseCabecMsg>` +
+    `<nfseDadosMsg>${dadosMsg}</nfseDadosMsg>` +
+    `</nfse:GerarNfse>` +
+    `</soapenv:Body>` +
+    `</soapenv:Envelope>`;
 
   const url = URLS_DF[ambiente];
-  const soapAction = `${SOAP_NS}/GerarNfse`;
-  if (process.env.NFSE_DEBUG) console.error("[nfse][df] envelope enviado:\n", envelope);
+  const soapAction = `"${SOAP_NS}/GerarNfse"`;
+  if (process.env.NFSE_DEBUG) {
+    console.error("[nfse][df] envelope enviado:\n", envelope);
+    const fs = await import("node:fs");
+    fs.writeFileSync(process.env.NFSE_DEBUG_DPS_FILE ?? "debug-dps.xml", dpsAssinado);
+  }
   const { status, body } = await postSoap(url, envelope, soapAction, key, cert);
   if (process.env.NFSE_DEBUG) console.error("[nfse][df] resposta bruta:\n", body);
 
-  const parser = new DOMParser();
-  const envelopeDoc = parser.parseFromString(body, "text/xml") as unknown as Document;
-  const outputXml = textoDoNo(
-    envelopeDoc,
-    "//*[local-name(.)='GerarNfseResponse']/*[local-name(.)='outputXML']"
-  );
-
-  if (status !== 200 || !outputXml) {
+  if (status !== 200) {
     throw new Error(`Falha ao emitir NFS-e pelo webservice do DF (HTTP ${status}). Resposta: ${body.slice(0, 500)}`);
   }
 
-  const respostaDoc = parser.parseFromString(outputXml, "text/xml") as unknown as Document;
+  const parser = new DOMParser();
+  const respostaDoc = parser.parseFromString(body, "text/xml") as unknown as Document;
 
   const codigoErro = textoDoNo(respostaDoc, "//*[local-name(.)='MensagemRetorno']/*[local-name(.)='Codigo']");
   if (codigoErro) {
@@ -447,11 +522,11 @@ async function emitirViaDF(
     throw new Error(`${codigoErro}: ${mensagemErro}${correcao ? ` (${correcao})` : ""}`);
   }
 
-  // A NFS-e vem embutida dentro de CompNfse/Nfse — guardamos o XML inteiro
-  // e tentamos achar a chave de acesso no atributo/elemento Id do infNFSe.
-  const nfseNode = xpath.select1("//*[local-name(.)='Nfse']", respostaDoc) as Node | undefined;
+  // A NFS-e vem embutida dentro de CompNfse/NFSe — guardamos o XML inteiro
+  // e a chave de acesso é o atributo Id do infNFSe (prefixo "NFS...").
+  const nfseNode = xpath.select1("//*[local-name(.)='NFSe']", respostaDoc) as Node | undefined;
   if (!nfseNode) {
-    throw new Error(`NFS-e não encontrada na resposta do DF: ${outputXml.slice(0, 500)}`);
+    throw new Error(`NFS-e não encontrada na resposta do DF: ${body.slice(0, 500)}`);
   }
   const nfseXml = new XMLSerializer().serializeToString(nfseNode as unknown as Parameters<XMLSerializer["serializeToString"]>[0]);
   const chaveAcesso =

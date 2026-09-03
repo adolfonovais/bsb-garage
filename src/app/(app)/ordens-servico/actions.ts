@@ -319,8 +319,12 @@ export async function emitirNfseAction(
   const ano = new Date().getFullYear();
   const numero = await proximoNumero("NFSE", ano);
   const serie = String(ano);
-  const descricaoServico =
-    os.itens.map((item) => item.descricao).join("; ") || "Serviços automotivos";
+  // "Intermediação de serviços automotivos" reflete a classificação fiscal
+  // real (LC 116 item 10.09 — representação comercial): a Primea intermedia
+  // entre o cliente e as oficinas terceirizadas, não executa o reparo ela
+  // mesma (ver comentário no topo de src/lib/nfse.ts).
+  const itensDescricao = os.itens.map((item) => item.descricao).join("; ");
+  const descricaoServico = `Intermediação de serviços automotivos${itensDescricao ? ` - ${itensDescricao}` : ""}`;
 
   try {
     const resultado = await emitirNFSe({
