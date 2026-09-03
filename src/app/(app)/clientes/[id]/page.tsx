@@ -87,6 +87,14 @@ export default async function ClienteDetalhePage({
                   <p className="text-xs uppercase text-slate-500">Endereço</p>
                   <p className="whitespace-pre-line text-slate-900">{cliente.endereco || "-"}</p>
                 </div>
+                <div>
+                  <p className="text-xs uppercase text-slate-500">Endereço detalhado (NFS-e)</p>
+                  <p className="text-slate-900">
+                    {cliente.logradouro
+                      ? `${cliente.logradouro}, ${cliente.numero || "S/N"} - ${cliente.bairro || ""} - CEP ${cliente.cep || ""}`
+                      : "-"}
+                  </p>
+                </div>
               </div>
             }
             formulario={
@@ -106,6 +114,23 @@ export default async function ClienteDetalhePage({
                 <Field label="Endereço">
                   <Textarea name="endereco" rows={2} defaultValue={cliente.endereco ?? ""} />
                 </Field>
+                <p className="text-xs text-slate-500">
+                  Endereço detalhado abaixo — necessário pra emitir NFS-e (Nota Fiscal) pra esse cliente.
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="CEP">
+                    <Input name="cep" defaultValue={cliente.cep ?? ""} placeholder="00000-000" />
+                  </Field>
+                  <Field label="Bairro">
+                    <Input name="bairro" defaultValue={cliente.bairro ?? ""} />
+                  </Field>
+                  <Field label="Logradouro (rua, avenida...)">
+                    <Input name="logradouro" defaultValue={cliente.logradouro ?? ""} />
+                  </Field>
+                  <Field label="Número">
+                    <Input name="numero" defaultValue={cliente.numero ?? ""} />
+                  </Field>
+                </div>
                 <div className="flex justify-end gap-2">
                   <BotaoCancelarEdicao />
                   <SubmitButton>Salvar</SubmitButton>

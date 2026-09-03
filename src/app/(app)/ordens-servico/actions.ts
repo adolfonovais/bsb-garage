@@ -332,7 +332,19 @@ export async function emitirNfseAction(
       numero,
       valor: Number(os.valorTotal),
       descricaoServico,
-      tomador: { cpf: os.cliente.cpf, nome: os.cliente.nome },
+      tomador: {
+        cpf: os.cliente.cpf,
+        nome: os.cliente.nome,
+        endereco:
+          os.cliente.logradouro && os.cliente.bairro && os.cliente.cep
+            ? {
+                logradouro: os.cliente.logradouro,
+                numero: os.cliente.numero || "S/N",
+                bairro: os.cliente.bairro,
+                cep: os.cliente.cep,
+              }
+            : null,
+      },
     });
 
     await prisma.ordemServico.update({

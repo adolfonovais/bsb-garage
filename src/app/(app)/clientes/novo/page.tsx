@@ -23,6 +23,23 @@ export default function NovoClientePage() {
           <Field label="Endereço">
             <Textarea name="endereco" rows={2} />
           </Field>
+          <p className="text-xs text-slate-500">
+            Endereço detalhado abaixo — necessário pra emitir NFS-e (Nota Fiscal) pra esse cliente.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="CEP">
+              <Input name="cep" placeholder="00000-000" />
+            </Field>
+            <Field label="Bairro">
+              <Input name="bairro" />
+            </Field>
+            <Field label="Logradouro (rua, avenida...)">
+              <Input name="logradouro" />
+            </Field>
+            <Field label="Número">
+              <Input name="numero" />
+            </Field>
+          </div>
           <div className="flex justify-end gap-2 pt-2">
             <SubmitButton>Salvar</SubmitButton>
           </div>
