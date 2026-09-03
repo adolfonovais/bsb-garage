@@ -123,7 +123,17 @@ function carregarCredenciais(): { key: string; cert: string } {
   }
 
   const pfxDer = forge.util.decode64(base64);
-  const asn1 = forge.asn1.fromDer(pfxDer);
+  let asn1;
+  try {
+    asn1 = forge.asn1.fromDer(pfxDer);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    // DIAGNÓSTICO TEMPORÁRIO — remover depois de descobrir a causa do
+    // "Too few bytes to read ASN.1 value" em produção.
+    throw new Error(
+      `Falha ao ler o certificado (diagnóstico: base64.length=${base64.length}, esperado=5344, pfxDer.length=${pfxDer.length}, esperado=4008). Erro original: ${msg}`
+    );
+  }
   const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, senha);
 
   let certPem: string | null = null;
