@@ -6,6 +6,7 @@ import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
 import { numeroFormatado, paraNumero } from "@/lib/format";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PECAS_CARROCERIA } from "@/lib/pecas-carro";
 
 export default async function EditarOrcamentoPage({
   params,
@@ -63,7 +64,12 @@ export default async function EditarOrcamentoPage({
 
           <div>
             <h2 className="mb-2 text-sm font-semibold text-slate-900">Itens do orçamento</h2>
-            <ItensEditor tiposServico={tiposServico} itensIniciais={itensIniciais} />
+            <ItensEditor
+              tiposServico={tiposServico}
+              itensIniciais={itensIniciais}
+              pecas={PECAS_CARROCERIA}
+              mostrarQuantidade={false}
+            />
           </div>
 
           <Field label="Observações">

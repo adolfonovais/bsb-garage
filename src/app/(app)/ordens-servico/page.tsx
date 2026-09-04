@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Badge, Card, EmptyState, LinkButton, PageHeader } from "@/components/ui";
+import { StatusTabLink } from "@/components/StatusTabLink";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
 
 const STATUS_TABS = [
@@ -35,17 +36,13 @@ export default async function OrdensServicoPage({
 
       <div className="mb-4 flex flex-wrap gap-2">
         {STATUS_TABS.map((tab) => (
-          <Link
+          <StatusTabLink
             key={tab.label}
             href={tab.value ? `/ordens-servico?status=${tab.value}` : "/ordens-servico"}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${
-              status === tab.value || (!status && !tab.value)
-                ? "bg-slate-900 text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
+            active={status === tab.value || (!status && !tab.value)}
           >
             {tab.label}
-          </Link>
+          </StatusTabLink>
         ))}
       </div>
 

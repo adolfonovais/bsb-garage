@@ -80,7 +80,7 @@ export default async function RepasseDetalhePage({
             </SubmitButton>
           </form>
         )}
-        <span className="ml-4 text-sm font-medium text-slate-700">Pagamento à oficina:</span>
+        <span className="ml-4 text-sm font-medium text-slate-700">Pagamento ao prestador:</span>
         {repasse.statusPagamentoOficina !== "PAGO" ? (
           <form action={atualizarStatusPagamentoOficina.bind(null, repasse.id, "PAGO")}>
             <SubmitButton>Marcar como pago</SubmitButton>
@@ -100,7 +100,7 @@ export default async function RepasseDetalhePage({
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Oficina</p>
+                  <p className="text-xs uppercase text-slate-500">Prestador</p>
                   <p className="text-slate-900">{repasse.oficina.nome}</p>
                 </div>
                 <div>
@@ -140,7 +140,7 @@ export default async function RepasseDetalhePage({
                   <p className="text-slate-900">{formatarMoeda(repasse.valorCobrado)}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Custo cobrado pela oficina</p>
+                  <p className="text-xs uppercase text-slate-500">Custo cobrado pelo prestador</p>
                   <p className="text-slate-900">{formatarMoeda(repasse.custoOficina)}</p>
                 </div>
                 <div>
@@ -160,7 +160,7 @@ export default async function RepasseDetalhePage({
           formulario={
             <form action={atualizarComId} className="space-y-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Oficina *">
+                <Field label="Prestador *">
                   <Select name="oficinaId" defaultValue={repasse.oficinaId} required>
                     {oficinas.map((o) => (
                       <option key={o.id} value={o.id}>
@@ -211,7 +211,7 @@ export default async function RepasseDetalhePage({
                     required
                   />
                 </Field>
-                <Field label="Custo cobrado pela oficina *">
+                <Field label="Custo cobrado pelo prestador *">
                   <Input
                     name="custoOficina"
                     type="number"

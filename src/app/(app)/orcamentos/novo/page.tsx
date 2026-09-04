@@ -4,6 +4,7 @@ import { Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PECAS_CARROCERIA } from "@/lib/pecas-carro";
 
 export default async function NovoOrcamentoPage() {
   const [clientes, tiposServico] = await Promise.all([
@@ -27,7 +28,7 @@ export default async function NovoOrcamentoPage() {
 
           <div>
             <h2 className="mb-2 text-sm font-semibold text-slate-900">Itens do orçamento</h2>
-            <ItensEditor tiposServico={tiposServico} />
+            <ItensEditor tiposServico={tiposServico} pecas={PECAS_CARROCERIA} mostrarQuantidade={false} />
           </div>
 
           <Field label="Observações">

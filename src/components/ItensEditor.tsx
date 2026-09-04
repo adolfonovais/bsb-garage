@@ -14,9 +14,15 @@ export type ItemForm = {
 export function ItensEditor({
   tiposServico,
   itensIniciais,
+  pecas,
+  mostrarQuantidade = true,
 }: {
   tiposServico: { id: string; nome: string }[];
   itensIniciais?: ItemForm[];
+  /** Lista de peças pra um dropdown de atalho na descrição (ver src/lib/pecas-carro.ts). Sem isso, some o dropdown e sobra só o campo de texto livre. */
+  pecas?: string[];
+  /** false esconde a coluna de quantidade (fica sempre 1 nos itens criados). */
+  mostrarQuantidade?: boolean;
 }) {
   const [itens, setItens] = useState<ItemForm[]>(
     itensIniciais && itensIniciais.length > 0
@@ -37,10 +43,21 @@ export function ItensEditor({
   }
 
   const total = itens.reduce((soma, it) => {
-    const qtd = Number(it.quantidade) || 0;
+    const qtd = mostrarQuantidade ? Number(it.quantidade) || 0 : 1;
     const valor = Number(it.valorUnit) || 0;
     return soma + qtd * valor;
   }, 0);
+
+  // Tailwind precisa das classes literais (não dá pra montar "col-span-N" via
+  // template string — o scanner não encontraria a classe no build).
+  const tipoColSpanClass = mostrarQuantidade ? "sm:col-span-4" : "sm:col-span-3";
+  const descColSpanClass = pecas
+    ? mostrarQuantidade
+      ? "sm:col-span-1"
+      : "sm:col-span-3"
+    : mostrarQuantidade
+      ? "sm:col-span-4"
+      : "sm:col-span-5";
 
   return (
     <div>
@@ -48,7 +65,7 @@ export function ItensEditor({
       <div className="space-y-3">
         {itens.map((item, idx) => (
           <div key={idx} className="grid grid-cols-12 items-start gap-2 rounded-md border border-slate-200 p-3">
-            <div className="col-span-12 sm:col-span-4">
+            <div className={`col-span-12 ${tipoColSpanClass}`}>
               <Select
                 name={`item_tipo_${idx}`}
                 value={item.tipoServicoId}
@@ -62,26 +79,45 @@ export function ItensEditor({
                 ))}
               </Select>
             </div>
-            <div className="col-span-12 sm:col-span-4">
+            {pecas && (
+              <div className="col-span-12 sm:col-span-3">
+                <Select
+                  value=""
+                  onChange={(e) => {
+                    if (e.target.value) atualizar(idx, "descricao", e.target.value);
+                  }}
+                >
+                  <option value="">Selecionar peça...</option>
+                  {pecas.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
+            <div className={`col-span-12 ${descColSpanClass}`}>
               <Input
                 name={`item_desc_${idx}`}
-                placeholder="Descrição (ex: Porta traseira direita)"
+                placeholder={pecas ? "Ou digite se a peça não estiver na lista" : "Descrição (ex: Porta traseira direita)"}
                 value={item.descricao}
                 onChange={(e) => atualizar(idx, "descricao", e.target.value)}
                 required
               />
             </div>
-            <div className="col-span-4 sm:col-span-1">
-              <Input
-                name={`item_qtd_${idx}`}
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Qtd."
-                value={item.quantidade}
-                onChange={(e) => atualizar(idx, "quantidade", e.target.value)}
-              />
-            </div>
+            {mostrarQuantidade && (
+              <div className="col-span-4 sm:col-span-1">
+                <Input
+                  name={`item_qtd_${idx}`}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Qtd."
+                  value={item.quantidade}
+                  onChange={(e) => atualizar(idx, "quantidade", e.target.value)}
+                />
+              </div>
+            )}
             <div className="col-span-6 sm:col-span-2">
               <Input
                 name={`item_valor_${idx}`}

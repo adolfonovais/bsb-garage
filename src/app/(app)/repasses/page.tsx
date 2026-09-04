@@ -31,7 +31,7 @@ export default async function RepassesPage({
   return (
     <div>
       <PageHeader
-        title="Repasses para oficinas terceirizadas"
+        title="Repasses para prestadores terceirizados"
         actions={<LinkButton href="/repasses/novo">Novo repasse</LinkButton>}
       />
 
@@ -68,7 +68,7 @@ export default async function RepassesPage({
               <thead className="text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-2">Entrada</th>
-                  <th className="px-4 py-2">Oficina</th>
+                  <th className="px-4 py-2">Prestador</th>
                   <th className="px-4 py-2">Carro</th>
                   <th className="px-4 py-2">Serviço</th>
                   <th className="px-4 py-2">Cobrado</th>
