@@ -147,10 +147,7 @@ export default async function NovoRepassePage({
             <Textarea name="servicoAdicional" rows={2} placeholder="Ex: Troca grade frontal" />
           </Field>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Field label="Valor cobrado do cliente *">
-              <Input name="valorCobrado" type="number" step="0.01" min="0" required />
-            </Field>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Custo cobrado pelo prestador *">
               <Input name="custoOficina" type="number" step="0.01" min="0" required />
             </Field>

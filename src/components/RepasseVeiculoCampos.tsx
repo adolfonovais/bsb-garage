@@ -44,6 +44,7 @@ export function RepasseVeiculoCampos({
   const [carro, setCarro] = useState(carroInicial ?? "");
   const [placa, setPlaca] = useState(placaInicial ?? "");
   const [tipoServico, setTipoServico] = useState(tipoServicoInicial ?? "");
+  const [valorCobrado, setValorCobrado] = useState("");
   const [itensSelecionados, setItensSelecionados] = useState<Set<string>>(new Set());
 
   // Só o que ainda não foi repassado pra ESSE prestador — outro prestador
@@ -97,6 +98,9 @@ export function RepasseVeiculoCampos({
       // tipo definido, cai pra descrição do item como antes.
       const tipos = [...new Set(marcados.map((it) => it.tipoServicoNome).filter((t): t is string => !!t))];
       setTipoServico(tipos.length > 0 ? tipos.join("/") : marcados.map((it) => it.descricao).join(", "));
+      // Valor cobrado do cliente = soma do valor desses itens na OS.
+      const soma = marcados.reduce((total, it) => total + it.valorTotal, 0);
+      setValorCobrado(marcados.length > 0 ? soma.toFixed(2) : "");
       return novo;
     });
   }
@@ -173,15 +177,28 @@ export function RepasseVeiculoCampos({
           </Field>
         </div>
 
-        <Field label="Tipo de serviço *">
-          <Input
-            name="tipoServico"
-            required
-            value={tipoServico}
-            onChange={(e) => setTipoServico(e.target.value)}
-            placeholder="Ex: Lanternagem/Pintura"
-          />
-        </Field>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Tipo de serviço *">
+            <Input
+              name="tipoServico"
+              required
+              value={tipoServico}
+              onChange={(e) => setTipoServico(e.target.value)}
+              placeholder="Ex: Lanternagem/Pintura"
+            />
+          </Field>
+          <Field label="Valor cobrado do cliente *" hint="Preenchido com a soma dos itens marcados acima — pode editar.">
+            <Input
+              name="valorCobrado"
+              type="number"
+              step="0.01"
+              min="0"
+              required
+              value={valorCobrado}
+              onChange={(e) => setValorCobrado(e.target.value)}
+            />
+          </Field>
+        </div>
       </div>
     </>
   );
