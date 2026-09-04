@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
   const fimStr = searchParams.get("fim");
   const secoesParam = searchParams.getAll("secoes") as SecaoRelatorio[];
   const secoes = SECOES_RELATORIO.filter((s) => secoesParam.includes(s));
+  const tipoServicoIds = searchParams.getAll("tiposServico");
 
   if (!inicioStr || !fimStr || secoes.length === 0) {
     return new Response("Parâmetros inválidos.", { status: 400 });
@@ -58,7 +59,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (secoes.includes("servicos")) {
-    const servicos = await buscarRelatorioServicos(inicio, fim);
+    const servicos = await buscarRelatorioServicos(inicio, fim, tipoServicoIds);
     const sheet = workbook.addWorksheet("Serviços");
     sheet.columns = [
       { header: "Número", key: "numero", width: 12 },

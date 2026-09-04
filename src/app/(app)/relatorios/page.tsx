@@ -29,7 +29,12 @@ function hoje(): string {
 export default async function RelatoriosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ inicio?: string; fim?: string; secoes?: string | string[] }>;
+  searchParams: Promise<{
+    inicio?: string;
+    fim?: string;
+    secoes?: string | string[];
+    tiposServico?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
   const gerado = params.secoes !== undefined;
@@ -40,23 +45,34 @@ export default async function RelatoriosPage({
       )
     : [...SECOES_RELATORIO];
 
+  const tipoServicoIdsSelecionados = params.tiposServico
+    ? Array.isArray(params.tiposServico)
+      ? params.tiposServico
+      : [params.tiposServico]
+    : [];
+
   const inicioStr = params.inicio || inicioDoMes();
   const fimStr = params.fim || hoje();
   const inicio = new Date(`${inicioStr}T00:00:00`);
   const fim = new Date(`${fimStr}T00:00:00`);
 
-  const empresa = await prisma.empresaConfig.findUnique({ where: { id: 1 } });
+  const [empresa, tiposServico] = await Promise.all([
+    prisma.empresaConfig.findUnique({ where: { id: 1 } }),
+    prisma.tipoServico.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
+  ]);
 
   const [financeiro, servicos, oficinas, estoque] = await Promise.all([
     gerado && secoesSelecionadas.includes("financeiro") ? buscarRelatorioFinanceiro(inicio, fim) : null,
-    gerado && secoesSelecionadas.includes("servicos") ? buscarRelatorioServicos(inicio, fim) : null,
+    gerado && secoesSelecionadas.includes("servicos")
+      ? buscarRelatorioServicos(inicio, fim, tipoServicoIdsSelecionados)
+      : null,
     gerado && secoesSelecionadas.includes("oficinas") ? buscarRelatorioOficinas(inicio, fim) : null,
     gerado && secoesSelecionadas.includes("estoque") ? buscarRelatorioEstoque() : null,
   ]);
 
   const exportHref = `/api/relatorios/export?inicio=${inicioStr}&fim=${fimStr}&${secoesSelecionadas
     .map((s) => `secoes=${s}`)
-    .join("&")}`;
+    .join("&")}${tipoServicoIdsSelecionados.map((id) => `&tiposServico=${id}`).join("")}`;
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -112,6 +128,29 @@ export default async function RelatoriosPage({
               </p>
             )}
           </div>
+
+          {tiposServico.length > 0 && (
+            <div className="border-t border-slate-200 pt-4">
+              <p className="mb-2 text-sm font-medium text-slate-700">
+                Filtrar Serviços realizados por tipo <span className="font-normal text-slate-500">(opcional — nenhum marcado mostra todos)</span>
+              </p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {tiposServico.map((t) => (
+                  <label key={t.id} className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      name="tiposServico"
+                      value={t.id}
+                      defaultChecked={tipoServicoIdsSelecionados.includes(t.id)}
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    {t.nome}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end">
             <SubmitButton>Gerar relatório</SubmitButton>
           </div>
@@ -128,6 +167,15 @@ export default async function RelatoriosPage({
               <p className="text-sm text-slate-600">
                 Relatório de {formatarData(inicio)} até {formatarData(fim)}
               </p>
+              {servicos && tipoServicoIdsSelecionados.length > 0 && (
+                <p className="text-xs text-slate-500">
+                  Serviços filtrados por:{" "}
+                  {tiposServico
+                    .filter((t) => tipoServicoIdsSelecionados.includes(t.id))
+                    .map((t) => t.nome)
+                    .join(", ")}
+                </p>
+              )}
             </div>
             {/* espaçador pra manter o texto centralizado apesar da logo à esquerda */}
             <div className="h-16 w-16 shrink-0" aria-hidden />

@@ -65,11 +65,18 @@ export async function buscarRelatorioFinanceiro(inicio: Date, fim: Date) {
   };
 }
 
-export async function buscarRelatorioServicos(inicio: Date, fim: Date) {
+export async function buscarRelatorioServicos(inicio: Date, fim: Date, tipoServicoIds?: string[]) {
   const fimAjustado = fimDoDia(fim);
 
   const ordens = await prisma.ordemServico.findMany({
-    where: { dataEntrada: { gte: inicio, lte: fimAjustado } },
+    where: {
+      dataEntrada: { gte: inicio, lte: fimAjustado },
+      // Sub-filtro: só entra a OS que tiver pelo menos um item de um dos
+      // tipos de serviço marcados (ex: só Martelinho, ou só Pintura).
+      ...(tipoServicoIds && tipoServicoIds.length > 0
+        ? { itens: { some: { tipoServicoId: { in: tipoServicoIds } } } }
+        : {}),
+    },
     include: { cliente: true, veiculo: true, itens: true },
     orderBy: { dataEntrada: "asc" },
   });
