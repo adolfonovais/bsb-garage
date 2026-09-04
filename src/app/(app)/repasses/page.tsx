@@ -28,6 +28,8 @@ export default async function RepassesPage({
     prisma.oficinaTerceirizada.findMany({ orderBy: { nome: "asc" } }),
   ]);
 
+  const totalPecas = repasses.reduce((soma, r) => soma + r.qtdPecas, 0);
+
   return (
     <div>
       <PageHeader
@@ -59,6 +61,14 @@ export default async function RepassesPage({
         ))}
       </div>
 
+      {oficinaId && repasses.length > 0 && (
+        <p className="mb-4 text-sm text-slate-600">
+          <strong className="text-slate-900">{totalPecas}</strong>{" "}
+          {totalPecas === 1 ? "peça repassada" : "peças repassadas"} pra {repasses[0].oficina.nome} em{" "}
+          {repasses.length} {repasses.length === 1 ? "repasse" : "repasses"}.
+        </p>
+      )}
+
       {repasses.length === 0 ? (
         <EmptyState>Nenhum repasse encontrado.</EmptyState>
       ) : (
@@ -71,6 +81,7 @@ export default async function RepassesPage({
                   <th className="px-4 py-2">Prestador</th>
                   <th className="px-4 py-2">Carro</th>
                   <th className="px-4 py-2">Serviço</th>
+                  <th className="px-4 py-2">Peças</th>
                   <th className="px-4 py-2">Cobrado</th>
                   <th className="px-4 py-2">Custo</th>
                   <th className="px-4 py-2">Lucro</th>
@@ -91,6 +102,7 @@ export default async function RepassesPage({
                       {r.carro} {r.placa ? `· ${r.placa}` : ""}
                     </td>
                     <td className="px-4 py-2">{r.tipoServico}</td>
+                    <td className="px-4 py-2">{r.qtdPecas}</td>
                     <td className="px-4 py-2">{formatarMoeda(r.valorCobrado)}</td>
                     <td className="px-4 py-2">{formatarMoeda(r.custoTotal)}</td>
                     <td className="px-4 py-2 text-emerald-700">{formatarMoeda(r.lucro)}</td>

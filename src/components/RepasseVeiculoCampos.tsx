@@ -9,6 +9,8 @@ type ItemOS = {
   descricao: string;
   valorTotal: number;
   tipoServicoNome: string | null;
+  /** Prestadores que já receberam esse item num repasse (não cancelado). */
+  oficinaIdsJaRepassados: string[];
 };
 
 type OS = {
@@ -22,24 +24,54 @@ type OS = {
 
 export function RepasseVeiculoCampos({
   ordens,
+  oficinas,
+  oficinaIdInicial,
   carroInicial,
   placaInicial,
   osIdInicial,
   tipoServicoInicial,
 }: {
   ordens: OS[];
+  oficinas: { id: string; nome: string }[];
+  oficinaIdInicial?: string;
   carroInicial?: string;
   placaInicial?: string;
   osIdInicial?: string;
   tipoServicoInicial?: string;
 }) {
+  const [oficinaId, setOficinaId] = useState(oficinaIdInicial ?? "");
   const [osId, setOsId] = useState(osIdInicial ?? "");
   const [carro, setCarro] = useState(carroInicial ?? "");
   const [placa, setPlaca] = useState(placaInicial ?? "");
   const [tipoServico, setTipoServico] = useState(tipoServicoInicial ?? "");
   const [itensSelecionados, setItensSelecionados] = useState<Set<string>>(new Set());
 
-  const osSelecionada = ordens.find((o) => o.id === osId);
+  // Só o que ainda não foi repassado pra ESSE prestador — outro prestador
+  // pode receber o mesmo item (ex: lanternagem numa oficina, pintura noutra).
+  // Sem prestador escolhido ainda, mostra tudo.
+  function itemDisponivel(item: ItemOS, paraOficinaId: string) {
+    return !paraOficinaId || !item.oficinaIdsJaRepassados.includes(paraOficinaId);
+  }
+  function osTemItemDisponivel(os: OS, paraOficinaId: string) {
+    return os.itens.length === 0 || os.itens.some((item) => itemDisponivel(item, paraOficinaId));
+  }
+
+  const ordensDisponiveis = ordens.filter((os) => osTemItemDisponivel(os, oficinaId));
+  const osSelecionada = ordensDisponiveis.find((o) => o.id === osId);
+  const itensDisponiveis = osSelecionada ? osSelecionada.itens.filter((item) => itemDisponivel(item, oficinaId)) : [];
+
+  function selecionarOficina(novoOficinaId: string) {
+    setOficinaId(novoOficinaId);
+    setItensSelecionados(new Set());
+    // Se a OS já escolhida não sobra com nenhum item disponível pra esse
+    // prestador, desvincula pra não deixar o select numa OS que sumiu.
+    const osAtual = ordens.find((o) => o.id === osId);
+    if (osAtual && !osTemItemDisponivel(osAtual, novoOficinaId)) {
+      setOsId("");
+      setCarro("");
+      setPlaca("");
+    }
+  }
 
   function selecionarOS(novoOsId: string) {
     setOsId(novoOsId);
@@ -59,27 +91,36 @@ export function RepasseVeiculoCampos({
       } else {
         novo.add(item.id);
       }
-      if (osSelecionada) {
-        const marcados = osSelecionada.itens.filter((it) => novo.has(it.id));
-        // Usa o mesmo "Tipo de serviço" já cadastrado nos itens da OS
-        // (Martelinho/Pintura/Lanternagem...); se nenhum item marcado tiver
-        // tipo definido, cai pra descrição do item como antes.
-        const tipos = [...new Set(marcados.map((it) => it.tipoServicoNome).filter((t): t is string => !!t))];
-        setTipoServico(tipos.length > 0 ? tipos.join("/") : marcados.map((it) => it.descricao).join(", "));
-      }
+      const marcados = itensDisponiveis.filter((it) => novo.has(it.id));
+      // Usa o mesmo "Tipo de serviço" já cadastrado nos itens da OS
+      // (Martelinho/Pintura/Lanternagem...); se nenhum item marcado tiver
+      // tipo definido, cai pra descrição do item como antes.
+      const tipos = [...new Set(marcados.map((it) => it.tipoServicoNome).filter((t): t is string => !!t))];
+      setTipoServico(tipos.length > 0 ? tipos.join("/") : marcados.map((it) => it.descricao).join(", "));
       return novo;
     });
   }
 
   return (
     <>
+      <Field label="Prestador *">
+        <Select name="oficinaId" value={oficinaId} onChange={(e) => selecionarOficina(e.target.value)} required>
+          <option value="">Selecione...</option>
+          {oficinas.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.nome}
+            </option>
+          ))}
+        </Select>
+      </Field>
+
       <Field
         label="Vincular a uma OS (opcional)"
-        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS com serviços ainda não repassados."
+        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS com serviços ainda não repassados pra esse prestador."
       >
         <Select name="osId" value={osId} onChange={(e) => selecionarOS(e.target.value)}>
           <option value="">Nenhuma</option>
-          {ordens.map((os) => (
+          {ordensDisponiveis.map((os) => (
             <option key={os.id} value={os.id}>
               {numeroFormatado(os.numero, os.ano)} — {os.cliente.nome}
               {os.veiculo ? ` (${formatarVeiculo(os.veiculo)})` : ""}
@@ -89,13 +130,13 @@ export function RepasseVeiculoCampos({
       </Field>
 
       <div className="space-y-4 sm:col-span-2">
-        {osSelecionada && osSelecionada.itens.length > 0 && (
+        {osSelecionada && itensDisponiveis.length > 0 && (
           <Field
             label="Serviços da OS repassados"
-            hint="Marque quais itens dessa OS (ainda não repassados) estão indo pra esse prestador — preenche o Tipo de serviço abaixo."
+            hint="Marque quais itens dessa OS (ainda não repassados pra esse prestador) estão indo pra ele — preenche o Tipo de serviço abaixo."
           >
             <div className="space-y-1.5 rounded-md border border-slate-300 bg-white p-3">
-              {osSelecionada.itens.map((item) => (
+              {itensDisponiveis.map((item) => (
                 <label key={item.id} className="flex items-center gap-2 text-sm text-slate-700">
                   <input
                     type="checkbox"
