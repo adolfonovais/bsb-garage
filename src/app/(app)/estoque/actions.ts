@@ -55,7 +55,11 @@ export async function criarPeca(formData: FormData) {
   redirect(`/estoque/${peca.id}`);
 }
 
-export async function atualizarPeca(pecaId: string, formData: FormData) {
+export async function atualizarPeca(
+  pecaId: string,
+  _estado: EstadoFormulario,
+  formData: FormData
+): Promise<EstadoFormulario> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -79,6 +83,7 @@ export async function atualizarPeca(pecaId: string, formData: FormData) {
 
   revalidatePath("/estoque");
   revalidatePath(`/estoque/${pecaId}`);
+  return { sucesso: true };
 }
 
 export async function excluirPeca(pecaId: string) {

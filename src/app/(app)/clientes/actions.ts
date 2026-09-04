@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import type { EstadoFormulario } from "@/components/EdicaoInline";
 
 const ClienteSchema = z.object({
   nome: z.string().trim().min(2, "Informe o nome do cliente."),
@@ -42,7 +43,11 @@ export async function criarCliente(formData: FormData) {
   redirect(`/clientes/${cliente.id}`);
 }
 
-export async function atualizarCliente(clienteId: string, formData: FormData) {
+export async function atualizarCliente(
+  clienteId: string,
+  _estado: EstadoFormulario,
+  formData: FormData
+): Promise<EstadoFormulario> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -62,6 +67,7 @@ export async function atualizarCliente(clienteId: string, formData: FormData) {
   await prisma.cliente.update({ where: { id: clienteId }, data: dados });
   revalidatePath("/clientes");
   revalidatePath(`/clientes/${clienteId}`);
+  return { sucesso: true };
 }
 
 export async function excluirCliente(clienteId: string) {

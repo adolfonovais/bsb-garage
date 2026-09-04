@@ -8,7 +8,7 @@ import {
   excluirRepasse,
 } from "@/app/(app)/repasses/actions";
 import { Badge, Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
-import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
+import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { RepasseVeiculoCampos } from "@/components/RepasseVeiculoCampos";
 import {
   formatarData,
@@ -167,7 +167,7 @@ export default async function RepasseDetalhePage({
             </div>
           }
           formulario={
-            <form action={atualizarComId} className="space-y-6">
+            <FormularioComFechamento action={atualizarComId} className="space-y-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <RepasseVeiculoCampos
                   ordens={ordens}
@@ -240,7 +240,7 @@ export default async function RepasseDetalhePage({
                   <SubmitButton>Salvar</SubmitButton>
                 </div>
               </div>
-            </form>
+            </FormularioComFechamento>
           }
         />
       </Card>

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { dataDoFormulario } from "@/lib/format";
+import type { EstadoFormulario } from "@/components/EdicaoInline";
 
 const RepasseSchema = z.object({
   oficinaId: z.string().min(1, "Selecione a oficina."),
@@ -103,7 +104,11 @@ export async function criarRepasse(formData: FormData) {
   redirect(`/repasses/${repasse.id}`);
 }
 
-export async function atualizarRepasse(repasseId: string, formData: FormData) {
+export async function atualizarRepasse(
+  repasseId: string,
+  _estado: EstadoFormulario,
+  formData: FormData
+): Promise<EstadoFormulario> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -163,6 +168,7 @@ export async function atualizarRepasse(repasseId: string, formData: FormData) {
   revalidatePath("/repasses");
   revalidatePath(`/repasses/${repasseId}`);
   revalidatePath("/oficinas");
+  return { sucesso: true };
 }
 
 export async function atualizarStatusRepasse(repasseId: string, status: string) {

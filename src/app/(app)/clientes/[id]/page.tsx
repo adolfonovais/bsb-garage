@@ -18,7 +18,7 @@ import {
 } from "@/components/ui";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
 import { Trash2 } from "lucide-react";
-import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
+import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { EditarVeiculoForm, NovoVeiculoForm } from "@/components/VeiculoForms";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -93,7 +93,7 @@ export default async function ClienteDetalhePage({
               </div>
             }
             formulario={
-              <form action={atualizarComId} className="space-y-4">
+              <FormularioComFechamento action={atualizarComId} className="space-y-4">
                 <Field label="Nome *">
                   <Input name="nome" defaultValue={cliente.nome} required />
                 </Field>
@@ -136,7 +136,7 @@ export default async function ClienteDetalhePage({
                   <BotaoCancelarEdicao />
                   <SubmitButton>Salvar</SubmitButton>
                 </div>
-              </form>
+              </FormularioComFechamento>
             }
           />
         </Card>

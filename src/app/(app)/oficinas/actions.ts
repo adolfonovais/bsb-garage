@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import type { EstadoFormulario } from "@/components/EdicaoInline";
 
 const OficinaSchema = z.object({
   nome: z.string().trim().min(2, "Informe o nome da oficina."),
@@ -34,7 +35,11 @@ export async function criarOficina(formData: FormData) {
   redirect(`/oficinas/${oficina.id}`);
 }
 
-export async function atualizarOficina(oficinaId: string, formData: FormData) {
+export async function atualizarOficina(
+  oficinaId: string,
+  _estado: EstadoFormulario,
+  formData: FormData
+): Promise<EstadoFormulario> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -54,6 +59,7 @@ export async function atualizarOficina(oficinaId: string, formData: FormData) {
   });
   revalidatePath("/oficinas");
   revalidatePath(`/oficinas/${oficinaId}`);
+  return { sucesso: true };
 }
 
 export async function alternarAtivoOficina(oficinaId: string, ativo: boolean) {

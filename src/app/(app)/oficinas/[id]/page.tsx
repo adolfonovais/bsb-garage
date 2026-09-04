@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { atualizarOficina, alternarAtivoOficina } from "@/app/(app)/oficinas/actions";
 import { Badge, Card, EmptyState, Field, Input, LinkButton, PageHeader } from "@/components/ui";
-import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
+import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { SubmitButton } from "@/components/SubmitButton";
 import {
   formatarData,
@@ -90,7 +90,7 @@ export default async function OficinaDetalhePage({
             </div>
           }
           formulario={
-            <form action={atualizarComId} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <FormularioComFechamento action={atualizarComId} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Nome *">
                 <Input name="nome" defaultValue={oficina.nome} required />
               </Field>
@@ -104,7 +104,7 @@ export default async function OficinaDetalhePage({
                 <BotaoCancelarEdicao />
                 <SubmitButton>Salvar</SubmitButton>
               </div>
-            </form>
+            </FormularioComFechamento>
           }
         />
       </Card>

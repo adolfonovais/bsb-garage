@@ -8,7 +8,7 @@ import {
   registrarMovimentacao,
 } from "@/app/(app)/estoque/actions";
 import { Card, EmptyState, Field, Input, PageHeader, Select } from "@/components/ui";
-import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
+import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
 import { AlertTriangle, Trash2 } from "lucide-react";
@@ -76,7 +76,7 @@ export default async function PecaDetalhePage({
             </div>
           }
           formulario={
-            <form action={atualizarComId} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormularioComFechamento action={atualizarComId} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Field label="Nome *">
                   <Input name="nome" defaultValue={peca.nome} required />
@@ -113,7 +113,7 @@ export default async function PecaDetalhePage({
                 <BotaoCancelarEdicao />
                 <SubmitButton>Salvar</SubmitButton>
               </div>
-            </form>
+            </FormularioComFechamento>
           }
         />
       </Card>
