@@ -2,7 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Badge, Card, EmptyState, LinkButton, PageHeader } from "@/components/ui";
 import { StatusTabLink } from "@/components/StatusTabLink";
-import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
+import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
+import { Valor } from "@/components/ValoresPrivacidade";
 
 const STATUS_TABS = [
   { value: undefined, label: "Todas" },
@@ -73,7 +74,7 @@ export default async function OrdensServicoPage({
                     <td className="px-4 py-2">{os.cliente?.nome}</td>
                     <td className="px-4 py-2">{formatarVeiculo(os.veiculo)}</td>
                     <td className="px-4 py-2">{formatarData(os.dataEntrada)}</td>
-                    <td className="px-4 py-2">{formatarMoeda(os.valorTotal)}</td>
+                    <td className="px-4 py-2"><Valor valor={paraNumero(os.valorTotal)} /></td>
                     <td className="px-4 py-2">
                       <Badge status={os.status} label={STATUS_OS_LABEL[os.status]} />
                     </td>

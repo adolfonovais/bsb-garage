@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LogOut, Menu } from "lucide-react";
 import { useMobileMenu } from "@/components/MobileMenu";
 import { sairAction } from "@/components/topbar-actions";
+import { BotaoOcultarValores } from "@/components/ValoresPrivacidade";
 
 export function Topbar({ nome, papel }: { nome: string; papel: string }) {
   const { setAberto } = useMobileMenu();
@@ -22,6 +23,7 @@ export function Topbar({ nome, papel }: { nome: string; papel: string }) {
         <p className="text-sm font-bold text-slate-900">BSB Garage Martelinho de Ouro</p>
       </div>
       <div className="ml-auto flex items-center gap-4">
+        <BotaoOcultarValores />
         <Link href="/minha-conta" className="text-right hover:opacity-70" title="Minha conta">
           <p className="text-sm font-medium text-slate-900">{nome}</p>
           <p className="text-xs text-slate-500">{papel === "ADMIN" ? "Administrador" : "Funcionário"}</p>

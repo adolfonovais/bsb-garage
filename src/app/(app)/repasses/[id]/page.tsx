@@ -12,7 +12,6 @@ import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/co
 import { RepasseVeiculoCampos } from "@/components/RepasseVeiculoCampos";
 import {
   formatarData,
-  formatarMoeda,
   numeroFormatado,
   paraInputDate,
   paraNumero,
@@ -21,6 +20,7 @@ import {
 } from "@/lib/format";
 import { Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
+import { Valor } from "@/components/ValoresPrivacidade";
 import { buscarOrdensParaRepasse } from "@/lib/repasse-disponibilidade";
 
 export default async function RepasseDetalhePage({
@@ -146,22 +146,22 @@ export default async function RepasseDetalhePage({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <p className="text-xs uppercase text-slate-500">Valor cobrado do cliente</p>
-                  <p className="text-slate-900">{formatarMoeda(repasse.valorCobrado)}</p>
+                  <p className="text-slate-900"><Valor valor={paraNumero(repasse.valorCobrado)} /></p>
                 </div>
                 <div>
                   <p className="text-xs uppercase text-slate-500">Custo cobrado pelo prestador</p>
-                  <p className="text-slate-900">{formatarMoeda(repasse.custoOficina)}</p>
+                  <p className="text-slate-900"><Valor valor={paraNumero(repasse.custoOficina)} /></p>
                 </div>
                 <div>
                   <p className="text-xs uppercase text-slate-500">Outros custos</p>
-                  <p className="text-slate-900">{repasse.outrosCustos ? formatarMoeda(repasse.outrosCustos) : "-"}</p>
+                  <p className="text-slate-900">{repasse.outrosCustos ? <Valor valor={paraNumero(repasse.outrosCustos)} /> : "-"}</p>
                 </div>
               </div>
               <p className="text-slate-900">Inclui polimento: {repasse.polimento ? "Sim" : "Não"}</p>
               <div className="flex items-center justify-between border-t border-slate-200 pt-4">
                 <span>
-                  Custo total: <strong>{formatarMoeda(repasse.custoTotal)}</strong> · Lucro:{" "}
-                  <strong className="text-emerald-700">{formatarMoeda(repasse.lucro)}</strong>
+                  Custo total: <strong><Valor valor={paraNumero(repasse.custoTotal)} /></strong> · Lucro:{" "}
+                  <strong className="text-emerald-700"><Valor valor={paraNumero(repasse.lucro)} /></strong>
                 </span>
               </div>
             </div>
@@ -232,8 +232,8 @@ export default async function RepasseDetalhePage({
 
               <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-sm">
                 <span>
-                  Custo total: <strong>{formatarMoeda(repasse.custoTotal)}</strong> · Lucro:{" "}
-                  <strong className="text-emerald-700">{formatarMoeda(repasse.lucro)}</strong>
+                  Custo total: <strong><Valor valor={paraNumero(repasse.custoTotal)} /></strong> · Lucro:{" "}
+                  <strong className="text-emerald-700"><Valor valor={paraNumero(repasse.lucro)} /></strong>
                 </span>
                 <div className="flex gap-2">
                   <BotaoCancelarEdicao />

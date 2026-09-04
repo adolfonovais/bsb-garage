@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Badge, Card, EmptyState, LinkButton, PageHeader } from "@/components/ui";
-import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
+import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
+import { Valor } from "@/components/ValoresPrivacidade";
 
 const STATUS_TABS = [
   { value: undefined, label: "Todos" },
@@ -75,7 +76,7 @@ export default async function OrcamentosPage({
                     <td className="px-4 py-2">{orc.cliente?.nome}</td>
                     <td className="px-4 py-2">{formatarVeiculo(orc.veiculo)}</td>
                     <td className="px-4 py-2">{formatarData(orc.data)}</td>
-                    <td className="px-4 py-2">{formatarMoeda(orc.valorTotal)}</td>
+                    <td className="px-4 py-2"><Valor valor={paraNumero(orc.valorTotal)} /></td>
                     <td className="px-4 py-2">
                       <Badge status={orc.status} label={STATUS_ORCAMENTO_LABEL[orc.status]} />
                     </td>

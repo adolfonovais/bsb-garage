@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Field, Input, Select } from "@/components/ui";
-import { formatarMoeda, formatarVeiculo, numeroFormatado } from "@/lib/format";
+import { formatarVeiculo, numeroFormatado } from "@/lib/format";
+import { Valor } from "@/components/ValoresPrivacidade";
 
 type ItemOS = {
   id: string;
@@ -156,7 +157,7 @@ export function RepasseVeiculoCampos({
                   />
                   {itensSelecionados.has(item.id) && <input type="hidden" name="itemIds" value={item.id} />}
                   {item.descricao}
-                  <span className="text-xs text-slate-400">({formatarMoeda(item.valorTotal)})</span>
+                  <span className="text-xs text-slate-400">(<Valor valor={item.valorTotal} />)</span>
                 </label>
               ))}
             </div>

@@ -16,8 +16,9 @@ import {
   Input,
   PageHeader,
 } from "@/components/ui";
-import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
+import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { Trash2 } from "lucide-react";
+import { Valor } from "@/components/ValoresPrivacidade";
 import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { EditarVeiculoForm, NovoVeiculoForm } from "@/components/VeiculoForms";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -207,7 +208,7 @@ export default async function ClienteDetalhePage({
                     </td>
                     <td className="px-4 py-2">{formatarVeiculo(os.veiculo)}</td>
                     <td className="px-4 py-2">{formatarData(os.dataEntrada)}</td>
-                    <td className="px-4 py-2">{formatarMoeda(os.valorTotal)}</td>
+                    <td className="px-4 py-2"><Valor valor={paraNumero(os.valorTotal)} /></td>
                     <td className="px-4 py-2">
                       <Badge status={os.status} label={STATUS_OS_LABEL[os.status]} />
                     </td>

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, ReactNode, useActionState, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useActionState, useContext, useState } from "react";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui";
 
@@ -38,9 +38,13 @@ export function FormularioComFechamento({
   const fechar = useContext(CancelarContext);
   const [estado, formAction] = useActionState(action, undefined);
 
-  useEffect(() => {
+  // Fecha assim que a action retornar sucesso — comparado durante o render
+  // (não num useEffect) pra não gerar um ciclo extra de render.
+  const [estadoTratado, setEstadoTratado] = useState(estado);
+  if (estado !== estadoTratado) {
+    setEstadoTratado(estado);
     if (estado?.sucesso) fechar();
-  }, [estado, fechar]);
+  }
 
   return (
     <form action={formAction} className={className}>

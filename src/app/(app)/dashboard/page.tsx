@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatarMoeda, formatarData, formatarVeiculo, STATUS_OS_LABEL, numeroFormatado } from "@/lib/format";
+import { formatarData, formatarVeiculo, paraNumero, STATUS_OS_LABEL, numeroFormatado } from "@/lib/format";
 import { Badge, Card, PageHeader } from "@/components/ui";
+import { Valor } from "@/components/ValoresPrivacidade";
 import { FileText, Wrench, Clock, Wallet } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -63,7 +64,7 @@ export default async function DashboardPage() {
           </div>
           <div>
             <p className="text-xs text-slate-500">Faturado no mês (OS)</p>
-            <p className="text-xl font-bold text-slate-900">{formatarMoeda(totalPrevistoMes)}</p>
+            <p className="text-xl font-bold text-slate-900"><Valor valor={totalPrevistoMes} /></p>
           </div>
         </Card>
         <Card className="flex items-center gap-4 p-4">
@@ -72,7 +73,7 @@ export default async function DashboardPage() {
           </div>
           <div>
             <p className="text-xs text-slate-500">A receber no mês</p>
-            <p className="text-xl font-bold text-slate-900">{formatarMoeda(aReceberMes)}</p>
+            <p className="text-xl font-bold text-slate-900"><Valor valor={aReceberMes} /></p>
           </div>
         </Card>
       </div>
@@ -107,7 +108,7 @@ export default async function DashboardPage() {
                     <td className="px-4 py-2">{os.cliente?.nome}</td>
                     <td className="hidden px-4 py-2 sm:table-cell">{formatarVeiculo(os.veiculo)}</td>
                     <td className="hidden px-4 py-2 sm:table-cell">{formatarData(os.dataEntrada)}</td>
-                    <td className="px-4 py-2">{formatarMoeda(os.valorTotal)}</td>
+                    <td className="px-4 py-2"><Valor valor={paraNumero(os.valorTotal)} /></td>
                     <td className="px-4 py-2">
                       <Badge status={os.status} label={STATUS_OS_LABEL[os.status]} />
                     </td>

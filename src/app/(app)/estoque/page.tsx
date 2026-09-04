@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card, EmptyState, LinkButton, PageHeader } from "@/components/ui";
-import { formatarMoeda, paraNumero } from "@/lib/format";
+import { paraNumero } from "@/lib/format";
 import { AlertTriangle } from "lucide-react";
+import { Valor } from "@/components/ValoresPrivacidade";
 
 export default async function EstoquePage() {
   const pecas = await prisma.peca.findMany({ orderBy: { nome: "asc" } });
@@ -58,7 +59,7 @@ export default async function EstoquePage() {
                       <td className="px-4 py-2 text-slate-500">
                         {paraNumero(peca.quantidadeMinima)} {peca.unidade}
                       </td>
-                      <td className="px-4 py-2">{peca.custoUnitario ? formatarMoeda(peca.custoUnitario) : "-"}</td>
+                      <td className="px-4 py-2">{peca.custoUnitario ? <Valor valor={paraNumero(peca.custoUnitario)} /> : "-"}</td>
                     </tr>
                   );
                 })}

@@ -10,7 +10,8 @@ import {
   type SecaoRelatorio,
 } from "@/lib/relatorios";
 import { Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
-import { formatarData, formatarMoeda, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
+import { formatarData, numeroFormatado, STATUS_OS_LABEL } from "@/lib/format";
+import { Valor } from "@/components/ValoresPrivacidade";
 import { PrintButton } from "@/components/PrintButton";
 import { Download } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -190,7 +191,7 @@ export default async function RelatoriosPage({
                           <td className="px-4 py-2">{os.cliente}</td>
                           <td className="px-4 py-2">{os.veiculo}</td>
                           <td className="px-4 py-2">{os.servicos}</td>
-                          <td className="px-4 py-2">{formatarMoeda(os.valorTotal)}</td>
+                          <td className="px-4 py-2"><Valor valor={os.valorTotal} /></td>
                           <td className="px-4 py-2">{STATUS_OS_LABEL[os.status]}</td>
                         </tr>
                       ))}
@@ -201,7 +202,7 @@ export default async function RelatoriosPage({
                           Total
                         </td>
                         <td className="px-4 py-2" colSpan={2}>
-                          {formatarMoeda(servicos.reduce((s, os) => s + os.valorTotal, 0))}
+                          <Valor valor={servicos.reduce((s, os) => s + os.valorTotal, 0)} />
                         </td>
                       </tr>
                     </tfoot>
@@ -237,9 +238,9 @@ export default async function RelatoriosPage({
                         <tr key={r.oficina}>
                           <td className="px-4 py-2">{r.oficina}</td>
                           <td className="px-4 py-2">{r.qtdPecas}</td>
-                          <td className="px-4 py-2">{formatarMoeda(r.valorCobrado)}</td>
-                          <td className="px-4 py-2">{formatarMoeda(r.custoTotal)}</td>
-                          <td className="px-4 py-2 text-emerald-700">{formatarMoeda(r.lucro)}</td>
+                          <td className="px-4 py-2"><Valor valor={r.valorCobrado} /></td>
+                          <td className="px-4 py-2"><Valor valor={r.custoTotal} /></td>
+                          <td className="px-4 py-2 text-emerald-700"><Valor valor={r.lucro} /></td>
                         </tr>
                       ))}
                     </tbody>
@@ -281,7 +282,7 @@ export default async function RelatoriosPage({
                           <td className="px-4 py-2 text-slate-500">
                             {p.quantidadeMinima} {p.unidade}
                           </td>
-                          <td className="px-4 py-2">{formatarMoeda(p.valorEmEstoque)}</td>
+                          <td className="px-4 py-2"><Valor valor={p.valorEmEstoque} /></td>
                         </tr>
                       ))}
                     </tbody>
@@ -310,7 +311,7 @@ function Resumo({
   return (
     <div>
       <p className="text-xs uppercase text-slate-500">{label}</p>
-      <p className={`text-lg font-bold ${cor ?? "text-slate-900"}`}>{formatarMoeda(valor)}</p>
+      <p className={`text-lg font-bold ${cor ?? "text-slate-900"}`}><Valor valor={valor} /></p>
       {sub && <p className="text-xs text-slate-500">{sub}</p>}
     </div>
   );

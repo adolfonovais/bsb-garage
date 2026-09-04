@@ -52,6 +52,37 @@ export async function criarConta(_prevState: EstadoFormulario, formData: FormDat
   return { sucesso: true };
 }
 
+export async function atualizarConta(
+  contaId: string,
+  _prevState: EstadoFormulario,
+  formData: FormData
+): Promise<EstadoFormulario> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const dados = ContaSchema.parse({
+    tipo: formData.get("tipo"),
+    descricao: formData.get("descricao"),
+    valor: formData.get("valor"),
+    dataVencimento: formData.get("dataVencimento"),
+    categoria: formData.get("categoria"),
+    recorrente: formData.get("recorrente"),
+  });
+
+  await prisma.contaFinanceira.update({
+    where: { id: contaId },
+    data: {
+      descricao: dados.descricao,
+      valor: Number(dados.valor) || 0,
+      dataVencimento: dataDoFormulario(dados.dataVencimento) ?? new Date(),
+      categoria: dados.categoria || null,
+      recorrente: dados.recorrente === "on",
+    },
+  });
+  revalidatePath("/financeiro");
+  return { sucesso: true };
+}
+
 export async function marcarContaPaga(contaId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");

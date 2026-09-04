@@ -7,7 +7,8 @@ import {
   excluirOrcamento,
 } from "@/app/(app)/orcamentos/actions";
 import { Badge, Card, LinkButton, PageHeader } from "@/components/ui";
-import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
+import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
+import { Valor } from "@/components/ValoresPrivacidade";
 import { Pencil, Printer, Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -92,8 +93,8 @@ export default async function OrcamentoDetalhePage({
               <tr key={item.id}>
                 <td className="px-4 py-2">{item.descricao}</td>
                 <td className="px-4 py-2">{Number(item.quantidade)}</td>
-                <td className="px-4 py-2">{formatarMoeda(item.valorUnit)}</td>
-                <td className="px-4 py-2">{formatarMoeda(item.valorTotal)}</td>
+                <td className="px-4 py-2"><Valor valor={paraNumero(item.valorUnit)} /></td>
+                <td className="px-4 py-2"><Valor valor={paraNumero(item.valorTotal)} /></td>
               </tr>
             ))}
           </tbody>
@@ -102,7 +103,7 @@ export default async function OrcamentoDetalhePage({
               <td className="px-4 py-2 font-semibold" colSpan={3}>
                 Total
               </td>
-              <td className="px-4 py-2 font-semibold">{formatarMoeda(orcamento.valorTotal)}</td>
+              <td className="px-4 py-2 font-semibold"><Valor valor={paraNumero(orcamento.valorTotal)} /></td>
             </tr>
           </tfoot>
         </table>

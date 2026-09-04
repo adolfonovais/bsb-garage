@@ -13,7 +13,8 @@ import {
 } from "@/app/(app)/ordens-servico/actions";
 import { Badge, Button, buttonVariants, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
 import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
-import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
+import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
+import { Valor } from "@/components/ValoresPrivacidade";
 import { nfseConfigurada } from "@/lib/nfse";
 import { Download, FileText, Pencil, Printer, Receipt, Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -173,8 +174,8 @@ export default async function OSDetalhePage({
               <tr key={item.id}>
                 <td className="px-4 py-2">{item.descricao}</td>
                 <td className="px-4 py-2">{Number(item.quantidade)}</td>
-                <td className="px-4 py-2">{formatarMoeda(item.valorUnit)}</td>
-                <td className="px-4 py-2">{formatarMoeda(item.valorTotal)}</td>
+                <td className="px-4 py-2"><Valor valor={paraNumero(item.valorUnit)} /></td>
+                <td className="px-4 py-2"><Valor valor={paraNumero(item.valorTotal)} /></td>
               </tr>
             ))}
           </tbody>
@@ -183,7 +184,7 @@ export default async function OSDetalhePage({
               <td className="px-4 py-2 font-semibold" colSpan={3}>
                 Total
               </td>
-              <td className="px-4 py-2 font-semibold">{formatarMoeda(os.valorTotal)}</td>
+              <td className="px-4 py-2 font-semibold"><Valor valor={paraNumero(os.valorTotal)} /></td>
             </tr>
           </tfoot>
         </table>
@@ -288,9 +289,9 @@ export default async function OSDetalhePage({
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-900">Controle de pagamentos</h2>
           <div className="text-right text-sm">
-            <p className="text-emerald-700">Recebido: {formatarMoeda(totalRecebido)}</p>
+            <p className="text-emerald-700">Recebido: <Valor valor={totalRecebido} /></p>
             <p className={aReceber > 0 ? "text-red-700" : "text-slate-500"}>
-              A receber: {formatarMoeda(aReceber)}
+              A receber: <Valor valor={aReceber} />
             </p>
           </div>
         </div>
@@ -312,7 +313,7 @@ export default async function OSDetalhePage({
                   <td className="px-4 py-2">{formatarData(p.data)}</td>
                   <td className="px-4 py-2">{p.descricao ?? "-"}</td>
                   <td className="px-4 py-2">{p.formaPagamento ?? "-"}</td>
-                  <td className="px-4 py-2">{formatarMoeda(p.valor)}</td>
+                  <td className="px-4 py-2"><Valor valor={paraNumero(p.valor)} /></td>
                   <td className="px-4 py-2 text-right">
                     <form action={excluirPagamento.bind(null, os.id, p.id)}>
                       <button type="submit" className="text-slate-400 hover:text-red-600">

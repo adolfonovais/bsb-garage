@@ -5,9 +5,9 @@ import { atualizarOficina, alternarAtivoOficina } from "@/app/(app)/oficinas/act
 import { Badge, Card, EmptyState, Field, Input, LinkButton, PageHeader } from "@/components/ui";
 import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { SubmitButton } from "@/components/SubmitButton";
+import { Valor } from "@/components/ValoresPrivacidade";
 import {
   formatarData,
-  formatarMoeda,
   paraNumero,
   STATUS_PAGAMENTO_OFICINA_LABEL,
   STATUS_REPASSE_LABEL,
@@ -58,15 +58,15 @@ export default async function OficinaDetalhePage({
         </Card>
         <Card className="p-4">
           <p className="text-xs uppercase text-slate-500">Receita total</p>
-          <p className="text-xl font-bold text-slate-900">{formatarMoeda(totalReceita)}</p>
+          <p className="text-xl font-bold text-slate-900"><Valor valor={totalReceita} /></p>
         </Card>
         <Card className="p-4">
           <p className="text-xs uppercase text-slate-500">Custo total</p>
-          <p className="text-xl font-bold text-slate-900">{formatarMoeda(totalCusto)}</p>
+          <p className="text-xl font-bold text-slate-900"><Valor valor={totalCusto} /></p>
         </Card>
         <Card className="p-4">
           <p className="text-xs uppercase text-slate-500">Lucro total</p>
-          <p className="text-xl font-bold text-emerald-700">{formatarMoeda(totalLucro)}</p>
+          <p className="text-xl font-bold text-emerald-700"><Valor valor={totalLucro} /></p>
         </Card>
       </div>
 
@@ -143,8 +143,8 @@ export default async function OficinaDetalhePage({
                       {r.carro} {r.placa ? `· ${r.placa}` : ""}
                     </td>
                     <td className="px-4 py-2">{r.tipoServico}</td>
-                    <td className="px-4 py-2">{formatarMoeda(r.valorCobrado)}</td>
-                    <td className="px-4 py-2 text-emerald-700">{formatarMoeda(r.lucro)}</td>
+                    <td className="px-4 py-2"><Valor valor={paraNumero(r.valorCobrado)} /></td>
+                    <td className="px-4 py-2 text-emerald-700"><Valor valor={paraNumero(r.lucro)} /></td>
                     <td className="px-4 py-2">
                       <Badge status={r.status} label={STATUS_REPASSE_LABEL[r.status]} />
                     </td>

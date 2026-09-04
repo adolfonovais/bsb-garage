@@ -10,8 +10,9 @@ import {
 import { Card, EmptyState, Field, Input, PageHeader, Select } from "@/components/ui";
 import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
-import { formatarData, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
+import { formatarData, numeroFormatado, paraNumero } from "@/lib/format";
 import { AlertTriangle, Trash2 } from "lucide-react";
+import { Valor } from "@/components/ValoresPrivacidade";
 import { SubmitButton } from "@/components/SubmitButton";
 
 const UNIDADES = ["un", "m", "m²", "m³", "vb", "kg", "l"];
@@ -71,7 +72,7 @@ export default async function PecaDetalhePage({
               </div>
               <div>
                 <p className="text-xs uppercase text-slate-500">Custo unitário</p>
-                <p className="text-slate-900">{peca.custoUnitario ? formatarMoeda(peca.custoUnitario) : "-"}</p>
+                <p className="text-slate-900">{peca.custoUnitario ? <Valor valor={paraNumero(peca.custoUnitario)} /> : "-"}</p>
               </div>
             </div>
           }
@@ -201,7 +202,7 @@ export default async function PecaDetalhePage({
 
       {peca.custoUnitario && (
         <Card className="p-4 text-sm text-slate-600">
-          Valor em estoque: <strong>{formatarMoeda(paraNumero(peca.quantidadeAtual) * paraNumero(peca.custoUnitario))}</strong>
+          Valor em estoque: <strong><Valor valor={paraNumero(peca.quantidadeAtual) * paraNumero(peca.custoUnitario)} /></strong>
         </Card>
       )}
 

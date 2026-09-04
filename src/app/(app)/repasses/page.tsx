@@ -3,10 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { Badge, Card, EmptyState, LinkButton, PageHeader } from "@/components/ui";
 import {
   formatarData,
-  formatarMoeda,
+  paraNumero,
   STATUS_PAGAMENTO_OFICINA_LABEL,
   STATUS_REPASSE_LABEL,
 } from "@/lib/format";
+import { Valor } from "@/components/ValoresPrivacidade";
 
 export default async function RepassesPage({
   searchParams,
@@ -103,9 +104,9 @@ export default async function RepassesPage({
                     </td>
                     <td className="px-4 py-2">{r.tipoServico}</td>
                     <td className="px-4 py-2">{r.qtdPecas}</td>
-                    <td className="px-4 py-2">{formatarMoeda(r.valorCobrado)}</td>
-                    <td className="px-4 py-2">{formatarMoeda(r.custoTotal)}</td>
-                    <td className="px-4 py-2 text-emerald-700">{formatarMoeda(r.lucro)}</td>
+                    <td className="px-4 py-2"><Valor valor={paraNumero(r.valorCobrado)} /></td>
+                    <td className="px-4 py-2"><Valor valor={paraNumero(r.custoTotal)} /></td>
+                    <td className="px-4 py-2 text-emerald-700"><Valor valor={paraNumero(r.lucro)} /></td>
                     <td className="px-4 py-2">
                       <Badge status={r.status} label={STATUS_REPASSE_LABEL[r.status]} />
                     </td>

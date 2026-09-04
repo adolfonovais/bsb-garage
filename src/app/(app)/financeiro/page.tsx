@@ -1,18 +1,14 @@
 import Link from "next/link";
 import type { ContaFinanceira } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { criarConta, excluirConta, marcarContaPaga, reabrirConta } from "@/app/(app)/financeiro/actions";
-import { Badge, Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
+import { atualizarConta, criarConta, excluirConta, marcarContaPaga, reabrirConta } from "@/app/(app)/financeiro/actions";
+import { Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
 import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
-import {
-  formatarData,
-  formatarMoeda,
-  numeroFormatado,
-  paraNumero,
-  STATUS_CONTA_LABEL,
-} from "@/lib/format";
-import { Trash2, Wallet, TrendingDown, TrendingUp } from "lucide-react";
+import { ContaItem } from "@/components/ContaItem";
+import { formatarData, numeroFormatado, paraNumero } from "@/lib/format";
+import { Wallet, TrendingDown, TrendingUp } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
+import { Valor } from "@/components/ValoresPrivacidade";
 
 export default async function FinanceiroPage() {
   const inicioMes = new Date();
@@ -64,7 +60,7 @@ export default async function FinanceiroPage() {
           </div>
           <div>
             <p className="text-xs text-slate-500">A receber (clientes)</p>
-            <p className="text-xl font-bold text-slate-900">{formatarMoeda(totalAReceberOS)}</p>
+            <p className="text-xl font-bold text-slate-900"><Valor valor={totalAReceberOS} /></p>
           </div>
         </Card>
         <Card className="flex items-center gap-4 p-4">
@@ -73,7 +69,7 @@ export default async function FinanceiroPage() {
           </div>
           <div>
             <p className="text-xs text-slate-500">A receber (outras contas)</p>
-            <p className="text-xl font-bold text-slate-900">{formatarMoeda(totalAReceberContas)}</p>
+            <p className="text-xl font-bold text-slate-900"><Valor valor={totalAReceberContas} /></p>
           </div>
         </Card>
         <Card className="flex items-center gap-4 p-4">
@@ -82,7 +78,7 @@ export default async function FinanceiroPage() {
           </div>
           <div>
             <p className="text-xs text-slate-500">A pagar (oficinas)</p>
-            <p className="text-xl font-bold text-slate-900">{formatarMoeda(totalAPagarRepasses)}</p>
+            <p className="text-xl font-bold text-slate-900"><Valor valor={totalAPagarRepasses} /></p>
           </div>
         </Card>
         <Card className="flex items-center gap-4 p-4">
@@ -91,7 +87,7 @@ export default async function FinanceiroPage() {
           </div>
           <div>
             <p className="text-xs text-slate-500">A pagar (outras contas)</p>
-            <p className="text-xl font-bold text-slate-900">{formatarMoeda(totalAPagarContas)}</p>
+            <p className="text-xl font-bold text-slate-900"><Valor valor={totalAPagarContas} /></p>
           </div>
         </Card>
       </div>
@@ -102,7 +98,7 @@ export default async function FinanceiroPage() {
         </div>
         <div>
           <p className="text-xs text-slate-500">Recebido de clientes este mês (pagamentos de OS)</p>
-          <p className="text-xl font-bold text-slate-900">{formatarMoeda(pagamentosDoMes._sum.valor)}</p>
+          <p className="text-xl font-bold text-slate-900"><Valor valor={paraNumero(pagamentosDoMes._sum.valor)} /></p>
         </div>
       </Card>
 
@@ -122,7 +118,7 @@ export default async function FinanceiroPage() {
                   <Link href={`/ordens-servico/${os.id}`} className="text-amber-700 hover:underline">
                     {numeroFormatado(os.numero, os.ano)} — {os.cliente.nome}
                   </Link>
-                  <span className="font-medium">{formatarMoeda(saldo)}</span>
+                  <span className="font-medium"><Valor valor={saldo} /></span>
                 </li>
               ))}
             </ul>
@@ -144,7 +140,7 @@ export default async function FinanceiroPage() {
                   <Link href={`/repasses/${r.id}`} className="text-amber-700 hover:underline">
                     {r.oficina.nome} — {r.carro}
                   </Link>
-                  <span className="font-medium">{formatarMoeda(r.custoTotal)}</span>
+                  <span className="font-medium"><Valor valor={paraNumero(r.custoTotal)} /></span>
                 </li>
               ))}
             </ul>
@@ -181,43 +177,24 @@ function ContasCard({
       ) : (
         <ul className="divide-y divide-slate-100 text-sm">
           {contas.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-2 px-4 py-2">
-              <div>
-                <p className="font-medium text-slate-900">
-                  {c.descricao}
-                  {c.recorrente && (
-                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase text-slate-500">
-                      Recorrente
-                    </span>
-                  )}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {c.categoria ? `${c.categoria} · ` : ""}Vencimento: {formatarData(c.dataVencimento)}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{formatarMoeda(c.valor)}</span>
-                <Badge status={c.status} label={STATUS_CONTA_LABEL[c.status]} />
-                {c.status !== "PAGA" ? (
-                  <form action={marcarContaPaga.bind(null, c.id)}>
-                    <button type="submit" className="text-xs font-medium text-amber-700 hover:underline">
-                      Marcar paga
-                    </button>
-                  </form>
-                ) : (
-                  <form action={reabrirConta.bind(null, c.id)}>
-                    <button type="submit" className="text-xs font-medium text-slate-500 hover:underline">
-                      Reabrir
-                    </button>
-                  </form>
-                )}
-                <form action={excluirConta.bind(null, c.id)}>
-                  <button type="submit" className="text-slate-400 hover:text-red-600">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </form>
-              </div>
-            </li>
+            <ContaItem
+              key={c.id}
+              conta={{
+                id: c.id,
+                tipo: c.tipo,
+                descricao: c.descricao,
+                categoria: c.categoria,
+                valor: paraNumero(c.valor),
+                dataVencimentoInput: c.dataVencimento.toISOString().slice(0, 10),
+                dataVencimentoFormatada: formatarData(c.dataVencimento),
+                recorrente: c.recorrente,
+                status: c.status,
+              }}
+              acaoAtualizar={atualizarConta.bind(null, c.id)}
+              acaoMarcarPaga={marcarContaPaga}
+              acaoReabrir={reabrirConta}
+              acaoExcluir={excluirConta}
+            />
           ))}
         </ul>
       )}
