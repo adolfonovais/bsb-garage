@@ -11,7 +11,6 @@ import { Valor } from "@/components/ValoresPrivacidade";
 import { StatusTabLink } from "@/components/StatusTabLink";
 
 const STATUS_TABS = [
-  { value: "", label: "Todos os status" },
   { value: "EM_ANDAMENTO", label: "Em andamento" },
   { value: "ENTREGUE", label: "Entregue" },
   { value: "CANCELADO", label: "Cancelado" },
@@ -59,18 +58,15 @@ export default async function RepassesPage({
         actions={<LinkButton href="/repasses/novo">Novo repasse</LinkButton>}
       />
 
-      <div className="mb-2 flex flex-wrap gap-2 text-xs">
-        {STATUS_TABS.map((tab) => (
-          <StatusTabLink key={tab.label} href={hrefComFiltros({ status: tab.value || undefined })} active={status === tab.value || (!status && !tab.value)}>
-            {tab.label}
-          </StatusTabLink>
-        ))}
-      </div>
-
       <div className="mb-4 flex flex-wrap gap-2 text-xs">
         <StatusTabLink href="/repasses" active={!oficinaId && !pagamento && !status}>
           Todos
         </StatusTabLink>
+        {STATUS_TABS.map((tab) => (
+          <StatusTabLink key={tab.value} href={hrefComFiltros({ status: tab.value })} active={status === tab.value}>
+            {tab.label}
+          </StatusTabLink>
+        ))}
         <StatusTabLink href={hrefComFiltros({ pagamento: "PENDENTE" })} active={pagamento === "PENDENTE"}>
           Pagamento pendente
         </StatusTabLink>
