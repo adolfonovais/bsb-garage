@@ -162,6 +162,17 @@ export async function atualizarStatusOS(osId: string, status: string) {
   revalidatePath(`/ordens-servico/${osId}`);
   revalidatePath("/ordens-servico");
 
+  // Carro entregue na OS também conta como entregue no(s) repasse(s)
+  // vinculados a ela — o contrário não vale: marcar o repasse como
+  // entregue não muda o status da OS, que é decidido por conta própria.
+  if (status === "ENTREGUE") {
+    await prisma.repasseOficina.updateMany({
+      where: { osId, status: { notIn: ["ENTREGUE", "CANCELADO"] } },
+      data: { status: "ENTREGUE" },
+    });
+    revalidatePath("/repasses");
+  }
+
   // Avisa o cliente quando o carro fica pronto (e-mail hoje, WhatsApp assim
   // que o Maytra for aprovado — ver src/lib/notificacoes.ts). Não trava a
   // atualização de status caso o aviso falhe.
