@@ -183,7 +183,14 @@ function ContasCard({
           {contas.map((c) => (
             <li key={c.id} className="flex items-center justify-between gap-2 px-4 py-2">
               <div>
-                <p className="font-medium text-slate-900">{c.descricao}</p>
+                <p className="font-medium text-slate-900">
+                  {c.descricao}
+                  {c.recorrente && (
+                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase text-slate-500">
+                      Recorrente
+                    </span>
+                  )}
+                </p>
                 <p className="text-xs text-slate-500">
                   {c.categoria ? `${c.categoria} · ` : ""}Vencimento: {formatarData(c.dataVencimento)}
                 </p>
@@ -239,6 +246,12 @@ function ContasCard({
             <Input name="valor" type="number" step="0.01" min="0" required />
           </Field>
         </div>
+        {tipo === "PAGAR" && (
+          <label className="col-span-2 flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" name="recorrente" className="h-4 w-4 rounded border-slate-300" />
+            Conta recorrente (repete todo mês — gera a próxima ao marcar como paga)
+          </label>
+        )}
         <div className="col-span-2 flex justify-end">
           <SubmitButton>Adicionar</SubmitButton>
         </div>

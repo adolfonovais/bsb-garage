@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { criarOS } from "@/app/(app)/ordens-servico/actions";
-import { Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { Card, Field, Input, LinkButton, PageHeader, Select, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -64,6 +64,9 @@ export default async function NovaOSPage() {
           </Field>
 
           <div className="flex justify-end gap-2 pt-2">
+            <LinkButton href="/ordens-servico" variant="secondary">
+              Cancelar
+            </LinkButton>
             <SubmitButton>Salvar Ordem de Serviço</SubmitButton>
           </div>
         </form>

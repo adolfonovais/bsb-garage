@@ -1,5 +1,5 @@
 import { criarCliente } from "@/app/(app)/clientes/actions";
-import { Card, Field, Input, PageHeader } from "@/components/ui";
+import { Card, Field, Input, LinkButton, PageHeader } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default function NovoClientePage() {
@@ -47,6 +47,9 @@ export default function NovoClientePage() {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
+            <LinkButton href="/clientes" variant="secondary">
+              Cancelar
+            </LinkButton>
             <SubmitButton>Salvar</SubmitButton>
           </div>
         </form>

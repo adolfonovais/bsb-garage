@@ -420,6 +420,9 @@ model ContaFinanceira {
   os              OrdemServico? @relation(fields: [osId], references: [id])
   repasseId       String?
   repasse         RepasseOficina? @relation(fields: [repasseId], references: [id])
+  // Conta recorrente (ex: aluguel, assinatura): ao marcar como paga, gera
+  // automaticamente a próxima ocorrência (1 mês depois), status ABERTA.
+  recorrente      Boolean     @default(false)
   createdAt       DateTime    @default(now())
 
   @@schema("bsb_garage")

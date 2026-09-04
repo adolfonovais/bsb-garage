@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { criarOrcamento } from "@/app/(app)/orcamentos/actions";
-import { Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
+import { Card, Field, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -36,6 +36,9 @@ export default async function NovoOrcamentoPage() {
           </Field>
 
           <div className="flex justify-end gap-2 pt-2">
+            <LinkButton href="/orcamentos" variant="secondary">
+              Cancelar
+            </LinkButton>
             <SubmitButton>Salvar orçamento</SubmitButton>
           </div>
         </form>

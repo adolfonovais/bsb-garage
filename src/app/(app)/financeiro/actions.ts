@@ -12,7 +12,16 @@ const ContaSchema = z.object({
   valor: z.string().min(1, "Informe o valor."),
   dataVencimento: z.string().min(1, "Informe o vencimento."),
   categoria: z.string().trim().optional(),
+  // Checkbox desmarcado não é enviado no FormData — o navegador manda
+  // `null`, não `undefined`, então precisa aceitar os dois.
+  recorrente: z.string().nullable().optional(),
 });
+
+function proximoMes(data: Date): Date {
+  const proxima = new Date(data);
+  proxima.setMonth(proxima.getMonth() + 1);
+  return proxima;
+}
 
 export type EstadoFormulario = { sucesso?: boolean } | undefined;
 
@@ -26,6 +35,7 @@ export async function criarConta(_prevState: EstadoFormulario, formData: FormDat
     valor: formData.get("valor"),
     dataVencimento: formData.get("dataVencimento"),
     categoria: formData.get("categoria"),
+    recorrente: formData.get("recorrente"),
   });
 
   await prisma.contaFinanceira.create({
@@ -35,6 +45,7 @@ export async function criarConta(_prevState: EstadoFormulario, formData: FormDat
       valor: Number(dados.valor) || 0,
       dataVencimento: dataDoFormulario(dados.dataVencimento) ?? new Date(),
       categoria: dados.categoria || null,
+      recorrente: dados.recorrente === "on",
     },
   });
   revalidatePath("/financeiro");
@@ -45,10 +56,26 @@ export async function marcarContaPaga(contaId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  await prisma.contaFinanceira.update({
+  const conta = await prisma.contaFinanceira.update({
     where: { id: contaId },
     data: { status: "PAGA", dataPagamento: new Date() },
   });
+
+  // Conta recorrente: ao pagar, já gera a próxima ocorrência (1 mês depois),
+  // pra não precisar recadastrar toda vez (ex: aluguel, assinatura).
+  if (conta.recorrente) {
+    await prisma.contaFinanceira.create({
+      data: {
+        tipo: conta.tipo,
+        descricao: conta.descricao,
+        valor: conta.valor,
+        dataVencimento: proximoMes(conta.dataVencimento),
+        categoria: conta.categoria,
+        recorrente: true,
+      },
+    });
+  }
+
   revalidatePath("/financeiro");
 }
 
