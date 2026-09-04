@@ -141,7 +141,7 @@ export default async function RelatoriosPage({
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <Resumo label="Faturado (OS)" valor={financeiro.faturado} sub={`${financeiro.qtdOS} OS`} />
                 <Resumo label="Recebido de clientes" valor={financeiro.recebidoClientes} cor="text-emerald-700" />
-                <Resumo label="Pago a oficinas" valor={financeiro.custoOficinas} cor="text-red-700" />
+                <Resumo label="Pago a prestadores" valor={financeiro.custoOficinas} cor="text-red-700" />
                 <Resumo label="Outras contas pagas" valor={financeiro.outrasContasPagas} cor="text-red-700" />
                 <Resumo label="Outras contas recebidas" valor={financeiro.outrasContasRecebidas} cor="text-emerald-700" />
                 <Resumo
@@ -226,7 +226,7 @@ export default async function RelatoriosPage({
                   <table className="w-full text-left text-sm">
                     <thead className="text-xs uppercase text-slate-500">
                       <tr>
-                        <th className="px-4 py-2">Oficina</th>
+                        <th className="px-4 py-2">Prestador</th>
                         <th className="px-4 py-2">Peças</th>
                         <th className="px-4 py-2">Cobrado</th>
                         <th className="px-4 py-2">Custo</th>

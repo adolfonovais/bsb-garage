@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
       { indicador: "Faturado (OS) no período", valor: financeiro.faturado },
       { indicador: "Quantidade de OS", valor: financeiro.qtdOS },
       { indicador: "Recebido de clientes", valor: financeiro.recebidoClientes },
-      { indicador: "Pago a oficinas terceirizadas", valor: financeiro.custoOficinas },
+      { indicador: "Pago a prestadores terceirizados", valor: financeiro.custoOficinas },
       { indicador: "Lucro nos repasses às oficinas", valor: financeiro.lucroRepasses },
       { indicador: "Outras contas pagas", valor: financeiro.outrasContasPagas },
       { indicador: "Outras contas recebidas", valor: financeiro.outrasContasRecebidas },
@@ -86,9 +86,9 @@ export async function GET(req: NextRequest) {
 
   if (secoes.includes("oficinas")) {
     const oficinas = await buscarRelatorioOficinas(inicio, fim);
-    const sheet = workbook.addWorksheet("Oficinas terceirizadas");
+    const sheet = workbook.addWorksheet("Prestadores terceirizados");
     sheet.columns = [
-      { header: "Oficina", key: "oficina", width: 25 },
+      { header: "Prestador", key: "oficina", width: 25 },
       { header: "Peças", key: "pecas", width: 10 },
       { header: "Cobrado", key: "cobrado", width: 15 },
       { header: "Custo", key: "custo", width: 15 },

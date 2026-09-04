@@ -70,6 +70,9 @@ export default async function RepassesPage({
         <StatusTabLink href={hrefComFiltros({ pagamento: "PENDENTE" })} active={pagamento === "PENDENTE"}>
           Pagamento pendente
         </StatusTabLink>
+        <StatusTabLink href={hrefComFiltros({ pagamento: "PAGO" })} active={pagamento === "PAGO"}>
+          Pago
+        </StatusTabLink>
         {oficinas.map((o) => (
           <StatusTabLink key={o.id} href={hrefComFiltros({ oficinaId: o.id })} active={oficinaId === o.id}>
             {o.nome}

@@ -5,7 +5,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 export default function NovaOficinaPage() {
   return (
     <div className="max-w-xl">
-      <PageHeader title="Nova oficina terceirizada" />
+      <PageHeader title="Novo prestador terceirizado" />
       <Card className="p-6">
         <form action={criarOficina} className="space-y-4">
           <Field label="Nome *">

@@ -38,7 +38,7 @@ export default async function OficinaDetalhePage({
     <div className="space-y-6">
       <PageHeader
         title={oficina.nome}
-        subtitle={oficina.ativo ? "Oficina ativa" : "Oficina inativa"}
+        subtitle={oficina.ativo ? "Prestador ativo" : "Prestador inativo"}
         actions={
           <>
             <LinkButton href={`/repasses/novo?oficinaId=${oficina.id}`}>Novo repasse</LinkButton>
@@ -71,7 +71,7 @@ export default async function OficinaDetalhePage({
       </div>
 
       <Card className="p-6">
-        <h2 className="mb-4 text-sm font-semibold text-slate-900">Dados da oficina</h2>
+        <h2 className="mb-4 text-sm font-semibold text-slate-900">Dados do prestador</h2>
         <EdicaoInline
           visualizacao={
             <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
@@ -115,7 +115,7 @@ export default async function OficinaDetalhePage({
         </div>
         {oficina.repasses.length === 0 ? (
           <div className="p-4">
-            <EmptyState>Nenhum repasse registrado para esta oficina ainda.</EmptyState>
+            <EmptyState>Nenhum repasse registrado para esse prestador ainda.</EmptyState>
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -7,7 +7,7 @@ export type SecaoRelatorio = (typeof SECOES_RELATORIO)[number];
 export const SECAO_LABEL: Record<SecaoRelatorio, string> = {
   financeiro: "Faturamento / Financeiro",
   servicos: "Serviços realizados (Ordens de Serviço)",
-  oficinas: "Oficinas terceirizadas",
+  oficinas: "Prestadores terceirizados",
   estoque: "Estoque",
 };
 

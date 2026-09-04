@@ -24,7 +24,7 @@ const links = [
   { href: "/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/ordens-servico", label: "Ordens de Serviço", icon: Wrench },
   { href: "/estoque", label: "Estoque", icon: Boxes },
-  { href: "/oficinas", label: "Oficinas terceirizadas", icon: Factory },
+  { href: "/oficinas", label: "Prestadores terceirizados", icon: Factory },
   { href: "/repasses", label: "Repasses", icon: ArrowLeftRight },
   { href: "/financeiro", label: "Financeiro", icon: Wallet },
   { href: "/relatorios", label: "Relatórios", icon: BarChart3 },

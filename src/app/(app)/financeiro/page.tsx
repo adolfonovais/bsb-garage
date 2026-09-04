@@ -77,7 +77,7 @@ export default async function FinanceiroPage() {
             <TrendingDown className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs text-slate-500">A pagar (oficinas)</p>
+            <p className="text-xs text-slate-500">A pagar (prestadores)</p>
             <p className="text-xl font-bold text-slate-900"><Valor valor={totalAPagarRepasses} /></p>
           </div>
         </Card>
@@ -127,7 +127,7 @@ export default async function FinanceiroPage() {
 
         <Card>
           <div className="border-b border-slate-200 px-4 py-3">
-            <h2 className="text-sm font-semibold text-slate-900">A pagar a oficinas terceirizadas</h2>
+            <h2 className="text-sm font-semibold text-slate-900">A pagar a prestadores terceirizados</h2>
           </div>
           {repassesPendentes.length === 0 ? (
             <div className="p-4">

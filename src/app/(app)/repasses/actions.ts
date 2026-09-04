@@ -19,7 +19,7 @@ const RepasseSchema = z.object({
   qtdPecas: z.string().optional(),
   servicoAdicional: z.string().trim().optional(),
   valorCobrado: z.string().min(1, "Informe o valor cobrado do cliente."),
-  custoOficina: z.string().min(1, "Informe o custo cobrado pela oficina."),
+  custoOficina: z.string().min(1, "Informe o custo cobrado pelo prestador."),
   outrosCustos: z.string().optional(),
   // Checkbox desmarcado não é enviado no FormData — o navegador manda `null`,
   // não `undefined`, então precisa aceitar os dois.
