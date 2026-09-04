@@ -9,7 +9,7 @@ import {
 } from "@/app/(app)/estoque/actions";
 import { Card, EmptyState, Field, Input, PageHeader, Select } from "@/components/ui";
 import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
-import { DetailsForm } from "@/components/DetailsForm";
+import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -192,7 +192,8 @@ export default async function PecaDetalhePage({
           <Field label="Observação">
             <Input name="observacao" placeholder="Opcional" />
           </Field>
-          <div className="col-span-2 sm:col-span-4 flex justify-end">
+          <div className="col-span-2 sm:col-span-4 flex justify-end gap-3">
+            <BotaoCancelarDetails />
             <SubmitButton>Registrar</SubmitButton>
           </div>
         </DetailsForm>

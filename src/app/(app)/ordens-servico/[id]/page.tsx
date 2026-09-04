@@ -12,7 +12,7 @@ import {
   usarPeca,
 } from "@/app/(app)/ordens-servico/actions";
 import { Badge, Button, buttonVariants, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
-import { DetailsForm } from "@/components/DetailsForm";
+import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { nfseConfigurada } from "@/lib/nfse";
 import { Download, FileText, Pencil, Printer, Receipt, Trash2 } from "lucide-react";
@@ -352,7 +352,8 @@ export default async function OSDetalhePage({
           <Field label="Valor *">
             <Input name="valor" type="number" step="0.01" min="0" required />
           </Field>
-          <div className="col-span-2 sm:col-span-4 flex justify-end">
+          <div className="col-span-2 sm:col-span-4 flex justify-end gap-3">
+            <BotaoCancelarDetails />
             <SubmitButton>Registrar</SubmitButton>
           </div>
         </DetailsForm>

@@ -3,7 +3,7 @@ import type { ContaFinanceira } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { criarConta, excluirConta, marcarContaPaga, reabrirConta } from "@/app/(app)/financeiro/actions";
 import { Badge, Card, EmptyState, Field, Input, PageHeader } from "@/components/ui";
-import { DetailsForm } from "@/components/DetailsForm";
+import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import {
   formatarData,
   formatarMoeda,
@@ -252,7 +252,8 @@ function ContasCard({
             Conta recorrente (repete todo mês — gera a próxima ao marcar como paga)
           </label>
         )}
-        <div className="col-span-2 flex justify-end">
+        <div className="col-span-2 flex justify-end gap-3">
+          <BotaoCancelarDetails />
           <SubmitButton>Adicionar</SubmitButton>
         </div>
       </DetailsForm>

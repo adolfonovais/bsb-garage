@@ -8,7 +8,7 @@ import {
   criarUsuario,
 } from "@/app/(app)/configuracoes/actions";
 import { Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
-import { DetailsForm } from "@/components/DetailsForm";
+import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import { nfseConfigurada } from "@/lib/nfse";
 import { whatsappConfigurado } from "@/lib/whatsapp";
 import { CheckCircle2, Circle } from "lucide-react";
@@ -95,6 +95,7 @@ export default async function ConfiguracoesPage() {
                     <Input name="novaSenha" type="password" placeholder="Deixe em branco pra manter" minLength={6} />
                   </Field>
                 </div>
+                <BotaoCancelarDetails />
                 <SubmitButton variant="secondary">
                   Salvar
                 </SubmitButton>
@@ -125,7 +126,8 @@ export default async function ConfiguracoesPage() {
               <option value="ADMIN">Administrador</option>
             </Select>
           </Field>
-          <div className="col-span-2 flex justify-end">
+          <div className="col-span-2 flex justify-end gap-3">
+            <BotaoCancelarDetails />
             <SubmitButton>Criar usuário</SubmitButton>
           </div>
         </DetailsForm>
