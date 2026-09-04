@@ -69,7 +69,13 @@ export async function criarOS(formData: FormData) {
   redirect(`/ordens-servico/${os.id}`);
 }
 
-export async function atualizarOS(osId: string, formData: FormData) {
+export type EstadoAtualizarOS = { sucesso?: boolean; erro?: string } | undefined;
+
+export async function atualizarOS(
+  osId: string,
+  _estado: EstadoAtualizarOS,
+  formData: FormData
+): Promise<EstadoAtualizarOS> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -85,16 +91,17 @@ export async function atualizarOS(osId: string, formData: FormData) {
   const total = somaItens(itens);
 
   // Não deixa reduzir o valor total pra menos do que o cliente já pagou —
-  // senão a OS fica com "saldo a receber" negativo, sem sentido.
+  // senão a OS fica com "saldo a receber" negativo, sem sentido. Devolve
+  // como erro de formulário (não lança) pra não cair na página de erro.
   const somaPagamentos = await prisma.pagamento.aggregate({
     where: { osId },
     _sum: { valor: true },
   });
   const totalRecebido = paraNumero(somaPagamentos._sum.valor);
   if (total < totalRecebido - 0.01) {
-    throw new Error(
-      `O novo valor total (${formatarMoeda(total)}) é menor do que o já recebido do cliente (${formatarMoeda(totalRecebido)}). Ajuste os itens ou exclua o pagamento antes de reduzir o valor.`
-    );
+    return {
+      erro: `O novo valor total (${formatarMoeda(total)}) é menor do que o já recebido do cliente (${formatarMoeda(totalRecebido)}). Ajuste os itens ou exclua o pagamento antes de reduzir o valor.`,
+    };
   }
 
   const orcamentoVinculadoId = await prisma.$transaction(async (tx) => {

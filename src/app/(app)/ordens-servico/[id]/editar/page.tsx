@@ -7,6 +7,7 @@ import { ItensEditor } from "@/components/ItensEditor";
 import { numeroFormatado, paraNumero } from "@/lib/format";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PECAS_CARROCERIA } from "@/lib/pecas-carro";
+import { FormularioComErro } from "@/components/FormularioComErro";
 
 const FORMAS_PAGAMENTO = [
   "Dinheiro",
@@ -64,7 +65,7 @@ export default async function EditarOSPage({
         </p>
       )}
       <Card className="p-6">
-        <form action={atualizarComId} className="space-y-6">
+        <FormularioComErro action={atualizarComId} className="space-y-6">
           <ClienteVeiculoPicker
             clientes={clientes}
             clienteIdInicial={os.clienteId}
@@ -114,7 +115,7 @@ export default async function EditarOSPage({
             </LinkButton>
             <SubmitButton>Salvar alterações</SubmitButton>
           </div>
-        </form>
+        </FormularioComErro>
       </Card>
     </div>
   );
