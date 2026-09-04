@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatarData, formatarVeiculo, paraNumero, STATUS_OS_LABEL, numeroFormatado } from "@/lib/format";
-import { Badge, Button, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
+import { Badge, Card, LinkButton, PageHeader } from "@/components/ui";
 import { Valor } from "@/components/ValoresPrivacidade";
+import { StatusTabLink } from "@/components/StatusTabLink";
+import { DashboardPeriodoFiltro } from "@/components/DashboardPeriodoFiltro";
 import { FileText, Wrench, Clock, Wallet } from "lucide-react";
 
-const STATUS_OPCOES = [
-  { value: "", label: "Todos os status" },
+const STATUS_TABS = [
+  { value: "", label: "Todas" },
   { value: "ABERTA", label: "Abertas" },
   { value: "EM_ANDAMENTO", label: "Em andamento" },
   { value: "AGUARDANDO_PECA", label: "Aguardando peça" },
@@ -76,31 +78,29 @@ export default async function DashboardPage({
     <div>
       <PageHeader title="Dashboard" subtitle="Visão geral da oficina" />
 
-      <Card className="mb-6 p-4">
-        <form action="/dashboard" method="get" className="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:items-end">
-          <Field label="De">
-            <Input name="inicio" type="date" defaultValue={inicioStr} required />
-          </Field>
-          <Field label="Até">
-            <Input name="fim" type="date" defaultValue={fimStr} required />
-          </Field>
-          <Field label="Status da OS">
-            <Select name="status" defaultValue={status}>
-              {STATUS_OPCOES.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <div className="flex gap-2">
-            <Button type="submit">Filtrar</Button>
-            <LinkButton href="/dashboard" variant="secondary">
-              Limpar
-            </LinkButton>
-          </div>
-        </form>
-      </Card>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-wrap gap-2">
+          {STATUS_TABS.map((tab) => (
+            <StatusTabLink
+              key={tab.label}
+              href={`/dashboard?${new URLSearchParams({
+                ...(tab.value ? { status: tab.value } : {}),
+                inicio: inicioStr,
+                fim: fimStr,
+              }).toString()}`}
+              active={status === tab.value}
+            >
+              {tab.label}
+            </StatusTabLink>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <DashboardPeriodoFiltro inicioStr={inicioStr} fimStr={fimStr} status={status} />
+          <LinkButton href="/dashboard" variant="secondary">
+            Limpar
+          </LinkButton>
+        </div>
+      </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="flex items-center gap-4 p-4">
