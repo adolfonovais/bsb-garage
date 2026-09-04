@@ -8,18 +8,39 @@ import {
   STATUS_REPASSE_LABEL,
 } from "@/lib/format";
 import { Valor } from "@/components/ValoresPrivacidade";
+import { StatusTabLink } from "@/components/StatusTabLink";
+
+const STATUS_TABS = [
+  { value: "", label: "Todos os status" },
+  { value: "EM_ANDAMENTO", label: "Em andamento" },
+  { value: "ENTREGUE", label: "Entregue" },
+  { value: "CANCELADO", label: "Cancelado" },
+];
 
 export default async function RepassesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ oficinaId?: string; pagamento?: string }>;
+  searchParams: Promise<{ oficinaId?: string; pagamento?: string; status?: string }>;
 }) {
-  const { oficinaId, pagamento } = await searchParams;
+  const { oficinaId, pagamento, status } = await searchParams;
+
+  // Monta a URL de cada filtro preservando os outros já ativos — dá pra
+  // combinar oficina + status + pagamento ao mesmo tempo.
+  function hrefComFiltros(overrides: Record<string, string | undefined>) {
+    const valores = { oficinaId, pagamento, status, ...overrides };
+    const params = new URLSearchParams();
+    for (const [chave, valor] of Object.entries(valores)) {
+      if (valor) params.set(chave, valor);
+    }
+    const qs = params.toString();
+    return qs ? `/repasses?${qs}` : "/repasses";
+  }
 
   const [repasses, oficinas] = await Promise.all([
     prisma.repasseOficina.findMany({
       where: {
         oficinaId: oficinaId || undefined,
+        status: status ? (status as never) : undefined,
         statusPagamentoOficina: pagamento ? (pagamento as never) : undefined,
       },
       include: { oficina: true },
@@ -38,27 +59,25 @@ export default async function RepassesPage({
         actions={<LinkButton href="/repasses/novo">Novo repasse</LinkButton>}
       />
 
+      <div className="mb-2 flex flex-wrap gap-2 text-xs">
+        {STATUS_TABS.map((tab) => (
+          <StatusTabLink key={tab.label} href={hrefComFiltros({ status: tab.value || undefined })} active={status === tab.value || (!status && !tab.value)}>
+            {tab.label}
+          </StatusTabLink>
+        ))}
+      </div>
+
       <div className="mb-4 flex flex-wrap gap-2 text-xs">
-        <Link
-          href="/repasses"
-          className={`rounded-full px-3 py-1 font-medium ${!oficinaId && !pagamento ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-        >
+        <StatusTabLink href="/repasses" active={!oficinaId && !pagamento && !status}>
           Todos
-        </Link>
-        <Link
-          href="/repasses?pagamento=PENDENTE"
-          className={`rounded-full px-3 py-1 font-medium ${pagamento === "PENDENTE" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-        >
+        </StatusTabLink>
+        <StatusTabLink href={hrefComFiltros({ pagamento: "PENDENTE" })} active={pagamento === "PENDENTE"}>
           Pagamento pendente
-        </Link>
+        </StatusTabLink>
         {oficinas.map((o) => (
-          <Link
-            key={o.id}
-            href={`/repasses?oficinaId=${o.id}`}
-            className={`rounded-full px-3 py-1 font-medium ${oficinaId === o.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-          >
+          <StatusTabLink key={o.id} href={hrefComFiltros({ oficinaId: o.id })} active={oficinaId === o.id}>
             {o.nome}
-          </Link>
+          </StatusTabLink>
         ))}
       </div>
 
