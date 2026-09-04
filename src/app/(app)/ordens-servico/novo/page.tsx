@@ -4,6 +4,7 @@ import { Card, Field, Input, PageHeader, Select, Textarea } from "@/components/u
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
 import { ItensEditor } from "@/components/ItensEditor";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PECAS_CARROCERIA } from "@/lib/pecas-carro";
 
 const FORMAS_PAGAMENTO = [
   "Dinheiro",
@@ -55,7 +56,7 @@ export default async function NovaOSPage() {
 
           <div>
             <h2 className="mb-2 text-sm font-semibold text-slate-900">Itens de serviço</h2>
-            <ItensEditor tiposServico={tiposServico} />
+            <ItensEditor tiposServico={tiposServico} pecas={PECAS_CARROCERIA} mostrarQuantidade={false} />
           </div>
 
           <Field label="Observações">
