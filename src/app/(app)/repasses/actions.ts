@@ -132,6 +132,8 @@ export async function atualizarRepasse(repasseId: string, formData: FormData) {
     throw new Error("Informe o carro.");
   }
 
+  const itemIds = formData.getAll("itemIds").map(String).filter(Boolean);
+
   await prisma.repasseOficina.update({
     where: { id: repasseId },
     data: {
@@ -150,6 +152,11 @@ export async function atualizarRepasse(repasseId: string, formData: FormData) {
       polimento: dados.polimento === "on",
       custoTotal,
       lucro,
+      // Substitui os itens vinculados pelos marcados agora (igual criarRepasse).
+      itens: {
+        deleteMany: {},
+        create: itemIds.map((itemId) => ({ itemId })),
+      },
     },
   });
 

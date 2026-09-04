@@ -4,7 +4,8 @@ import { criarRepasse } from "@/app/(app)/repasses/actions";
 import { Card, Field, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
 import { RepasseVeiculoCampos } from "@/components/RepasseVeiculoCampos";
 import { SubmitButton } from "@/components/SubmitButton";
-import { formatarData, paraNumero } from "@/lib/format";
+import { formatarData } from "@/lib/format";
+import { buscarOrdensParaRepasse } from "@/lib/repasse-disponibilidade";
 
 export default async function NovoRepassePage({
   searchParams,
@@ -13,18 +14,9 @@ export default async function NovoRepassePage({
 }) {
   const { oficinaId } = await searchParams;
 
-  const [oficinas, ordensRaw, repassesAbertos, repassesComOS] = await Promise.all([
+  const [oficinas, ordens, repassesAbertos] = await Promise.all([
     prisma.oficinaTerceirizada.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
-    prisma.ordemServico.findMany({
-      where: { status: { not: "CANCELADA" } },
-      include: {
-        cliente: true,
-        veiculo: true,
-        itens: { orderBy: { ordem: "asc" }, include: { tipoServico: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }),
+    buscarOrdensParaRepasse(),
     // "Já repassado, ainda não entregue" — visão rápida do que já está com
     // algum prestador antes de criar mais um repasse.
     prisma.repasseOficina.findMany({
@@ -32,58 +24,7 @@ export default async function NovoRepassePage({
       include: { oficina: true },
       orderBy: { dataEntrada: "desc" },
     }),
-    // Repasses ainda válidos (cancelado libera o item de novo), com qual
-    // prestador recebeu e quais itens cada um registrou ter coberto — usado
-    // pra esconder do formulário só o que já foi pra ESSE MESMO prestador
-    // (outro prestador pode receber o mesmo item, ex: lanternagem numa
-    // oficina e pintura em outra).
-    prisma.repasseOficina.findMany({
-      where: { status: { not: "CANCELADO" }, osId: { not: null } },
-      select: { osId: true, oficinaId: true, itens: { select: { itemId: true } } },
-    }),
   ]);
-
-  // Repasses feitos ANTES dessa funcionalidade (ou sem nenhum item marcado)
-  // não têm RepasseItem — não dá pra saber qual item específico cobriram,
-  // então a OS inteira fica marcada como já repassada PRA AQUELE prestador.
-  // Quando o repasse marcou itens específicos, só esses ficam marcados.
-  const oficinaIdsTotaisPorOS = new Map<string, Set<string>>();
-  const oficinaIdsPorItem = new Map<string, Set<string>>();
-  for (const r of repassesComOS) {
-    if (r.itens.length === 0) {
-      if (r.osId) {
-        const atual = oficinaIdsTotaisPorOS.get(r.osId) ?? new Set<string>();
-        atual.add(r.oficinaId);
-        oficinaIdsTotaisPorOS.set(r.osId, atual);
-      }
-    } else {
-      for (const it of r.itens) {
-        const atual = oficinaIdsPorItem.get(it.itemId) ?? new Set<string>();
-        atual.add(r.oficinaId);
-        oficinaIdsPorItem.set(it.itemId, atual);
-      }
-    }
-  }
-
-  // Decimal do Prisma não atravessa a fronteira server->client component;
-  // convertido pra número antes de passar pro RepasseVeiculoCampos. Cada
-  // item leva a lista de prestadores que já o receberam — o filtro real
-  // (por prestador selecionado no formulário) acontece no client component.
-  const ordens = ordensRaw.map((os) => {
-    const oficinasTotais = oficinaIdsTotaisPorOS.get(os.id);
-    return {
-      ...os,
-      itens: os.itens.map((item) => ({
-        id: item.id,
-        descricao: item.descricao,
-        valorTotal: paraNumero(item.valorTotal),
-        tipoServicoNome: item.tipoServico?.nome ?? null,
-        oficinaIdsJaRepassados: [
-          ...new Set([...(oficinaIdsPorItem.get(item.id) ?? []), ...(oficinasTotais ?? [])]),
-        ],
-      })),
-    };
-  });
 
   const hoje = new Date().toISOString().slice(0, 10);
 

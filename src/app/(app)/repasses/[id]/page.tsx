@@ -7,18 +7,21 @@ import {
   atualizarStatusRepasse,
   excluirRepasse,
 } from "@/app/(app)/repasses/actions";
-import { Badge, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { Badge, Card, Field, Input, PageHeader, Textarea } from "@/components/ui";
 import { BotaoCancelarEdicao, EdicaoInline } from "@/components/EdicaoInline";
+import { RepasseVeiculoCampos } from "@/components/RepasseVeiculoCampos";
 import {
   formatarData,
   formatarMoeda,
   numeroFormatado,
   paraInputDate,
+  paraNumero,
   STATUS_PAGAMENTO_OFICINA_LABEL,
   STATUS_REPASSE_LABEL,
 } from "@/lib/format";
 import { Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
+import { buscarOrdensParaRepasse } from "@/lib/repasse-disponibilidade";
 
 export default async function RepasseDetalhePage({
   params,
@@ -27,12 +30,18 @@ export default async function RepasseDetalhePage({
 }) {
   const { id } = await params;
 
-  const [repasse, oficinas] = await Promise.all([
+  const [repasse, oficinas, itensDoRepasse, ordens] = await Promise.all([
     prisma.repasseOficina.findUnique({
       where: { id },
       include: { oficina: true, os: true },
     }),
+    // Sem filtro de ativo — se o repasse já aponta pra uma oficina desativada
+    // desde então, ela precisa continuar aparecendo como opção selecionada.
     prisma.oficinaTerceirizada.findMany({ orderBy: { nome: "asc" } }),
+    prisma.repasseItem.findMany({ where: { repasseId: id }, select: { itemId: true } }),
+    // Exclui o próprio repasse da contagem de "já repassado" — editar não
+    // pode fazer os itens que ele mesmo já usa sumirem do formulário.
+    buscarOrdensParaRepasse(id),
   ]);
 
   if (!repasse) notFound();
@@ -160,25 +169,17 @@ export default async function RepasseDetalhePage({
           formulario={
             <form action={atualizarComId} className="space-y-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Prestador *">
-                  <Select name="oficinaId" defaultValue={repasse.oficinaId} required>
-                    {oficinas.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.nome}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <input type="hidden" name="osId" value={repasse.osId ?? ""} />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Carro *">
-                  <Input name="carro" defaultValue={repasse.carro} required />
-                </Field>
-                <Field label="Placa">
-                  <Input name="placa" defaultValue={repasse.placa ?? ""} className="uppercase" />
-                </Field>
+                <RepasseVeiculoCampos
+                  ordens={ordens}
+                  oficinas={oficinas}
+                  oficinaIdInicial={repasse.oficinaId}
+                  osIdInicial={repasse.osId ?? ""}
+                  carroInicial={repasse.carro}
+                  placaInicial={repasse.placa ?? ""}
+                  tipoServicoInicial={repasse.tipoServico}
+                  valorCobradoInicial={String(paraNumero(repasse.valorCobrado))}
+                  itensSelecionadosIniciais={itensDoRepasse.map((it) => it.itemId)}
+                />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -193,24 +194,11 @@ export default async function RepasseDetalhePage({
                 </Field>
               </div>
 
-              <Field label="Tipo de serviço *">
-                <Input name="tipoServico" defaultValue={repasse.tipoServico} required />
-              </Field>
               <Field label="Serviço adicional">
                 <Textarea name="servicoAdicional" rows={2} defaultValue={repasse.servicoAdicional ?? ""} />
               </Field>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <Field label="Valor cobrado do cliente *">
-                  <Input
-                    name="valorCobrado"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    defaultValue={String(repasse.valorCobrado)}
-                    required
-                  />
-                </Field>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Custo cobrado pelo prestador *">
                   <Input
                     name="custoOficina"

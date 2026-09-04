@@ -30,6 +30,8 @@ export function RepasseVeiculoCampos({
   placaInicial,
   osIdInicial,
   tipoServicoInicial,
+  valorCobradoInicial,
+  itensSelecionadosIniciais,
 }: {
   ordens: OS[];
   oficinas: { id: string; nome: string }[];
@@ -38,14 +40,18 @@ export function RepasseVeiculoCampos({
   placaInicial?: string;
   osIdInicial?: string;
   tipoServicoInicial?: string;
+  valorCobradoInicial?: string;
+  itensSelecionadosIniciais?: string[];
 }) {
   const [oficinaId, setOficinaId] = useState(oficinaIdInicial ?? "");
   const [osId, setOsId] = useState(osIdInicial ?? "");
   const [carro, setCarro] = useState(carroInicial ?? "");
   const [placa, setPlaca] = useState(placaInicial ?? "");
   const [tipoServico, setTipoServico] = useState(tipoServicoInicial ?? "");
-  const [valorCobrado, setValorCobrado] = useState("");
-  const [itensSelecionados, setItensSelecionados] = useState<Set<string>>(new Set());
+  const [valorCobrado, setValorCobrado] = useState(valorCobradoInicial ?? "");
+  const [itensSelecionados, setItensSelecionados] = useState<Set<string>>(
+    new Set(itensSelecionadosIniciais ?? [])
+  );
 
   // Só o que ainda não foi repassado pra ESSE prestador — outro prestador
   // pode receber o mesmo item (ex: lanternagem numa oficina, pintura noutra).
