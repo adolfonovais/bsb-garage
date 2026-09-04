@@ -7,7 +7,7 @@ import { prisma, TX_OPTIONS } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
-import { dataDoFormulario, numeroFormatado } from "@/lib/format";
+import { dataDoFormulario, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
 import { salvarFoto, removerFoto } from "@/lib/storage";
 import { notificarClienteOSConcluida } from "@/lib/notificacoes";
 import { emitirNFSe } from "@/lib/nfse";
@@ -83,6 +83,19 @@ export async function atualizarOS(osId: string, formData: FormData) {
   });
   const itens = parseItens(formData);
   const total = somaItens(itens);
+
+  // Não deixa reduzir o valor total pra menos do que o cliente já pagou —
+  // senão a OS fica com "saldo a receber" negativo, sem sentido.
+  const somaPagamentos = await prisma.pagamento.aggregate({
+    where: { osId },
+    _sum: { valor: true },
+  });
+  const totalRecebido = paraNumero(somaPagamentos._sum.valor);
+  if (total < totalRecebido - 0.01) {
+    throw new Error(
+      `O novo valor total (${formatarMoeda(total)}) é menor do que o já recebido do cliente (${formatarMoeda(totalRecebido)}). Ajuste os itens ou exclua o pagamento antes de reduzir o valor.`
+    );
+  }
 
   const orcamentoVinculadoId = await prisma.$transaction(async (tx) => {
     await tx.ordemServicoItem.deleteMany({ where: { osId } });
@@ -320,11 +333,21 @@ export async function emitirNfseAction(
 
   const os = await prisma.ordemServico.findUniqueOrThrow({
     where: { id: osId },
-    include: { cliente: true, itens: { orderBy: { ordem: "asc" } } },
+    include: { cliente: true, itens: { orderBy: { ordem: "asc" } }, pagamentos: true },
   });
 
   if (os.nfseChaveAcesso) {
     return { erro: "Esta OS já tem uma NFS-e emitida." };
+  }
+
+  // Só emite depois do cliente já ter pago — evita faturar um serviço que
+  // ainda não foi recebido.
+  const valorTotalOS = paraNumero(os.valorTotal);
+  const totalRecebido = os.pagamentos.reduce((soma, p) => soma + paraNumero(p.valor), 0);
+  if (totalRecebido < valorTotalOS - 0.01) {
+    return {
+      erro: `Ainda falta receber ${formatarMoeda(valorTotalOS - totalRecebido)} do cliente. A NFS-e só pode ser emitida depois do pagamento completo — registre o recebimento antes de emitir.`,
+    };
   }
 
   const ano = new Date().getFullYear();
