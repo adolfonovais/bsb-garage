@@ -72,6 +72,8 @@ export async function criarRepasse(formData: FormData) {
     throw new Error("Informe o carro, ou vincule a uma OS com veículo cadastrado.");
   }
 
+  const itemIds = formData.getAll("itemIds").map(String).filter(Boolean);
+
   const repasse = await prisma.repasseOficina.create({
     data: {
       oficinaId: dados.oficinaId,
@@ -89,6 +91,9 @@ export async function criarRepasse(formData: FormData) {
       polimento: dados.polimento === "on",
       custoTotal,
       lucro,
+      // Guarda quais itens da OS esse repasse cobre, pra não deixar
+      // repassar o mesmo serviço duas vezes (ver /repasses/novo).
+      itens: itemIds.length > 0 ? { create: itemIds.map((itemId) => ({ itemId })) } : undefined,
     },
   });
 

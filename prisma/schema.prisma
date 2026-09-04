@@ -250,6 +250,8 @@ model OrdemServicoItem {
   valorTotal    Decimal      @db.Decimal(10, 2)
   ordem         Int          @default(0)
 
+  repasses RepasseItem[]
+
   @@schema("bsb_garage")
 }
 
@@ -331,7 +333,23 @@ model RepasseOficina {
   createdAt              DateTime                @default(now())
 
   contas ContaFinanceira[]
+  itens  RepasseItem[]
 
+  @@schema("bsb_garage")
+}
+
+// Liga um repasse aos itens específicos da OS que ele cobre — usado pra não
+// deixar repassar o mesmo serviço duas vezes (ver "Vincular a uma OS" em
+// /repasses/novo, que some com os itens já usados em algum RepasseItem).
+model RepasseItem {
+  id        String            @id @default(cuid())
+  repasseId String
+  repasse   RepasseOficina    @relation(fields: [repasseId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      OrdemServicoItem  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  createdAt DateTime          @default(now())
+
+  @@unique([repasseId, itemId])
   @@schema("bsb_garage")
 }
 

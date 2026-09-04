@@ -8,6 +8,7 @@ type ItemOS = {
   id: string;
   descricao: string;
   valorTotal: number;
+  tipoServicoNome: string | null;
 };
 
 type OS = {
@@ -59,8 +60,12 @@ export function RepasseVeiculoCampos({
         novo.add(item.id);
       }
       if (osSelecionada) {
-        const descricoes = osSelecionada.itens.filter((it) => novo.has(it.id)).map((it) => it.descricao);
-        setTipoServico(descricoes.join(", "));
+        const marcados = osSelecionada.itens.filter((it) => novo.has(it.id));
+        // Usa o mesmo "Tipo de serviço" já cadastrado nos itens da OS
+        // (Martelinho/Pintura/Lanternagem...); se nenhum item marcado tiver
+        // tipo definido, cai pra descrição do item como antes.
+        const tipos = [...new Set(marcados.map((it) => it.tipoServicoNome).filter((t): t is string => !!t))];
+        setTipoServico(tipos.length > 0 ? tipos.join("/") : marcados.map((it) => it.descricao).join(", "));
       }
       return novo;
     });
@@ -70,7 +75,7 @@ export function RepasseVeiculoCampos({
     <>
       <Field
         label="Vincular a uma OS (opcional)"
-        hint="Preenche carro/placa automaticamente ao selecionar."
+        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS com serviços ainda não repassados."
       >
         <Select name="osId" value={osId} onChange={(e) => selecionarOS(e.target.value)}>
           <option value="">Nenhuma</option>
@@ -87,7 +92,7 @@ export function RepasseVeiculoCampos({
         {osSelecionada && osSelecionada.itens.length > 0 && (
           <Field
             label="Serviços da OS repassados"
-            hint="Marque quais itens dessa OS estão sendo repassados nesse serviço — preenche o Tipo de serviço abaixo."
+            hint="Marque quais itens dessa OS (ainda não repassados) estão indo pra esse prestador — preenche o Tipo de serviço abaixo."
           >
             <div className="space-y-1.5 rounded-md border border-slate-300 bg-white p-3">
               {osSelecionada.itens.map((item) => (
@@ -98,6 +103,7 @@ export function RepasseVeiculoCampos({
                     onChange={() => alternarItem(item)}
                     className="h-4 w-4 rounded border-slate-300"
                   />
+                  {itensSelecionados.has(item.id) && <input type="hidden" name="itemIds" value={item.id} />}
                   {item.descricao}
                   <span className="text-xs text-slate-400">({formatarMoeda(item.valorTotal)})</span>
                 </label>

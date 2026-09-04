@@ -1,9 +1,10 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { criarRepasse } from "@/app/(app)/repasses/actions";
 import { Card, Field, Input, LinkButton, PageHeader, Select, Textarea } from "@/components/ui";
 import { RepasseVeiculoCampos } from "@/components/RepasseVeiculoCampos";
 import { SubmitButton } from "@/components/SubmitButton";
-import { paraNumero } from "@/lib/format";
+import { formatarData, paraNumero } from "@/lib/format";
 
 export default async function NovoRepassePage({
   searchParams,
@@ -12,32 +13,91 @@ export default async function NovoRepassePage({
 }) {
   const { oficinaId } = await searchParams;
 
-  const [oficinas, ordensRaw] = await Promise.all([
+  const [oficinas, ordensRaw, repassesAbertos, itensJaRepassados] = await Promise.all([
     prisma.oficinaTerceirizada.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
     prisma.ordemServico.findMany({
       where: { status: { not: "CANCELADA" } },
-      include: { cliente: true, veiculo: true, itens: { orderBy: { ordem: "asc" } } },
+      include: {
+        cliente: true,
+        veiculo: true,
+        itens: { orderBy: { ordem: "asc" }, include: { tipoServico: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 100,
     }),
+    // "Já repassado, ainda não entregue" — visão rápida do que já está com
+    // algum prestador antes de criar mais um repasse.
+    prisma.repasseOficina.findMany({
+      where: { status: "EM_ANDAMENTO" },
+      include: { oficina: true },
+      orderBy: { dataEntrada: "desc" },
+    }),
+    prisma.repasseItem.findMany({ select: { itemId: true } }),
   ]);
 
+  const itemIdsJaRepassados = new Set(itensJaRepassados.map((r) => r.itemId));
+
   // Decimal do Prisma não atravessa a fronteira server->client component;
-  // convertido pra número antes de passar pro RepasseVeiculoCampos.
-  const ordens = ordensRaw.map((os) => ({
-    ...os,
-    itens: os.itens.map((item) => ({
-      id: item.id,
-      descricao: item.descricao,
-      valorTotal: paraNumero(item.valorTotal),
-    })),
-  }));
+  // convertido pra número antes de passar pro RepasseVeiculoCampos. Também
+  // tira os itens que já foram repassados antes (pra não repassar o mesmo
+  // serviço duas vezes) e some com a OS inteira do dropdown se não sobrar
+  // nenhum item dela pra repassar.
+  const ordens = ordensRaw
+    .map((os) => {
+      const itensRestantes = os.itens.filter((item) => !itemIdsJaRepassados.has(item.id));
+      return {
+        ...os,
+        totalItensOriginais: os.itens.length,
+        itens: itensRestantes.map((item) => ({
+          id: item.id,
+          descricao: item.descricao,
+          valorTotal: paraNumero(item.valorTotal),
+          tipoServicoNome: item.tipoServico?.nome ?? null,
+        })),
+      };
+    })
+    .filter((os) => os.totalItensOriginais === 0 || os.itens.length > 0);
 
   const hoje = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="max-w-3xl">
       <PageHeader title="Novo repasse" subtitle="Registro de serviço enviado para um prestador terceirizado" />
+
+      {repassesAbertos.length > 0 && (
+        <Card className="mb-6 overflow-x-auto">
+          <div className="border-b border-slate-200 px-4 py-3">
+            <h2 className="text-sm font-semibold text-slate-900">Já repassado, ainda não entregue</h2>
+          </div>
+          <table className="w-full text-left text-sm">
+            <thead className="text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-2">Entrada</th>
+                <th className="px-4 py-2">Prestador</th>
+                <th className="px-4 py-2">Carro</th>
+                <th className="px-4 py-2">Serviço</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {repassesAbertos.map((r) => (
+                <tr key={r.id} className="hover:bg-slate-50">
+                  <td className="px-4 py-2">
+                    <Link href={`/repasses/${r.id}`} className="font-medium text-amber-700 hover:underline">
+                      {formatarData(r.dataEntrada)}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-2">{r.oficina.nome}</td>
+                  <td className="px-4 py-2">
+                    {r.carro} {r.placa ? `· ${r.placa}` : ""}
+                  </td>
+                  <td className="px-4 py-2">{r.tipoServico}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
       <Card className="p-6">
         <form action={criarRepasse} className="space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
