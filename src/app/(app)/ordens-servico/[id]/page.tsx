@@ -48,7 +48,7 @@ export default async function OSDetalhePage({
       include: {
         cliente: true,
         veiculo: true,
-        itens: { orderBy: { ordem: "asc" } },
+        itens: { orderBy: { ordem: "asc" }, include: { tipoServico: true } },
         pagamentos: { orderBy: { data: "asc" } },
         fotos: { orderBy: { createdAt: "asc" } },
         movEstoque: { orderBy: { data: "desc" }, include: { peca: true } },
@@ -163,6 +163,7 @@ export default async function OSDetalhePage({
         <table className="w-full text-left text-sm">
           <thead className="text-xs uppercase text-slate-500">
             <tr>
+              <th className="px-4 py-2">Tipo de serviço</th>
               <th className="px-4 py-2">Descrição</th>
               <th className="px-4 py-2">Qtd.</th>
               <th className="px-4 py-2">Valor unit.</th>
@@ -172,6 +173,7 @@ export default async function OSDetalhePage({
           <tbody className="divide-y divide-slate-100">
             {os.itens.map((item) => (
               <tr key={item.id}>
+                <td className="px-4 py-2 text-slate-500">{item.tipoServico?.nome ?? "-"}</td>
                 <td className="px-4 py-2">{item.descricao}</td>
                 <td className="px-4 py-2">{Number(item.quantidade)}</td>
                 <td className="px-4 py-2"><Valor valor={paraNumero(item.valorUnit)} /></td>
@@ -181,7 +183,7 @@ export default async function OSDetalhePage({
           </tbody>
           <tfoot>
             <tr className="border-t border-slate-200">
-              <td className="px-4 py-2 font-semibold" colSpan={3}>
+              <td className="px-4 py-2 font-semibold" colSpan={4}>
                 Total
               </td>
               <td className="px-4 py-2 font-semibold"><Valor valor={paraNumero(os.valorTotal)} /></td>

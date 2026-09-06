@@ -131,12 +131,16 @@ export function RepasseVeiculoCampos({
       >
         <Select name="osId" value={osId} onChange={(e) => selecionarOS(e.target.value)}>
           <option value="">Nenhuma</option>
-          {ordensDisponiveis.map((os) => (
-            <option key={os.id} value={os.id}>
-              {numeroFormatado(os.numero, os.ano)} — {os.cliente.nome}
-              {os.veiculo ? ` (${formatarVeiculo(os.veiculo)})` : ""}
-            </option>
-          ))}
+          {ordensDisponiveis.map((os) => {
+            const tipos = [...new Set(os.itens.map((it) => it.tipoServicoNome).filter((t): t is string => !!t))];
+            return (
+              <option key={os.id} value={os.id}>
+                {numeroFormatado(os.numero, os.ano)}
+                {tipos.length > 0 ? ` (${tipos.join("/")})` : ""} — {os.cliente.nome}
+                {os.veiculo ? ` (${formatarVeiculo(os.veiculo)})` : ""}
+              </option>
+            );
+          })}
         </Select>
       </Field>
 

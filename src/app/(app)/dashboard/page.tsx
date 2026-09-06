@@ -27,6 +27,11 @@ function hoje(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function tiposServicoDaOS(itens: { tipoServico: { nome: string } | null }[]): string {
+  const nomes = [...new Set(itens.map((i) => i.tipoServico?.nome).filter((n): n is string => !!n))];
+  return nomes.length > 0 ? nomes.join("/") : "-";
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -66,7 +71,7 @@ export default async function DashboardPage({
       where: filtroOSPeriodo,
       orderBy: { dataEntrada: "desc" },
       take: 100,
-      include: { cliente: true, veiculo: true },
+      include: { cliente: true, veiculo: true, itens: { include: { tipoServico: true } } },
     }),
   ]);
 
@@ -160,6 +165,7 @@ export default async function DashboardPage({
                   <th className="px-4 py-2">Cliente</th>
                   <th className="hidden px-4 py-2 sm:table-cell">Veículo</th>
                   <th className="hidden px-4 py-2 sm:table-cell">Entrada</th>
+                  <th className="px-4 py-2">Tipo de serviço</th>
                   <th className="px-4 py-2">Valor</th>
                   <th className="px-4 py-2">Status</th>
                 </tr>
@@ -175,6 +181,7 @@ export default async function DashboardPage({
                     <td className="px-4 py-2">{os.cliente?.nome}</td>
                     <td className="hidden px-4 py-2 sm:table-cell">{formatarVeiculo(os.veiculo)}</td>
                     <td className="hidden px-4 py-2 sm:table-cell">{formatarData(os.dataEntrada)}</td>
+                    <td className="px-4 py-2 text-slate-500">{tiposServicoDaOS(os.itens)}</td>
                     <td className="px-4 py-2">
                       <Valor valor={paraNumero(os.valorTotal)} />
                     </td>
