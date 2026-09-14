@@ -2,16 +2,22 @@
 
 import { useState } from "react";
 import { Field, Input, Select } from "@/components/ui";
-import { formatarVeiculo, numeroFormatado } from "@/lib/format";
+import { formatarVeiculo, numeroFormatado, STATUS_REPASSE_LABEL } from "@/lib/format";
 import { Valor } from "@/components/ValoresPrivacidade";
+
+type RepasseExistente = {
+  oficinaId: string;
+  oficinaNome: string;
+  status: string;
+};
 
 type ItemOS = {
   id: string;
   descricao: string;
   valorTotal: number;
   tipoServicoNome: string | null;
-  /** Prestadores que já receberam esse item num repasse (não cancelado). */
-  oficinaIdsJaRepassados: string[];
+  /** Repasses (não cancelados) que já cobrem esse item. */
+  repassesExistentes: RepasseExistente[];
 };
 
 type OS = {
@@ -58,7 +64,7 @@ export function RepasseVeiculoCampos({
   // pode receber o mesmo item (ex: lanternagem numa oficina, pintura noutra).
   // Sem prestador escolhido ainda, mostra tudo.
   function itemDisponivel(item: ItemOS, paraOficinaId: string) {
-    return !paraOficinaId || !item.oficinaIdsJaRepassados.includes(paraOficinaId);
+    return !paraOficinaId || !item.repassesExistentes.some((r) => r.oficinaId === paraOficinaId);
   }
   function osTemItemDisponivel(os: OS, paraOficinaId: string) {
     return os.itens.length === 0 || os.itens.some((item) => itemDisponivel(item, paraOficinaId));
@@ -67,6 +73,28 @@ export function RepasseVeiculoCampos({
   const ordensDisponiveis = ordens.filter((os) => osTemItemDisponivel(os, oficinaId));
   const osSelecionada = ordensDisponiveis.find((o) => o.id === osId);
   const itensDisponiveis = osSelecionada ? osSelecionada.itens.filter((item) => itemDisponivel(item, oficinaId)) : [];
+
+  // Pra explicar pro usuário por que uma OS/item sumiu do dropdown — sem
+  // isso, um item já repassado (ainda que "Entregue") simplesmente
+  // desaparecia sem nenhuma pista do motivo.
+  const jaRepassadoParaOficina = oficinaId
+    ? ordens
+        .map((os) => {
+          const itensCobertos = os.itens.filter((item) =>
+            item.repassesExistentes.some((r) => r.oficinaId === oficinaId)
+          );
+          if (itensCobertos.length === 0) return null;
+          const statuses = [
+            ...new Set(
+              itensCobertos.flatMap((item) =>
+                item.repassesExistentes.filter((r) => r.oficinaId === oficinaId).map((r) => r.status)
+              )
+            ),
+          ];
+          return { os, itensCobertos, statuses };
+        })
+        .filter((x): x is { os: OS; itensCobertos: ItemOS[]; statuses: string[] } => x !== null)
+    : [];
 
   function selecionarOficina(novoOficinaId: string) {
     setOficinaId(novoOficinaId);
@@ -145,6 +173,21 @@ export function RepasseVeiculoCampos({
       </Field>
 
       <div className="space-y-4 sm:col-span-2">
+        {jaRepassadoParaOficina.length > 0 && (
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <p className="font-medium">Já repassado pra esse prestador (por isso não aparece(m) acima):</p>
+            <ul className="mt-1 list-disc space-y-0.5 pl-4">
+              {jaRepassadoParaOficina.map(({ os, itensCobertos, statuses }) => (
+                <li key={os.id}>
+                  {numeroFormatado(os.numero, os.ano)} — {os.cliente.nome}:{" "}
+                  {itensCobertos.map((item) => item.descricao).join(", ")} (
+                  {statuses.map((s) => STATUS_REPASSE_LABEL[s] ?? s).join(", ")})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {osSelecionada && itensDisponiveis.length > 0 && (
           <Field
             label="Serviços da OS repassados"
