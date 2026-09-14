@@ -27,6 +27,8 @@ type OS = {
   cliente: { nome: string };
   veiculo: { modelo: string; placa: string | null } | null;
   itens: ItemOS[];
+  /** Qualquer repasse (não cancelado) já existente pra essa OS, um por prestador. */
+  repassesOS: RepasseExistente[];
 };
 
 export function RepasseVeiculoCampos({
@@ -60,37 +62,34 @@ export function RepasseVeiculoCampos({
     new Set(itensSelecionadosIniciais ?? [])
   );
 
-  // Só o que ainda não foi repassado pra ESSE prestador — outro prestador
-  // pode receber o mesmo item (ex: lanternagem numa oficina, pintura noutra).
-  // Sem prestador escolhido ainda, mostra tudo.
+  // Uma OS só deve ter UM repasse por prestador — se já existe um (completo
+  // ou não) pra esse prestador, a OS some do dropdown pra ele; pra adicionar
+  // mais itens é só editar o repasse existente, não criar outro. Pra outro
+  // prestador diferente, a OS continua disponível normalmente (ex:
+  // lanternagem numa oficina, pintura noutra). Sem prestador ainda, mostra tudo.
   function itemDisponivel(item: ItemOS, paraOficinaId: string) {
     return !paraOficinaId || !item.repassesExistentes.some((r) => r.oficinaId === paraOficinaId);
   }
   function osTemItemDisponivel(os: OS, paraOficinaId: string) {
-    return os.itens.length === 0 || os.itens.some((item) => itemDisponivel(item, paraOficinaId));
+    return !paraOficinaId || !os.repassesOS.some((r) => r.oficinaId === paraOficinaId);
   }
 
   const ordensDisponiveis = ordens.filter((os) => osTemItemDisponivel(os, oficinaId));
   const osSelecionada = ordensDisponiveis.find((o) => o.id === osId);
   const itensDisponiveis = osSelecionada ? osSelecionada.itens.filter((item) => itemDisponivel(item, oficinaId)) : [];
 
-  // Pra explicar pro usuário por que uma OS/item sumiu do dropdown — sem
-  // isso, um item já repassado (ainda que "Entregue") simplesmente
-  // desaparecia sem nenhuma pista do motivo.
+  // Pra explicar pro usuário por que uma OS sumiu do dropdown — sem isso,
+  // uma OS já repassada (ainda que "Entregue") simplesmente desaparecia
+  // sem nenhuma pista do motivo.
   const jaRepassadoParaOficina = oficinaId
     ? ordens
         .map((os) => {
+          const repassesDessaOficina = os.repassesOS.filter((r) => r.oficinaId === oficinaId);
+          if (repassesDessaOficina.length === 0) return null;
           const itensCobertos = os.itens.filter((item) =>
             item.repassesExistentes.some((r) => r.oficinaId === oficinaId)
           );
-          if (itensCobertos.length === 0) return null;
-          const statuses = [
-            ...new Set(
-              itensCobertos.flatMap((item) =>
-                item.repassesExistentes.filter((r) => r.oficinaId === oficinaId).map((r) => r.status)
-              )
-            ),
-          ];
+          const statuses = [...new Set(repassesDessaOficina.map((r) => r.status))];
           return { os, itensCobertos, statuses };
         })
         .filter((x): x is { os: OS; itensCobertos: ItemOS[]; statuses: string[] } => x !== null)
@@ -155,7 +154,7 @@ export function RepasseVeiculoCampos({
 
       <Field
         label="Vincular a uma OS (opcional)"
-        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS com serviços ainda não repassados pra esse prestador."
+        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS que ainda não têm repasse pra esse prestador."
       >
         <Select name="osId" value={osId} onChange={(e) => selecionarOS(e.target.value)}>
           <option value="">Nenhuma</option>
@@ -175,12 +174,15 @@ export function RepasseVeiculoCampos({
       <div className="space-y-4 sm:col-span-2">
         {jaRepassadoParaOficina.length > 0 && (
           <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            <p className="font-medium">Já repassado pra esse prestador (por isso não aparece(m) acima):</p>
+            <p className="font-medium">
+              Já tem repasse pra esse prestador (por isso não aparecem acima) — edite o repasse existente pra
+              adicionar mais itens:
+            </p>
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
               {jaRepassadoParaOficina.map(({ os, itensCobertos, statuses }) => (
                 <li key={os.id}>
                   {numeroFormatado(os.numero, os.ano)} — {os.cliente.nome}:{" "}
-                  {itensCobertos.map((item) => item.descricao).join(", ")} (
+                  {itensCobertos.length > 0 ? itensCobertos.map((item) => item.descricao).join(", ") : "OS inteira"} (
                   {statuses.map((s) => STATUS_REPASSE_LABEL[s] ?? s).join(", ")})
                 </li>
               ))}

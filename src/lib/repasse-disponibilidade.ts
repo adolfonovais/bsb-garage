@@ -1,12 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { paraNumero } from "@/lib/format";
 
-// Usado tanto em /repasses/novo quanto em /repasses/[id] (editar) — monta,
-// pra cada OS não cancelada, a lista de itens com quais prestadores já
-// receberam cada um (RepasseItem de repasses ainda válidos, ou a OS inteira
-// quando o repasse é antigo/sem item rastreado — ver comentário abaixo).
-// `excluirRepasseId` tira o próprio repasse sendo editado dessa contagem,
-// senão editar um repasse faria ele "esconder" os itens que ele mesmo já usa.
+// Usado tanto em /repasses/novo quanto em /repasses/[id] (editar). `excluirRepasseId`
+// tira o próprio repasse sendo editado dessa contagem, senão editar um
+// repasse faria ele "esconder" a própria OS que ele mesmo usa.
 
 export type RepasseExistente = {
   oficinaId: string;
@@ -19,9 +16,7 @@ export type ItemOSDisponibilidade = {
   descricao: string;
   valorTotal: number;
   tipoServicoNome: string | null;
-  /** Repasses (não cancelados) que já cobrem esse item, com prestador e status
-   * — usado tanto pra filtrar o dropdown quanto pra explicar pro usuário por
-   * que um item/OS não aparece mais como opção. */
+  /** Repasses (não cancelados) que citam esse item especificamente. */
   repassesExistentes: RepasseExistente[];
 };
 
@@ -32,6 +27,14 @@ export type OSParaRepasse = {
   cliente: { nome: string };
   veiculo: { modelo: string; placa: string | null } | null;
   itens: ItemOSDisponibilidade[];
+  /**
+   * Qualquer repasse (não cancelado) que já existe pra essa OS, um por
+   * prestador — uma OS só deve ter UM repasse por prestador; se já existe
+   * um (completo ou não), a OS some do dropdown pra ESSE prestador e quem
+   * precisar adicionar mais itens edita o repasse existente, em vez de
+   * criar outro. Pra outro prestador, a OS continua disponível normalmente.
+   */
+  repassesOS: RepasseExistente[];
 };
 
 export async function buscarOrdensParaRepasse(excluirRepasseId?: string): Promise<OSParaRepasse[]> {
@@ -46,9 +49,9 @@ export async function buscarOrdensParaRepasse(excluirRepasseId?: string): Promis
       orderBy: { createdAt: "desc" },
       take: 100,
     }),
-    // Repasses ainda válidos (cancelado libera o item de novo), com qual
-    // prestador recebeu, em que status está, e quais itens cada um
-    // registrou ter coberto.
+    // Repasses ainda válidos (cancelado libera a OS de novo pro mesmo
+    // prestador), com qual prestador recebeu, em que status está, e quais
+    // itens cada um registrou ter coberto (se algum).
     prisma.repasseOficina.findMany({
       where: {
         status: { not: "CANCELADO" },
@@ -64,44 +67,35 @@ export async function buscarOrdensParaRepasse(excluirRepasseId?: string): Promis
     }),
   ]);
 
-  // Repasses feitos ANTES dessa funcionalidade (ou sem nenhum item marcado)
-  // não têm RepasseItem — não dá pra saber qual item específico cobriram,
-  // então a OS inteira fica marcada como já repassada PRA AQUELE prestador.
-  // Quando o repasse marcou itens específicos, só esses ficam marcados.
-  const totaisPorOS = new Map<string, RepasseExistente[]>();
+  const repassesPorOS = new Map<string, RepasseExistente[]>();
   const porItem = new Map<string, RepasseExistente[]>();
   for (const r of repassesComOS) {
     const info: RepasseExistente = { oficinaId: r.oficina.id, oficinaNome: r.oficina.nome, status: r.status };
-    if (r.itens.length === 0) {
-      if (r.osId) {
-        const atual = totaisPorOS.get(r.osId) ?? [];
-        atual.push(info);
-        totaisPorOS.set(r.osId, atual);
-      }
-    } else {
-      for (const it of r.itens) {
-        const atual = porItem.get(it.itemId) ?? [];
-        atual.push(info);
-        porItem.set(it.itemId, atual);
-      }
+    if (r.osId) {
+      const atual = repassesPorOS.get(r.osId) ?? [];
+      atual.push(info);
+      repassesPorOS.set(r.osId, atual);
+    }
+    for (const it of r.itens) {
+      const atualItem = porItem.get(it.itemId) ?? [];
+      atualItem.push(info);
+      porItem.set(it.itemId, atualItem);
     }
   }
 
-  return ordensRaw.map((os) => {
-    const totais = totaisPorOS.get(os.id) ?? [];
-    return {
-      id: os.id,
-      numero: os.numero,
-      ano: os.ano,
-      cliente: { nome: os.cliente.nome },
-      veiculo: os.veiculo ? { modelo: os.veiculo.modelo, placa: os.veiculo.placa } : null,
-      itens: os.itens.map((item) => ({
-        id: item.id,
-        descricao: item.descricao,
-        valorTotal: paraNumero(item.valorTotal),
-        tipoServicoNome: item.tipoServico?.nome ?? null,
-        repassesExistentes: [...(porItem.get(item.id) ?? []), ...totais],
-      })),
-    };
-  });
+  return ordensRaw.map((os) => ({
+    id: os.id,
+    numero: os.numero,
+    ano: os.ano,
+    cliente: { nome: os.cliente.nome },
+    veiculo: os.veiculo ? { modelo: os.veiculo.modelo, placa: os.veiculo.placa } : null,
+    repassesOS: repassesPorOS.get(os.id) ?? [],
+    itens: os.itens.map((item) => ({
+      id: item.id,
+      descricao: item.descricao,
+      valorTotal: paraNumero(item.valorTotal),
+      tipoServicoNome: item.tipoServico?.nome ?? null,
+      repassesExistentes: porItem.get(item.id) ?? [],
+    })),
+  }));
 }
