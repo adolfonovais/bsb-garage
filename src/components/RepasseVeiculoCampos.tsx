@@ -160,6 +160,9 @@ export function RepasseVeiculoCampos({
                     className="h-4 w-4 rounded border-slate-300"
                   />
                   {itensSelecionados.has(item.id) && <input type="hidden" name="itemIds" value={item.id} />}
+                  {item.tipoServicoNome && (
+                    <span className="text-slate-500">{item.tipoServicoNome} —</span>
+                  )}
                   {item.descricao}
                   <span className="text-xs text-slate-400">(<Valor valor={item.valorTotal} />)</span>
                 </label>
