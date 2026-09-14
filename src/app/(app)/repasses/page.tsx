@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Badge, Card, EmptyState, LinkButton, PageHeader } from "@/components/ui";
 import {
   formatarData,
+  numeroFormatado,
   paraNumero,
   STATUS_PAGAMENTO_OFICINA_LABEL,
   STATUS_REPASSE_LABEL,
@@ -42,7 +43,7 @@ export default async function RepassesPage({
         status: status ? (status as never) : undefined,
         statusPagamentoOficina: pagamento ? (pagamento as never) : undefined,
       },
-      include: { oficina: true },
+      include: { oficina: true, os: { select: { id: true, numero: true, ano: true } } },
       orderBy: { dataEntrada: "desc" },
       take: 200,
     }),
@@ -97,6 +98,7 @@ export default async function RepassesPage({
               <thead className="text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-2">Entrada</th>
+                  <th className="px-4 py-2">OS</th>
                   <th className="px-4 py-2">Prestador</th>
                   <th className="px-4 py-2">Carro</th>
                   <th className="px-4 py-2">Serviço</th>
@@ -115,6 +117,18 @@ export default async function RepassesPage({
                       <Link href={`/repasses/${r.id}`} className="font-medium text-amber-700 hover:underline">
                         {formatarData(r.dataEntrada)}
                       </Link>
+                    </td>
+                    <td className="px-4 py-2">
+                      {r.os ? (
+                        <Link
+                          href={`/ordens-servico/${r.os.id}`}
+                          className="font-medium text-amber-700 hover:underline"
+                        >
+                          {numeroFormatado(r.os.numero, r.os.ano)}
+                        </Link>
+                      ) : (
+                        "-"
+                      )}
                     </td>
                     <td className="px-4 py-2">{r.oficina.nome}</td>
                     <td className="px-4 py-2">
