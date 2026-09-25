@@ -6,7 +6,7 @@ import { useMobileMenu } from "@/components/MobileMenu";
 import { sairAction } from "@/components/topbar-actions";
 import { BotaoOcultarValores } from "@/components/ValoresPrivacidade";
 
-export function Topbar({ nome, papel }: { nome: string; papel: string }) {
+export function Topbar({ nome, papel, nomeOrganizacao }: { nome: string; papel: string; nomeOrganizacao: string }) {
   const { setAberto } = useMobileMenu();
 
   return (
@@ -20,7 +20,7 @@ export function Topbar({ nome, papel }: { nome: string; papel: string }) {
         >
           <Menu className="h-6 w-6" />
         </button>
-        <p className="text-sm font-bold text-slate-900">BSB Garage Martelinho de Ouro</p>
+        <p className="text-sm font-bold text-slate-900">{nomeOrganizacao}</p>
       </div>
       <div className="ml-auto flex items-center gap-4">
         <BotaoOcultarValores />

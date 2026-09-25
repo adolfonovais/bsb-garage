@@ -14,6 +14,7 @@ import {
   Wallet,
   Boxes,
   BarChart3,
+  Building2,
   X,
 } from "lucide-react";
 import { useMobileMenu } from "@/components/MobileMenu";
@@ -30,7 +31,17 @@ const links = [
   { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
 ];
 
-export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
+export function Sidebar({
+  isAdmin,
+  nomeOrganizacao,
+  comLogo,
+  adminPlataforma,
+}: {
+  isAdmin: boolean;
+  nomeOrganizacao: string;
+  comLogo: boolean;
+  adminPlataforma: boolean;
+}) {
   const pathname = usePathname();
   const { aberto, setAberto } = useMobileMenu();
 
@@ -55,17 +66,16 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
         }`}
       >
         <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
-          {/* eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev */}
-          <img
-            src="/brand/logo.png"
-            alt="Logo BSB Garage Martelinho de Ouro"
-            width={44}
-            height={44}
-            className="shrink-0"
-          />
-          <div className="flex-1">
-            <p className="text-sm font-bold leading-tight">BSB Garage</p>
-            <p className="text-xs text-neutral-400 leading-tight">Martelinho de Ouro</p>
+          {comLogo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev
+            <img src="/brand/logo.png" alt={`Logo ${nomeOrganizacao}`} width={44} height={44} className="shrink-0" />
+          ) : (
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-black">
+              <Wrench className="h-6 w-6" />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold leading-tight">{nomeOrganizacao}</p>
           </div>
           <button
             type="button"
@@ -107,10 +117,25 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
             Configurações
           </Link>
         )}
+        {adminPlataforma && (
+          <Link
+            href="/plataforma"
+            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              pathname.startsWith("/plataforma")
+                ? "bg-amber-500 text-black"
+                : "text-neutral-300 hover:bg-neutral-900 hover:text-white"
+            }`}
+          >
+            <Building2 className="h-4 w-4" />
+            Plataforma
+          </Link>
+        )}
       </nav>
-        <div className="border-t border-neutral-800 px-4 py-3 text-xs text-neutral-500">
-          NFS-e e WhatsApp chegam em breve — ver Configurações.
-        </div>
+        {comLogo && (
+          <div className="border-t border-neutral-800 px-4 py-3 text-xs text-neutral-500">
+            NFS-e e WhatsApp chegam em breve — ver Configurações.
+          </div>
+        )}
       </aside>
     </>
   );

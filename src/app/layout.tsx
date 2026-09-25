@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { NOME_PLATAFORMA } from "@/lib/marca";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BSB Garage Martelinho de Ouro",
+  title: NOME_PLATAFORMA,
   description: "Sistema de gestão da oficina — orçamentos, ordens de serviço e mais.",
 };
 

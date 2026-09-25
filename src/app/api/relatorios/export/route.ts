@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import ExcelJS from "exceljs";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { organizacaoAtual } from "@/lib/tenant";
 import {
   buscarRelatorioEstoque,
   buscarRelatorioFinanceiro,
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
 
   const empresa = await prisma.empresaConfig.findFirst();
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = empresa?.nome ?? "BSB Garage Martelinho de Ouro";
+  workbook.creator = empresa?.nome ?? (await organizacaoAtual()).nome;
   workbook.created = new Date();
 
   if (secoes.includes("financeiro")) {

@@ -205,7 +205,7 @@ export async function atualizarStatusOS(osId: string, status: string) {
       paraTelefone: os.cliente.telefone,
       nomeCliente: os.cliente.nome,
       numeroOS: numeroFormatado(os.numero, os.ano),
-      nomeEmpresa: empresa?.nome ?? "BSB Garage Martelinho de Ouro",
+      nomeEmpresa: empresa?.nome ?? (await organizacaoAtual()).nome,
     });
   }
 }

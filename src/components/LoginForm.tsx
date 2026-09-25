@@ -12,7 +12,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
     <form action={action} className="space-y-4">
       <input type="hidden" name="callbackUrl" value={callbackUrl ?? "/dashboard"} />
       <Field label="E-mail">
-        <Input type="email" name="email" required autoFocus placeholder="voce@bsbgarage.com.br" />
+        <Input type="email" name="email" required autoFocus placeholder="voce@email.com" />
       </Field>
       <Field label="Senha">
         <Input type="password" name="senha" required placeholder="••••••••" />

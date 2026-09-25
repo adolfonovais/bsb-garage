@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { organizacaoAtual } from "@/lib/tenant";
 import {
   buscarRelatorioEstoque,
   buscarRelatorioFinanceiro,
@@ -163,7 +164,7 @@ export default async function RelatoriosPage({
             {/* eslint-disable-next-line @next/next/no-img-element -- logo estática, precisa renderizar igual na impressão/PDF */}
             <img src="/brand/logo.png" alt="" className="h-16 w-16 shrink-0" />
             <div className="flex-1 text-center">
-              <h1 className="text-xl font-extrabold">{empresa?.nome ?? "BSB Garage Martelinho de Ouro"}</h1>
+              <h1 className="text-xl font-extrabold">{empresa?.nome ?? (await organizacaoAtual()).nome}</h1>
               <p className="text-sm text-slate-600">
                 Relatório de {formatarData(inicio)} até {formatarData(fim)}
               </p>

@@ -4,6 +4,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { prismaBase } from "@/lib/prisma-base";
 import { auth } from "@/lib/auth";
 import { organizacaoIdAtual } from "@/lib/tenant";
 
@@ -64,6 +65,10 @@ export async function criarUsuario(_prevState: EstadoFormulario, formData: FormD
     senha: formData.get("senha"),
     papel: formData.get("papel"),
   });
+
+  if (await prismaBase.usuario.findUnique({ where: { email: dados.email.toLowerCase() }, select: { id: true } })) {
+    return { erro: "Já existe um usuário com esse e-mail." };
+  }
 
   const senhaHash = await bcrypt.hash(dados.senha, 10);
 

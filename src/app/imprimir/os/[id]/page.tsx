@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { organizacaoAtual } from "@/lib/tenant";
 import { formatarData, formatarMoeda, nomeArquivoImpressao, numeroFormatado, paraNumero } from "@/lib/format";
 import { DocumentoImprimivel } from "@/components/DocumentoImprimivel";
 
@@ -43,12 +44,12 @@ export default async function ImprimirOSPage({
       voltarHref={`/ordens-servico/${os.id}`}
       empresa={
         empresa ?? {
-          nome: "BSB Garage Martelinho de Ouro",
+          nome: (await organizacaoAtual()).nome,
           razaoSocial: null,
           cnpj: null,
           ie: null,
           telefones: null,
-          cidadeUf: "Brasília - DF",
+          cidadeUf: "",
         }
       }
       titulo="Ordem de Serviço"

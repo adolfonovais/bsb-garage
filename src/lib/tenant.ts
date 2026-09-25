@@ -21,3 +21,17 @@ export const organizacaoAtual = cache(async () => {
   const organizacaoId = await organizacaoIdAtual();
   return prismaBase.organizacao.findUniqueOrThrow({ where: { id: organizacaoId } });
 });
+
+/**
+ * Administradores da plataforma (donos do SaaS) — enxergam o painel /plataforma
+ * com todas as organizações. Lista de e-mails na env PLATAFORMA_ADMIN_EMAILS
+ * (separados por vírgula); o padrão é o admin da BSB Garage.
+ */
+export function ehAdminDaPlataforma(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const lista = (process.env.PLATAFORMA_ADMIN_EMAILS || "adolfo@bsbgarage.com.br")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return lista.includes(email.toLowerCase());
+}
