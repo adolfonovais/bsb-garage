@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { organizacaoIdAtual } from "@/lib/tenant";
 
 async function exigirAdmin() {
   const session = await auth();
@@ -36,10 +37,11 @@ export async function atualizarEmpresa(formData: FormData) {
     cidadeUf: formData.get("cidadeUf"),
   });
 
+  const organizacaoId = await organizacaoIdAtual();
   await prisma.empresaConfig.upsert({
-    where: { id: 1 },
+    where: { organizacaoId },
     update: dados,
-    create: { id: 1, ...dados },
+    create: { ...dados, organizacaoId },
   });
   revalidatePath("/configuracoes");
 }
@@ -67,6 +69,7 @@ export async function criarUsuario(_prevState: EstadoFormulario, formData: FormD
 
   await prisma.usuario.create({
     data: {
+      organizacaoId: await organizacaoIdAtual(),
       nome: dados.nome,
       email: dados.email.toLowerCase(),
       senhaHash,

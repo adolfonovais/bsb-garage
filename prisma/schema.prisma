@@ -18,6 +18,44 @@ datasource db {
   schemas  = ["bsb_garage"]
 }
 
+// ---------- Organizações (multi-tenant) ----------
+//
+// Cada cliente da plataforma é uma Organizacao; todo dado de negócio carrega
+// organizacaoId e o PrismaClient (src/lib/prisma.ts) filtra/injeta esse campo
+// automaticamente com base na sessão. A BSB Garage é a organização #1.
+
+model Organizacao {
+  id               String    @id @default(cuid())
+  nome             String
+  slug             String    @unique
+  ativa            Boolean   @default(true)
+  // Plano/trial — hoje todo mundo é "trial" sem cobrança (ver estratégia
+  // de lançamento); a estrutura já fica pronta pra Stripe depois.
+  plano            String    @default("trial")
+  trialTerminaEm   DateTime?
+  // NFS-e (webservice DF + certificado da Primea) só funciona pra organização
+  // dona do certificado — as demais não veem o botão de emitir nota.
+  nfseHabilitada   Boolean   @default(false)
+  origemCadastro   String?
+  createdAt        DateTime  @default(now())
+
+  usuarios      Usuario[]
+  clientes      Cliente[]
+  veiculos      Veiculo[]
+  tiposServico  TipoServico[]
+  contadores    Contador[]
+  orcamentos    Orcamento[]
+  ordensServico OrdemServico[]
+  oficinas      OficinaTerceirizada[]
+  repasses      RepasseOficina[]
+  pecas         Peca[]
+  movEstoque    MovimentacaoEstoque[]
+  contas        ContaFinanceira[]
+  empresaConfig EmpresaConfig?
+
+  @@schema("bsb_garage")
+}
+
 // ---------- Usuários / Auth ----------
 
 enum PapelUsuario {
@@ -28,9 +66,11 @@ enum PapelUsuario {
 }
 
 model Usuario {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id           String       @id @default(cuid())
   nome         String
-  email        String       @unique
+  email        String       @unique // e-mail é único na plataforma toda (login); um usuário pertence a uma organização
   senhaHash    String
   papel        PapelUsuario @default(FUNCIONARIO)
   ativo        Boolean      @default(true)
@@ -39,12 +79,15 @@ model Usuario {
   orcamentos     Orcamento[]
   ordensServico  OrdemServico[]
 
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
 // ---------- Clientes / Veículos ----------
 
 model Cliente {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id          String   @id @default(cuid())
   nome        String
   cpf         String?
@@ -69,10 +112,13 @@ model Cliente {
   ordensServico OrdemServico[]
 
   @@index([nome])
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
 model Veiculo {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id        String   @id @default(cuid())
   clienteId String
   cliente   Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
@@ -87,32 +133,40 @@ model Veiculo {
 
   @@index([placa])
   @@index([clienteId])
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
 // ---------- Catálogo de serviços ----------
 
 model TipoServico {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id         String   @id @default(cuid())
-  nome       String   @unique
+  nome       String
   precoBase  Decimal? @db.Decimal(10, 2)
   ativo      Boolean  @default(true)
 
   itensOrcamento OrcamentoItem[]
   itensOS        OrdemServicoItem[]
 
+  @@unique([organizacaoId, nome])
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
 // ---------- Numeração sequencial (Orçamento / OS) ----------
 
 model Contador {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id     String @id @default(cuid())
   chave  String // "ORCAMENTO" | "OS"
   ano    Int
   ultimo Int    @default(0)
 
-  @@unique([chave, ano])
+  @@unique([organizacaoId, chave, ano])
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
@@ -128,6 +182,8 @@ enum StatusOrcamento {
 }
 
 model Orcamento {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id            String          @id @default(cuid())
   numero        Int
   ano           Int
@@ -148,7 +204,8 @@ model Orcamento {
   itens         OrcamentoItem[]
   ordensServico OrdemServico[]
 
-  @@unique([ano, numero])
+  @@unique([organizacaoId, ano, numero])
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
@@ -188,6 +245,8 @@ enum TipoFoto {
 }
 
 model OrdemServico {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id                    String        @id @default(cuid())
   numero                Int
   ano                   Int
@@ -234,7 +293,8 @@ model OrdemServico {
   repasses    RepasseOficina[]
   movEstoque  MovimentacaoEstoque[]
 
-  @@unique([ano, numero])
+  @@unique([organizacaoId, ano, numero])
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
@@ -297,8 +357,10 @@ enum StatusPagamentoOficina {
 }
 
 model OficinaTerceirizada {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id       String  @id @default(cuid())
-  nome     String  @unique
+  nome     String
   contato  String?
   telefone String?
   ativo    Boolean @default(true)
@@ -306,10 +368,14 @@ model OficinaTerceirizada {
   ordensServico OrdemServico[]
   repasses      RepasseOficina[]
 
+  @@unique([organizacaoId, nome])
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
 model RepasseOficina {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id                     String                  @id @default(cuid())
   oficinaId              String
   oficina                OficinaTerceirizada     @relation(fields: [oficinaId], references: [id])
@@ -335,6 +401,7 @@ model RepasseOficina {
   contas ContaFinanceira[]
   itens  RepasseItem[]
 
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
@@ -363,8 +430,10 @@ enum TipoMovimentoEstoque {
 }
 
 model Peca {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id               String  @id @default(cuid())
-  nome             String  @unique
+  nome             String
   unidade          String  @default("un")
   quantidadeAtual  Decimal @default(0) @db.Decimal(10, 2)
   quantidadeMinima Decimal @default(0) @db.Decimal(10, 2)
@@ -372,10 +441,14 @@ model Peca {
 
   movimentacoes MovimentacaoEstoque[]
 
+  @@unique([organizacaoId, nome])
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
 model MovimentacaoEstoque {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id          String               @id @default(cuid())
   pecaId      String
   peca        Peca                 @relation(fields: [pecaId], references: [id])
@@ -386,6 +459,7 @@ model MovimentacaoEstoque {
   os          OrdemServico?        @relation(fields: [osId], references: [id])
   observacao  String?
 
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
@@ -408,6 +482,8 @@ enum StatusConta {
 }
 
 model ContaFinanceira {
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   id              String      @id @default(cuid())
   tipo            TipoConta
   descricao       String
@@ -425,13 +501,16 @@ model ContaFinanceira {
   recorrente      Boolean     @default(false)
   createdAt       DateTime    @default(now())
 
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }
 
 // ---------- Configuração da empresa ----------
 
 model EmpresaConfig {
-  id           Int     @id @default(1)
+  id           Int     @id @default(autoincrement())
+  organizacaoId String @unique
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
   nome         String  @default("BSB Garage Martelinho de Ouro")
   razaoSocial  String?
   cnpj         String?

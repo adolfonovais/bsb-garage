@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
   const inicio = new Date(`${inicioStr}T00:00:00`);
   const fim = new Date(`${fimStr}T00:00:00`);
 
-  const empresa = await prisma.empresaConfig.findUnique({ where: { id: 1 } });
+  const empresa = await prisma.empresaConfig.findFirst();
   const workbook = new ExcelJS.Workbook();
   workbook.creator = empresa?.nome ?? "BSB Garage Martelinho de Ouro";
   workbook.created = new Date();

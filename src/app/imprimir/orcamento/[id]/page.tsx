@@ -27,7 +27,7 @@ export default async function ImprimirOrcamentoPage({
       where: { id },
       include: { cliente: true, veiculo: true, itens: { orderBy: { ordem: "asc" } } },
     }),
-    prisma.empresaConfig.findUnique({ where: { id: 1 } }),
+    prisma.empresaConfig.findFirst(),
   ]);
 
   if (!orcamento) notFound();

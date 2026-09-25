@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma, TX_OPTIONS } from "@/lib/prisma";
+import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
@@ -33,6 +34,7 @@ export async function criarOrcamento(formData: FormData) {
     const numero = await proximoNumero("ORCAMENTO", ano, tx);
     return tx.orcamento.create({
       data: {
+      organizacaoId: await organizacaoIdAtual(),
         numero,
         ano,
         clienteId: dados.clienteId,
@@ -170,6 +172,7 @@ export async function converterEmOS(orcamentoId: string) {
 
     const novaOS = await tx.ordemServico.create({
       data: {
+      organizacaoId: await organizacaoIdAtual(),
         numero,
         ano,
         origemOrcamentoId: orcamento.id,

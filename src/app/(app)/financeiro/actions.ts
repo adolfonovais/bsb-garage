@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { dataDoFormulario } from "@/lib/format";
 
@@ -40,6 +41,7 @@ export async function criarConta(_prevState: EstadoFormulario, formData: FormDat
 
   await prisma.contaFinanceira.create({
     data: {
+      organizacaoId: await organizacaoIdAtual(),
       tipo: dados.tipo,
       descricao: dados.descricao,
       valor: Number(dados.valor) || 0,
@@ -97,6 +99,7 @@ export async function marcarContaPaga(contaId: string) {
   if (conta.recorrente) {
     await prisma.contaFinanceira.create({
       data: {
+      organizacaoId: await organizacaoIdAtual(),
         tipo: conta.tipo,
         descricao: conta.descricao,
         valor: conta.valor,

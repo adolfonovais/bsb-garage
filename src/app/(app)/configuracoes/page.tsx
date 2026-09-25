@@ -10,6 +10,7 @@ import {
 import { Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
 import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import { nfseConfigurada } from "@/lib/nfse";
+import { organizacaoAtual } from "@/lib/tenant";
 import { whatsappConfigurado } from "@/lib/whatsapp";
 import { CheckCircle2, Circle } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -18,9 +19,10 @@ export default async function ConfiguracoesPage() {
   const session = await auth();
   if (session?.user.papel !== "ADMIN") redirect("/dashboard");
 
-  const [empresa, usuarios] = await Promise.all([
-    prisma.empresaConfig.findUnique({ where: { id: 1 } }),
+  const [empresa, usuarios, organizacao] = await Promise.all([
+    prisma.empresaConfig.findFirst(),
     prisma.usuario.findMany({ orderBy: { nome: "asc" } }),
+    organizacaoAtual(),
   ]);
 
   return (
@@ -33,7 +35,7 @@ export default async function ConfiguracoesPage() {
         </h2>
         <form action={atualizarEmpresa} className="space-y-4">
           <Field label="Nome fantasia *">
-            <Input name="nome" defaultValue={empresa?.nome ?? "BSB Garage Martelinho de Ouro"} required />
+            <Input name="nome" defaultValue={empresa?.nome ?? organizacao.nome} required />
           </Field>
           <Field label="Razão social">
             <Input name="razaoSocial" defaultValue={empresa?.razaoSocial ?? ""} />
@@ -133,6 +135,8 @@ export default async function ConfiguracoesPage() {
         </DetailsForm>
       </Card>
 
+      {/* Integrações globais (certificado da Primea, WhatsApp Maytra) — só a organização dona delas vê. */}
+      {organizacao.nfseHabilitada && (
       <Card className="p-6">
         <h2 className="mb-1 text-sm font-semibold text-slate-900">Integrações</h2>
         <p className="mb-4 text-xs text-slate-500">
@@ -171,6 +175,7 @@ export default async function ConfiguracoesPage() {
           </li>
         </ul>
       </Card>
+      )}
     </div>
   );
 }

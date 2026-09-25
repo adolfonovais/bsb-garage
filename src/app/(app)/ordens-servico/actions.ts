@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma, TX_OPTIONS } from "@/lib/prisma";
+import { organizacaoAtual, organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
@@ -41,6 +42,7 @@ export async function criarOS(formData: FormData) {
     const numero = await proximoNumero("OS", ano, tx);
     return tx.ordemServico.create({
       data: {
+      organizacaoId: await organizacaoIdAtual(),
         numero,
         ano,
         clienteId: dados.clienteId,
@@ -197,7 +199,7 @@ export async function atualizarStatusOS(osId: string, status: string) {
   // que o Maytra for aprovado — ver src/lib/notificacoes.ts). Não trava a
   // atualização de status caso o aviso falhe.
   if (status === "CONCLUIDA") {
-    const empresa = await prisma.empresaConfig.findUnique({ where: { id: 1 } });
+    const empresa = await prisma.empresaConfig.findFirst();
     await notificarClienteOSConcluida({
       paraEmail: os.cliente.email,
       paraTelefone: os.cliente.telefone,
@@ -311,6 +313,7 @@ export async function usarPeca(osId: string, formData: FormData) {
   await prisma.$transaction([
     prisma.movimentacaoEstoque.create({
       data: {
+      organizacaoId: await organizacaoIdAtual(),
         pecaId: dados.pecaId,
         osId,
         tipo: "SAIDA",
@@ -337,6 +340,11 @@ export async function emitirNfseAction(
 ): Promise<EstadoEmissaoNFSe> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
+
+  // A emissão usa o certificado da Primea — só a organização dona dele pode emitir.
+  if (!(await organizacaoAtual()).nfseHabilitada) {
+    return { erro: "Emissão de NFS-e não está habilitada para a sua conta." };
+  }
 
   const os = await prisma.ordemServico.findUniqueOrThrow({
     where: { id: osId },

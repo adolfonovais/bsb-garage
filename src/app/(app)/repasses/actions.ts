@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { dataDoFormulario } from "@/lib/format";
 import type { EstadoFormulario } from "@/components/EdicaoInline";
@@ -77,6 +78,7 @@ export async function criarRepasse(formData: FormData) {
 
   const repasse = await prisma.repasseOficina.create({
     data: {
+      organizacaoId: await organizacaoIdAtual(),
       oficinaId: dados.oficinaId,
       osId: dados.osId || null,
       dataEntrada: dataDoFormulario(dados.dataEntrada) ?? new Date(),

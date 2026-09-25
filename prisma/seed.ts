@@ -6,7 +6,24 @@ import bcrypt from "bcryptjs";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+// Organização #1 (a BSB Garage). Na migração multi-tenant ela já é criada com
+// esse id; o upsert cobre um banco novo (dev/local).
+const ORG_ID = "org_bsb_garage";
+
 async function main() {
+  await prisma.organizacao.upsert({
+    where: { id: ORG_ID },
+    update: {},
+    create: {
+      id: ORG_ID,
+      nome: "BSB Garage Martelinho de Ouro",
+      slug: "bsb-garage",
+      plano: "interno",
+      nfseHabilitada: true,
+      origemCadastro: "seed",
+    },
+  });
+
   // ---- Usuário administrador ----
   const senhaAdmin = process.env.SEED_ADMIN_SENHA ?? "trocar123";
   const senhaHash = await bcrypt.hash(senhaAdmin, 10);
@@ -19,16 +36,17 @@ async function main() {
       email: "adolfo@bsbgarage.com.br",
       senhaHash,
       papel: "ADMIN",
+      organizacaoId: ORG_ID,
     },
   });
   console.log(`Usuário admin: ${admin.email} / senha inicial: ${senhaAdmin}`);
 
   // ---- Configuração da empresa (dados extraídos do modelo de Orçamento atual) ----
   await prisma.empresaConfig.upsert({
-    where: { id: 1 },
+    where: { organizacaoId: ORG_ID },
     update: {},
     create: {
-      id: 1,
+      organizacaoId: ORG_ID,
       nome: "BSB Garage Martelinho de Ouro",
       razaoSocial: "ADOLFO DE NOVAIS PINTO NETO ME",
       cnpj: "16.691.058/0001-69",
@@ -53,9 +71,9 @@ async function main() {
   ];
   for (const nome of tiposServico) {
     await prisma.tipoServico.upsert({
-      where: { nome },
+      where: { organizacaoId_nome: { organizacaoId: ORG_ID, nome } },
       update: {},
-      create: { nome },
+      create: { organizacaoId: ORG_ID, nome },
     });
   }
 
@@ -68,17 +86,17 @@ async function main() {
   ];
   for (const p of pecas) {
     await prisma.peca.upsert({
-      where: { nome: p.nome },
+      where: { organizacaoId_nome: { organizacaoId: ORG_ID, nome: p.nome } },
       update: {},
-      create: { ...p, quantidadeAtual: p.quantidadeMinima * 2 },
+      create: { ...p, organizacaoId: ORG_ID, quantidadeAtual: p.quantidadeMinima * 2 },
     });
   }
 
   // ---- Oficina terceirizada de exemplo ----
   await prisma.oficinaTerceirizada.upsert({
-    where: { nome: "JL Pintura" },
+    where: { organizacaoId_nome: { organizacaoId: ORG_ID, nome: "JL Pintura" } },
     update: {},
-    create: { nome: "JL Pintura" },
+    create: { organizacaoId: ORG_ID, nome: "JL Pintura" },
   });
 
   // ---- Cliente + veículo de exemplo (só para dar uma base pra testar) ----
@@ -87,6 +105,7 @@ async function main() {
     update: {},
     create: {
       id: "cliente-exemplo-seed",
+      organizacaoId: ORG_ID,
       nome: "Cliente Exemplo",
       telefone: "(61) 99999-0000",
       email: "cliente.exemplo@email.com",
@@ -98,6 +117,7 @@ async function main() {
     update: {},
     create: {
       id: "veiculo-exemplo-seed",
+      organizacaoId: ORG_ID,
       clienteId: clienteExemplo.id,
       modelo: "HB20",
       placa: "ABC1D23",

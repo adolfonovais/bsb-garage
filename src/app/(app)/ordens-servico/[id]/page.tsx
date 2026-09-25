@@ -16,6 +16,7 @@ import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { Valor } from "@/components/ValoresPrivacidade";
 import { nfseConfigurada } from "@/lib/nfse";
+import { organizacaoAtual } from "@/lib/tenant";
 import { Download, FileText, Pencil, Printer, Receipt, Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { EmitirNfseButton } from "@/components/EmitirNfseButton";
@@ -42,6 +43,7 @@ export default async function OSDetalhePage({
 }) {
   const { id } = await params;
 
+  const organizacao = await organizacaoAtual();
   const [os, pecas] = await Promise.all([
     prisma.ordemServico.findUnique({
       where: { id },
@@ -99,7 +101,7 @@ export default async function OSDetalhePage({
                   <Download className="h-4 w-4" /> Baixar XML
                 </LinkButton>
               </>
-            ) : nfseConfigurada() ? (
+            ) : organizacao.nfseHabilitada && nfseConfigurada() ? (
               <EmitirNfseButton osId={os.id} />
             ) : (
               <Button

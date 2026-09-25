@@ -57,7 +57,7 @@ export default async function RelatoriosPage({
   const fim = new Date(`${fimStr}T00:00:00`);
 
   const [empresa, tiposServico] = await Promise.all([
-    prisma.empresaConfig.findUnique({ where: { id: 1 } }),
+    prisma.empresaConfig.findFirst(),
     prisma.tipoServico.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
   ]);
 

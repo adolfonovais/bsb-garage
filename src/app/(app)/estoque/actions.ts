@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma, TX_OPTIONS } from "@/lib/prisma";
+import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { dataDoFormulario } from "@/lib/format";
 
@@ -33,6 +34,7 @@ export async function criarPeca(formData: FormData) {
 
   const peca = await prisma.peca.create({
     data: {
+      organizacaoId: await organizacaoIdAtual(),
       nome: dados.nome,
       unidade: dados.unidade,
       quantidadeMinima: Number(dados.quantidadeMinima) || 0,
@@ -42,6 +44,7 @@ export async function criarPeca(formData: FormData) {
         quantidadeInicial > 0
           ? {
               create: {
+                organizacaoId: await organizacaoIdAtual(),
                 tipo: "ENTRADA",
                 quantidade: quantidadeInicial,
                 observacao: "Estoque inicial",
@@ -125,6 +128,7 @@ export async function registrarMovimentacao(
   await prisma.$transaction([
     prisma.movimentacaoEstoque.create({
       data: {
+      organizacaoId: await organizacaoIdAtual(),
         pecaId,
         tipo: dados.tipo,
         quantidade,

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import type { EstadoFormulario } from "@/components/EdicaoInline";
 
@@ -38,7 +39,7 @@ export async function criarCliente(formData: FormData) {
     uf: formData.get("uf"),
   });
 
-  const cliente = await prisma.cliente.create({ data: dados });
+  const cliente = await prisma.cliente.create({ data: { ...dados, organizacaoId: await organizacaoIdAtual() } });
   revalidatePath("/clientes");
   redirect(`/clientes/${cliente.id}`);
 }
@@ -105,6 +106,7 @@ export async function criarVeiculo(
 
   await prisma.veiculo.create({
     data: {
+      organizacaoId: await organizacaoIdAtual(),
       clienteId,
       modelo: dados.modelo,
       placa: dados.placa?.toUpperCase() || null,

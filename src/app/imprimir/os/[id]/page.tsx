@@ -30,7 +30,7 @@ export default async function ImprimirOSPage({
         pagamentos: { orderBy: { data: "asc" } },
       },
     }),
-    prisma.empresaConfig.findUnique({ where: { id: 1 } }),
+    prisma.empresaConfig.findFirst(),
   ]);
 
   if (!os) notFound();

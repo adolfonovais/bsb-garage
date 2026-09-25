@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
+import { organizacaoIdAtual } from "@/lib/tenant";
 
-type ClientOuTx = typeof prisma | Prisma.TransactionClient;
+type ClientOuTx = typeof prisma | Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
 /**
  * Gera o próximo número sequencial (por ano) para Orçamento ou Ordem de Serviço.
@@ -14,10 +14,11 @@ export async function proximoNumero(
   tx?: ClientOuTx
 ): Promise<number> {
   const client = tx ?? prisma;
+  const organizacaoId = await organizacaoIdAtual();
 
   const contador = await client.contador.upsert({
-    where: { chave_ano: { chave, ano } },
-    create: { chave, ano, ultimo: 1 },
+    where: { organizacaoId_chave_ano: { organizacaoId, chave, ano } },
+    create: { organizacaoId, chave, ano, ultimo: 1 },
     update: { ultimo: { increment: 1 } },
   });
 

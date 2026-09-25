@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import type { EstadoFormulario } from "@/components/EdicaoInline";
 
@@ -25,6 +26,7 @@ export async function criarOficina(formData: FormData) {
 
   const oficina = await prisma.oficinaTerceirizada.create({
     data: {
+      organizacaoId: await organizacaoIdAtual(),
       nome: dados.nome,
       contato: dados.contato || null,
       telefone: dados.telefone || null,
