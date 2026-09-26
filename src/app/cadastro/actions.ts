@@ -1,11 +1,11 @@
 "use server";
 
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { signIn } from "@/lib/auth";
 import { prismaBase } from "@/lib/prisma-base";
-import { cadastroAberto, DIAS_DE_TESTE } from "@/lib/marca";
+import { cadastroAberto } from "@/lib/marca";
+import { criarOrganizacaoComAdmin } from "@/lib/nova-organizacao";
 
 export type CadastroState = { erro?: string } | undefined;
 
@@ -16,32 +16,6 @@ const CadastroSchema = z.object({
   email: z.string().trim().email("E-mail inválido."),
   senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
 });
-
-// Catálogo inicial de tipos de serviço — cada organização recebe a sua cópia
-// e edita como quiser (é o mesmo catálogo que a BSB Garage usa hoje).
-const TIPOS_SERVICO_PADRAO = [
-  "Martelinho de Ouro",
-  "Pintura",
-  "Lanternagem",
-  "Pintura c/ Lanternagem",
-  "Polimento Geral",
-  "Polimento Localizado",
-  "Polimento de Faróis",
-  "Vitrificação",
-  "Higienização",
-  "Alinhamento de Para-choque",
-];
-
-function gerarSlug(nome: string) {
-  const base = nome
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40);
-  return `${base || "oficina"}-${Math.random().toString(36).slice(2, 7)}`;
-}
 
 export async function criarConta(_prev: CadastroState, formData: FormData): Promise<CadastroState> {
   if (!cadastroAberto()) return { erro: "Cadastro ainda não está aberto." };
@@ -64,20 +38,13 @@ export async function criarConta(_prev: CadastroState, formData: FormData): Prom
     return { erro: "Já existe uma conta com esse e-mail. Faça login." };
   }
 
-  const senhaHash = await bcrypt.hash(dados.senha, 10);
-  const trialTerminaEm = new Date(Date.now() + DIAS_DE_TESTE * 24 * 60 * 60 * 1000);
-
-  await prismaBase.organizacao.create({
-    data: {
-      nome: dados.nomeOficina,
-      slug: gerarSlug(dados.nomeOficina),
-      plano: "trial",
-      trialTerminaEm,
-      origemCadastro: "cadastro",
-      usuarios: { create: { nome: dados.nome, email, senhaHash, papel: "ADMIN" } },
-      empresaConfig: { create: { nome: dados.nomeOficina, cidadeUf: dados.cidadeUf } },
-      tiposServico: { create: TIPOS_SERVICO_PADRAO.map((nome) => ({ nome })) },
-    },
+  await criarOrganizacaoComAdmin({
+    nomeOficina: dados.nomeOficina,
+    cidadeUf: dados.cidadeUf,
+    nomeAdmin: dados.nome,
+    email,
+    senha: dados.senha,
+    origemCadastro: "cadastro",
   });
 
   try {
