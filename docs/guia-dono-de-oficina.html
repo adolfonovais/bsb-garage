@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Guia do dono de oficina</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root { --ink:#0f172a; --muted:#475569; --line:#e2e8f0; --amber:#f59e0b; --amber-dk:#b45309; --amber-bg:#fffbeb; --bg:#ffffff; --soft:#f8fafc; --ok:#047857; --ok-bg:#ecfdf5; --red:#b91c1c; --red-bg:#fef2f2; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin:0; font-family: "Segoe UI", Arial, sans-serif; color:var(--ink); background:#e5e7eb; line-height:1.5; font-size:11pt; }
+  .page { width:210mm; height:297mm; overflow:hidden; margin:0 auto 8mm; background:var(--bg); padding:18mm 18mm 16mm; page-break-after:always; break-after:page; position:relative; }
+  .page:last-child { page-break-after:auto; break-after:auto; }
+  @media print { body { background:#fff; } .page { margin:0; } }
+
+  .capa { background:#000; color:#fff; padding:0; display:flex; flex-direction:column; justify-content:space-between; }
+  .capa .topo { padding:26mm 22mm 0; }
+  .capa .selo { width:18mm; height:18mm; border-radius:4mm; background:var(--amber); display:flex; align-items:center; justify-content:center; font-size:26pt; color:#000; font-weight:800; }
+  .capa h1 { font-size:34pt; line-height:1.1; margin:14mm 0 4mm; letter-spacing:-.5px; }
+  .capa p.sub { font-size:14pt; color:#d4d4d8; max-width:130mm; margin:0; }
+  .capa .rodape { padding:0 22mm 22mm; color:#a1a1aa; font-size:10pt; }
+  .capa .faixa { height:4mm; background:var(--amber); }
+
+  h2 { font-size:19pt; margin:0 0 3mm; letter-spacing:-.3px; padding-bottom:2mm; border-bottom:3px solid var(--amber); }
+  h2 .n { display:inline-block; min-width:9mm; color:var(--amber-dk); }
+  h3 { font-size:12.5pt; margin:6mm 0 1.5mm; color:var(--ink); }
+  p { margin:0 0 2.5mm; }
+  ul, ol { margin:0 0 3mm; padding-left:6mm; }
+  li { margin-bottom:1.2mm; }
+  .lead { color:var(--muted); font-size:11.5pt; margin-bottom:4mm; }
+  code, .btn { font-family: inherit; }
+  .btn { display:inline-block; background:#111827; color:#fff; border-radius:1.5mm; padding:0 2mm; font-size:9.5pt; font-weight:600; white-space:nowrap; }
+  .menu { display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:1.5mm; padding:0 2mm; font-size:10pt; font-weight:600; white-space:nowrap; }
+  .tag { display:inline-block; border-radius:9mm; padding:0 2.2mm; font-size:9pt; font-weight:600; background:#f1f5f9; color:#334155; }
+  .caixa { border-radius:2mm; padding:3mm 4mm; margin:3mm 0 4mm; font-size:10.5pt; }
+  .dica { background:var(--amber-bg); border-left:3px solid var(--amber); }
+  .atencao { background:var(--red-bg); border-left:3px solid var(--red); }
+  .ok { background:var(--ok-bg); border-left:3px solid var(--ok); }
+  .caixa b:first-child { display:block; margin-bottom:.5mm; }
+  table { width:100%; border-collapse:collapse; margin:2mm 0 4mm; font-size:10.5pt; }
+  th, td { text-align:left; padding:1.8mm 2.5mm; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--soft); font-size:9.5pt; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); }
+  .fluxo { display:flex; flex-wrap:wrap; gap:2mm; align-items:center; margin:3mm 0 5mm; }
+  .fluxo .passo { background:var(--soft); border:1px solid var(--line); border-radius:2mm; padding:2mm 3mm; font-weight:600; font-size:10.5pt; }
+  .fluxo .seta { color:var(--amber-dk); font-weight:800; }
+  .passos { counter-reset:p; list-style:none; padding:0; }
+  .passos li { counter-increment:p; position:relative; padding-left:9mm; margin-bottom:2.2mm; }
+  .passos li::before { content:counter(p); position:absolute; left:0; top:.3mm; width:6mm; height:6mm; border-radius:50%; background:var(--amber); color:#000; font-weight:800; font-size:9pt; text-align:center; line-height:6mm; }
+  .duas { display:grid; grid-template-columns:1fr 1fr; gap:5mm; }
+  .sumario li { margin-bottom:1.6mm; }
+  .sumario a { color:var(--ink); text-decoration:none; }
+  .pe { position:absolute; left:18mm; right:18mm; bottom:8mm; font-size:8.5pt; color:#94a3b8; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<section class="page capa">
+  <div>
+    <div class="faixa"></div>
+    <div class="topo">
+      <div class="selo">⚙</div>
+      <h1>Guia do<br>dono de oficina</h1>
+      <p class="sub">Do primeiro acesso ao fechamento do mês: como usar o sistema para orçar, executar, receber e controlar a sua oficina.</p>
+    </div>
+  </div>
+  <div class="rodape">Versão de 26/09/2026 · Válido para oficinas de martelinho de ouro, funilaria e pintura</div>
+</section>
+
+<!-- SUMÁRIO / VISÃO GERAL -->
+<section class="page">
+  <h2>Como o sistema funciona</h2>
+  <p class="lead">Tudo gira em torno de um caminho simples. Cada etapa alimenta a próxima, então você não digita a mesma informação duas vezes.</p>
+  <div class="fluxo">
+    <span class="passo">Cliente e veículo</span><span class="seta">→</span>
+    <span class="passo">Orçamento</span><span class="seta">→</span>
+    <span class="passo">Ordem de Serviço</span><span class="seta">→</span>
+    <span class="passo">Pagamento</span><span class="seta">→</span>
+    <span class="passo">Entrega</span>
+  </div>
+  <p>Ao lado desse caminho principal, o sistema cuida de quatro coisas que costumam se perder em planilhas:</p>
+  <ul>
+    <li><b>Prestadores terceirizados e repasses</b> — o que você mandou pra pintura/lanternagem de fora, quanto cobrou do cliente, quanto pagou e quanto sobrou de lucro.</li>
+    <li><b>Financeiro</b> — o que falta receber dos clientes e o que falta pagar (prestadores, aluguel, contas fixas).</li>
+    <li><b>Estoque</b> — tintas, massas, vernizes, lixas: com baixa automática por OS e alerta de mínimo.</li>
+    <li><b>Relatórios</b> — faturamento, serviços, prestadores e estoque por período, com exportação.</li>
+  </ul>
+
+  <h3>Conteúdo deste guia</h3>
+  <ol class="sumario">
+    <li>Primeiros passos: conta, e-mail e teste grátis</li>
+    <li>Deixando a oficina com a sua cara (logo, dados, equipe)</li>
+    <li>Clientes e veículos</li>
+    <li>Orçamentos</li>
+    <li>Ordens de Serviço: do serviço à entrega</li>
+    <li>Prestadores terceirizados e repasses</li>
+    <li>Financeiro</li>
+    <li>Estoque</li>
+    <li>Dashboard e Relatórios</li>
+    <li>Privacidade e segurança</li>
+    <li>Rotina sugerida para o dono</li>
+    <li>Dúvidas frequentes e o que ainda não existe</li>
+  </ol>
+
+  <div class="caixa dica"><b>Dica: onde fica cada coisa</b>O menu lateral (no celular, o ícone ☰ no topo) tem: Dashboard, Clientes, Orçamentos, Ordens de Serviço, Estoque, Prestadores terceirizados, Repasses, Financeiro e Relatórios. <span class="menu">Configurações</span> só aparece para administradores.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>2</span></div>
+</section>
+
+<!-- 1. PRIMEIROS PASSOS -->
+<section class="page">
+  <h2><span class="n">1</span>Primeiros passos</h2>
+  <h3>Criando a conta da oficina</h3>
+  <ol class="passos">
+    <li>Abra o endereço do sistema e clique em <span class="btn">Criar conta grátis</span> (quando o cadastro estiver aberto) — ou aceite o convite/conta criada para você pela equipe do sistema.</li>
+    <li>Informe o <b>nome da oficina</b>, a <b>cidade - UF</b>, o <b>seu nome</b>, o <b>e-mail</b> e uma <b>senha</b> (mínimo de 6 caracteres).</li>
+    <li>Se o sistema pedir, abra o e-mail que você recebeu e clique no link de confirmação (vale 48 horas; olhe também o spam). Sem confirmar, o login não libera. Se o link vencer, tente entrar e use <span class="btn">Reenviar e-mail de confirmação</span>.</li>
+    <li>Entre com e-mail e senha. Você cai no <b>Dashboard</b> — vazio, mas já com o catálogo de serviços pronto.</li>
+  </ol>
+  <div class="caixa ok"><b>Teste grátis de 30 dias</b>Sua conta começa em período de teste, sem cartão. Uma faixa no topo mostra os dias restantes. Todos os recursos deste guia já funcionam durante o teste.</div>
+
+  <h3>O que já vem pronto</h3>
+  <ul>
+    <li><b>Catálogo de tipos de serviço:</b> Martelinho de Ouro, Pintura, Lanternagem, Pintura c/ Lanternagem, Polimento Geral, Polimento Localizado, Polimento de Faróis, Vitrificação, Higienização e Alinhamento de Para-choque.</li>
+    <li><b>Seu usuário administrador</b> — você vê tudo e configura tudo.</li>
+    <li><b>Dados isolados:</b> ninguém de fora enxerga clientes, ordens ou valores da sua oficina.</li>
+  </ul>
+
+  <h3>Trocando o seu nome e a sua senha</h3>
+  <p>Clique no seu nome no canto superior direito (abre <span class="menu">Minha conta</span>). Lá você altera o nome exibido e a senha. <b>Se a senha inicial foi passada por outra pessoa, troque-a no primeiro acesso.</b></p>
+  <div class="caixa atencao"><b>Esqueceu a senha?</b>Peça a um administrador da sua oficina para definir uma nova em <span class="menu">Configurações</span> → Usuários (campo “Nova senha”). Se você é o único administrador, fale com o suporte do sistema.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>3</span></div>
+</section>
+
+<!-- 2. CONFIGURAÇÕES -->
+<section class="page">
+  <h2><span class="n">2</span>Deixando a oficina com a sua cara</h2>
+  <p class="lead">Faça isto uma vez, no começo. Tudo fica em <span class="menu">Configurações</span> (menu lateral, só para administradores).</p>
+
+  <h3>Logo da oficina</h3>
+  <p>No card <b>Logo da oficina</b>, clique em <span class="btn">Enviar logo</span>, escolha o arquivo (PNG, JPG ou WEBP, até 10 MB) e confirme. A logo passa a aparecer na barra lateral, no cabeçalho dos Orçamentos e Ordens de Serviço impressos e nos relatórios. Para trocar, use <span class="btn">Trocar logo</span>; para tirar, <span class="btn">Remover</span>.</p>
+  <div class="caixa dica"><b>Qual arquivo usar</b>Logo com fundo branco ou transparente e formato mais largo do que alto funciona bem. Evite fotos escuras ou com muito texto pequeno.</div>
+
+  <h3>Dados da empresa</h3>
+  <p>Nome fantasia, razão social, CNPJ, inscrição estadual, telefones e cidade/UF. Esses dados formam o <b>cabeçalho dos documentos impressos</b> (orçamento, OS e relatórios). Preencha com o que você quer que o cliente veja.</p>
+
+  <h3>Equipe: usuários e papéis</h3>
+  <table>
+    <tr><th>Papel</th><th>O que faz</th></tr>
+    <tr><td><b>Administrador</b></td><td>Acesso total, inclusive Configurações (dados da empresa, logo e usuários).</td></tr>
+    <tr><td><b>Funcionário</b></td><td>Usa o dia a dia (clientes, orçamentos, ordens, repasses, financeiro, estoque), mas não vê Configurações.</td></tr>
+  </table>
+  <p><b>Convidar por e-mail (recomendado):</b></p>
+  <ol class="passos">
+    <li>Em <span class="menu">Configurações</span>, no bloco <b>Convidar por e-mail</b>, digite o e-mail da pessoa e escolha o papel.</li>
+    <li>Clique em <span class="btn">Enviar convite</span>. A pessoa recebe um link (vale 7 dias), informa o nome, cria a própria senha e já entra na sua oficina.</li>
+    <li>Se o envio de e-mail não estiver ativo, o sistema mostra o link na tela: copie e mande por WhatsApp.</li>
+  </ol>
+  <p><b>Criar o usuário direto:</b> <span class="btn">+ Novo usuário</span> — você define nome, e-mail, senha inicial e papel. Depois, avise a pessoa para trocar a senha em <i>Minha conta</i>.</p>
+  <p><b>Editar ou desativar:</b> cada usuário da lista tem opção de alterar nome/senha e de ativar/desativar. Quem sai da equipe deve ser <b>desativado</b> (o histórico dele nas ordens é mantido).</p>
+  <div class="pe"><span>Guia do dono de oficina</span><span>4</span></div>
+</section>
+
+<!-- 3. CLIENTES -->
+<section class="page">
+  <h2><span class="n">3</span>Clientes e veículos</h2>
+  <p class="lead">Cadastre uma vez, use sempre: o cliente e o carro aparecem prontos para escolher em orçamentos, ordens e relatórios.</p>
+  <h3>Cadastrar um cliente</h3>
+  <ol class="passos">
+    <li>Menu <span class="menu">Clientes</span> → <span class="btn">Novo cliente</span>.</li>
+    <li>Preencha ao menos o <b>nome</b>. Telefone e e-mail ajudam a avisar o cliente; CPF e endereço completo (CEP, logradouro, número, bairro, cidade, UF) só são necessários quando você precisar emitir nota fiscal.</li>
+    <li>Salve. Você entra na ficha do cliente.</li>
+  </ol>
+  <h3>Cadastrar os veículos</h3>
+  <p>Na ficha do cliente, adicione cada carro com <b>modelo</b>, <b>placa</b>, cor e ano. Um cliente pode ter vários veículos. A ficha mostra o <b>histórico</b> de orçamentos e ordens de serviço daquele cliente/carro.</p>
+  <div class="caixa dica"><b>Cadastro rápido</b>Ao criar um orçamento ou uma OS você pode escolher o cliente e o veículo na hora. Se o cliente ainda não existe, cadastre-o antes — leva menos de um minuto.</div>
+  <h3>Buscar</h3>
+  <p>A lista de clientes tem uma caixa de busca por nome, CPF, telefone ou placa — é o jeito mais rápido de achar o histórico de um carro que voltou à oficina.</p>
+  <div class="pe"><span>Guia do dono de oficina</span><span>5</span></div>
+</section>
+
+<!-- 4. ORÇAMENTOS -->
+<section class="page">
+  <h2><span class="n">4</span>Orçamentos</h2>
+  <p class="lead">O orçamento é a proposta ao cliente. Aprovado, vira Ordem de Serviço com um clique — sem redigitar nada.</p>
+  <h3>Criar um orçamento</h3>
+  <ol class="passos">
+    <li>Menu <span class="menu">Orçamentos</span> → <span class="btn">Novo orçamento</span>.</li>
+    <li>Escolha o <b>cliente</b> e o <b>veículo</b>. Defina a validade em dias (padrão: 30).</li>
+    <li>Adicione os <b>itens de serviço</b>: escolha o <b>tipo de serviço</b> (Martelinho, Pintura...), descreva a <b>parte do carro</b> (ex.: “Porta dianteira direita”), informe quantidade e valor. O total é calculado sozinho.</li>
+    <li>Use o campo de observações para condições, prazo ou o que ficou combinado. Salve.</li>
+  </ol>
+  <h3>Enviar ao cliente</h3>
+  <p>Na tela do orçamento, <span class="btn">Imprimir / PDF</span> abre o documento com o cabeçalho da sua oficina (logo, CNPJ, telefones). Imprima ou salve em PDF para mandar por WhatsApp.</p>
+  <h3>Situação do orçamento</h3>
+  <table>
+    <tr><th>Situação</th><th>Quando usar</th></tr>
+    <tr><td><span class="tag">Pendente</span></td><td>Enviado, aguardando resposta do cliente.</td></tr>
+    <tr><td><span class="tag">Aprovado</span></td><td>Cliente aceitou — use <span class="btn">Aprovar</span> e depois <span class="btn">Converter em Ordem de Serviço</span>.</td></tr>
+    <tr><td><span class="tag">Recusado</span></td><td>Cliente não aceitou — use <span class="btn">Recusar</span>. Fica no histórico.</td></tr>
+    <tr><td><span class="tag">Expirado</span></td><td>Passou da validade sem resposta.</td></tr>
+  </table>
+  <div class="caixa dica"><b>Ajustou o preço depois?</b>Use <span class="btn">Editar</span> na tela do orçamento para mudar itens e valores. Se ele já virou OS, o ajuste também pode ser feito na própria ordem.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>6</span></div>
+</section>
+
+<!-- 5. ORDENS DE SERVIÇO -->
+<section class="page">
+  <h2><span class="n">5</span>Ordens de Serviço</h2>
+  <p class="lead">A OS é o coração da oficina: registra o que será feito, o andamento, as fotos, os materiais gastos e os pagamentos.</p>
+
+  <h3>Criar uma OS</h3>
+  <ul>
+    <li><b>A partir de um orçamento aprovado:</b> no orçamento, <span class="btn">Converter em Ordem de Serviço</span>. Cliente, veículo e itens vêm prontos.</li>
+    <li><b>Do zero:</b> <span class="menu">Ordens de Serviço</span> → <span class="btn">Nova OS</span>, com o mesmo formulário do orçamento (cliente, veículo, itens, previsão de saída, forma de pagamento, observações).</li>
+  </ul>
+
+  <h3>O caminho do status</h3>
+  <div class="fluxo">
+    <span class="passo">Aberta</span><span class="seta">→</span>
+    <span class="passo">Em andamento</span><span class="seta">→</span>
+    <span class="passo">Concluída</span><span class="seta">→</span>
+    <span class="passo">Entregue</span>
+  </div>
+  <p>Na tela da OS, o cartão <b>Status</b> mostra só o próximo passo possível: <span class="btn">Iniciar serviço</span>, <span class="btn">Aguardando peça</span> (e <span class="btn">Retomar serviço</span>), <span class="btn">Marcar como concluída</span> e <span class="btn">Marcar como entregue</span>. Uma OS aberta ainda pode ser <b>cancelada</b>.</p>
+  <div class="caixa atencao"><b>Entregue exige data de saída</b>Ao marcar como entregue, o sistema registra a data de saída real. Receber o pagamento <b>não</b> muda o status: carros que já saem pagos na entrada continuam “em andamento” até você entregar. Marcar a OS como entregue também entrega os repasses ligados a ela.</div>
+
+  <h3>Dentro da OS</h3>
+  <table>
+    <tr><th>Bloco</th><th>Para que serve</th></tr>
+    <tr><td><b>Itens de serviço</b></td><td>O que será feito, por tipo de serviço, com valores. Editável em <i>Editar</i>.</td></tr>
+    <tr><td><b>Fotos do veículo</b></td><td>Envie fotos <b>antes</b> e <b>depois</b>. Protegem a oficina em caso de dúvida e mostram o resultado ao cliente.</td></tr>
+    <tr><td><b>Materiais utilizados</b></td><td>Escolha a peça/material e a quantidade e clique em <span class="btn">Dar baixa</span>: o estoque desconta na hora. A lixeira desfaz.</td></tr>
+    <tr><td><b>Controle de pagamentos</b></td><td>Registre cada pagamento (entrada, parcelas, saldo) com data, valor e forma. O sistema mostra <span class="tag">Recebido</span> e <span class="tag">A receber</span>.</td></tr>
+  </table>
+  <div class="caixa atencao"><b>Trava de segurança</b>Não é possível editar a OS para um valor <b>menor</b> do que o já recebido. Se o valor precisa cair, ajuste antes o registro de pagamento.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>7</span></div>
+</section>
+
+<section class="page">
+  <h2><span class="n">5</span>Ordens de Serviço <span style="font-weight:400;color:var(--muted);font-size:13pt">(continuação)</span></h2>
+  <h3>Imprimir a OS</h3>
+  <p><span class="btn">Imprimir / PDF</span> gera o documento com cabeçalho da oficina, dados do cliente e do veículo, itens, total e controle de pagamentos — pronto para o cliente assinar na entrada ou receber por WhatsApp.</p>
+
+  <h3>Achando ordens na lista</h3>
+  <p>Em <span class="menu">Ordens de Serviço</span> use as abas de situação (Aberta, Em andamento, Aguardando peça, Concluída, Entregue, Cancelada). Elas mostram na hora onde estão os carros da oficina — bom para conferir a ocupação do pátio.</p>
+
+  <h3>Passo a passo de um serviço típico</h3>
+  <ol class="passos">
+    <li>Cliente traz o carro: <b>cadastre/localize</b> o cliente e o veículo.</li>
+    <li>Faça o <b>orçamento</b>, imprima em PDF e envie.</li>
+    <li>Cliente aprovou: <span class="btn">Aprovar</span> → <span class="btn">Converter em Ordem de Serviço</span>.</li>
+    <li>Tire as <b>fotos “antes”</b> e anexe na OS. Registre a <b>entrada</b> paga, se houver, em Controle de pagamentos.</li>
+    <li>Ao começar: <span class="btn">Iniciar serviço</span>. Se faltar peça: <span class="btn">Aguardando peça</span>.</li>
+    <li>Vá dando <b>baixa nos materiais</b> usados. Se parte do serviço vai para um prestador de fora, crie o <b>repasse</b> (capítulo 6).</li>
+    <li>Terminou: <span class="btn">Marcar como concluída</span>, fotos “depois”, cobre o saldo e registre o pagamento.</li>
+    <li>Cliente retirou: <span class="btn">Marcar como entregue</span>. A OS fecha com a data de saída.</li>
+  </ol>
+  <div class="caixa ok"><b>Resultado</b>No fim, o financeiro, o estoque, os repasses e os relatórios já estão atualizados sozinhos — sem planilha paralela.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>8</span></div>
+</section>
+
+<!-- 6. PRESTADORES E REPASSES -->
+<section class="page">
+  <h2><span class="n">6</span>Prestadores terceirizados e repasses</h2>
+  <p class="lead">Mandou pintura, lanternagem ou polimento para uma oficina parceira? O repasse registra quanto você cobrou do cliente, quanto pagou ao prestador e o lucro que ficou.</p>
+
+  <h3>Cadastrar o prestador</h3>
+  <p>Menu <span class="menu">Prestadores terceirizados</span> → <span class="btn">Novo prestador</span> (nome, contato e telefone). A ficha do prestador lista todos os repasses feitos a ele.</p>
+
+  <h3>Criar um repasse</h3>
+  <ol class="passos">
+    <li>Menu <span class="menu">Repasses</span> → <span class="btn">Novo repasse</span>.</li>
+    <li>Escolha o <b>prestador</b>. Em seguida, se quiser, <b>vincule a uma OS</b> — carro e placa se preenchem sozinhos.</li>
+    <li>Marque quais <b>serviços da OS</b> estão indo para esse prestador (aparece tipo de serviço, descrição e valor). O <b>tipo de serviço</b> e o <b>valor cobrado do cliente</b> são preenchidos com a soma dos itens marcados.</li>
+    <li>Informe o <b>custo do prestador</b>, outros custos e a quantidade de peças. O sistema calcula <b>custo total</b> e <b>lucro</b>.</li>
+    <li>Salve. O repasse nasce <span class="tag">Em andamento</span> com pagamento <span class="tag">Pendente</span>.</li>
+  </ol>
+  <div class="caixa atencao"><b>Uma OS, um repasse por prestador</b>Se você já repassou uma OS para determinado prestador, ela some da lista quando esse prestador é escolhido; a caixa amarela avisa qual OS e quais itens já estão com ele. Para acrescentar itens, <b>edite o repasse existente</b>. Para outro prestador (por exemplo, lanternagem numa oficina e pintura noutra), a OS continua disponível.</div>
+
+  <h3>Acompanhar</h3>
+  <table>
+    <tr><th>Campo</th><th>Valores</th></tr>
+    <tr><td><b>Status do repasse</b></td><td>Em andamento · Entregue · Cancelado</td></tr>
+    <tr><td><b>Pagamento ao prestador</b></td><td>Pendente · Pago</td></tr>
+  </table>
+  <p>A lista de repasses tem filtros por status, por pagamento e por prestador (dá para combinar). Ao filtrar por um prestador, o sistema mostra <b>quantas peças</b> já foram repassadas a ele. A coluna <b>OS</b> leva direto para a ordem de serviço de origem.</p>
+  <p>O que o prestador te cobra entra automaticamente em <b>Financeiro → A pagar a prestadores</b>.</p>
+  <div class="pe"><span>Guia do dono de oficina</span><span>9</span></div>
+</section>
+
+<!-- 7. FINANCEIRO -->
+<section class="page">
+  <h2><span class="n">7</span>Financeiro</h2>
+  <p class="lead">Uma tela para responder “quanto tenho a receber, quanto tenho a pagar e como está o mês”.</p>
+
+  <h3>O que aparece sozinho</h3>
+  <ul>
+    <li><b>A receber de clientes:</b> saldo das ordens de serviço em aberto (valor da OS menos o que já foi registrado como pago).</li>
+    <li><b>A pagar a prestadores terceirizados:</b> repasses com pagamento pendente.</li>
+    <li><b>Recebido de clientes no mês</b> (soma dos pagamentos lançados nas ordens).</li>
+  </ul>
+
+  <h3>Contas avulsas (aluguel, energia, fornecedores...)</h3>
+  <ol class="passos">
+    <li>Em <span class="menu">Financeiro</span>, clique em <span class="btn">+ Nova conta</span>.</li>
+    <li>Escolha <b>a pagar</b> ou <b>a receber</b>, descreva, informe categoria, vencimento e valor.</li>
+    <li>Marque <b>“conta recorrente”</b> se ela se repete todo mês (aluguel, assinatura): ao marcar como paga, o sistema já cria a do mês seguinte.</li>
+    <li>Quando pagar/receber, use <b>Marcar como paga</b>. Para corrigir valor, data ou descrição, use <b>Editar</b> na própria conta.</li>
+  </ol>
+  <div class="caixa dica"><b>Rotina simples</b>Cadastre as contas fixas do mês no primeiro dia e marque como pagas conforme for saindo o dinheiro.</div>
+
+  <h3>Pagamento do cliente vs. conta financeira</h3>
+  <p>Os recebimentos dos clientes são lançados <b>na própria OS</b> (Controle de pagamentos). Não é preciso lançar de novo no Financeiro: ele já lê o que foi registrado nas ordens.</p>
+  <div class="pe"><span>Guia do dono de oficina</span><span>10</span></div>
+</section>
+
+<!-- 8. ESTOQUE -->
+<section class="page">
+  <h2><span class="n">8</span>Estoque</h2>
+  <p class="lead">Controle de tintas, massas, vernizes, lixas e outros insumos, com alerta quando estiver acabando.</p>
+  <ol class="passos">
+    <li>Menu <span class="menu">Estoque</span> → novo item: informe <b>nome</b>, <b>unidade</b> (un, kg, l...), <b>quantidade inicial</b>, <b>quantidade mínima</b> e <b>custo unitário</b>.</li>
+    <li>Na ficha do item, <span class="btn">+ Registrar movimentação</span> lança <b>entradas</b> (compra) e <b>saídas</b> (uso avulso), com data e observação.</li>
+    <li>Na <b>OS</b>, o bloco “Materiais utilizados” dá <b>baixa</b> ligada àquele serviço. Assim você sabe quanto material cada carro consumiu.</li>
+  </ol>
+  <div class="caixa ok"><b>Alerta de mínimo</b>Quando a quantidade fica abaixo do mínimo que você definiu, o item aparece destacado na lista — hora de comprar.</div>
+  <div class="caixa dica"><b>Errou uma baixa?</b>Na OS, a lixeira ao lado do material desfaz a baixa e devolve a quantidade ao estoque.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>11</span></div>
+</section>
+
+<!-- 9. DASHBOARD E RELATÓRIOS -->
+<section class="page">
+  <h2><span class="n">9</span>Dashboard e Relatórios</h2>
+
+  <h3>Dashboard: a foto do momento</h3>
+  <p>É a primeira tela ao entrar. Mostra a visão geral da oficina e a lista de <b>Ordens de Serviço no período</b>, com o tipo de serviço de cada uma.</p>
+  <ul>
+    <li><b>Abas de situação</b> (Todas, Aberta, Em andamento, Concluída...) filtram a lista.</li>
+    <li><b>Período:</b> escolha as datas “de” e “até”; o filtro se aplica sozinho, sem botão.</li>
+  </ul>
+
+  <h3>Relatórios: o fechamento</h3>
+  <ol class="passos">
+    <li>Menu <span class="menu">Relatórios</span>. Escolha o <b>período</b>.</li>
+    <li>Marque as seções que quer: <b>Faturamento/Financeiro</b>, <b>Serviços realizados</b> (dá para filtrar por tipo de serviço), <b>Prestadores terceirizados</b> e <b>Estoque</b>.</li>
+    <li>Clique em <span class="btn">Gerar relatório</span>. Use <b>Imprimir</b> para papel/PDF (com a logo e o cabeçalho da oficina) ou o botão de <b>exportar para Excel</b>.</li>
+  </ol>
+  <div class="caixa dica"><b>Para o contador</b>No fim do mês gere o relatório de Faturamento e o de Serviços e mande em Excel — evita perguntas depois.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>12</span></div>
+</section>
+
+<!-- 10. PRIVACIDADE -->
+<section class="page">
+  <h2><span class="n">10</span>Privacidade e segurança</h2>
+  <h3>Ocultar valores na tela</h3>
+  <p>Com o sistema aberto na frente de cliente, fornecedor ou funcionário, use o botão de <b>ocultar valores</b> no topo da tela. Os valores em reais ficam escondidos até você clicar de novo (a escolha fica guardada naquele navegador). Vale para dashboard, financeiro, ordens, repasses e relatórios.</p>
+
+  <h3>Boas práticas</h3>
+  <ul>
+    <li><b>Um usuário por pessoa.</b> Nada de compartilhar login — assim o histórico mostra quem fez cada coisa.</li>
+    <li><b>Funcionário não precisa ser administrador.</b> Dê o papel Administrador só a quem deve mexer em usuários e dados da empresa.</li>
+    <li><b>Desative</b> (não apague) quem saiu da equipe.</li>
+    <li><b>Troque a senha inicial</b> em Minha conta no primeiro acesso, e use senhas que só você saiba.</li>
+    <li><b>Saia do sistema</b> (botão Sair, canto superior direito) em computadores compartilhados.</li>
+  </ul>
+
+  <div class="caixa ok"><b>Seus dados são só seus</b>Cada oficina tem o seu espaço isolado no sistema: clientes, ordens, valores e fotos de uma oficina nunca aparecem para outra.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>13</span></div>
+</section>
+
+<!-- 11. ROTINA -->
+<section class="page">
+  <h2><span class="n">11</span>Rotina sugerida para o dono</h2>
+  <div class="duas">
+    <div>
+      <h3>Todo dia (5 minutos)</h3>
+      <ul>
+        <li>Abra o <b>Dashboard</b> e veja o que está aberto/em andamento.</li>
+        <li>Confira as ordens <b>concluídas</b> que ainda não foram entregues.</li>
+        <li>Veja se algum cliente tem <b>saldo a receber</b> na entrega.</li>
+        <li>Cheque se algum <b>orçamento pendente</b> precisa de retorno.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Toda semana</h3>
+      <ul>
+        <li>Em <b>Repasses</b>, filtre “Pagamento pendente” e pague os prestadores.</li>
+        <li>Em <b>Estoque</b>, veja o que está abaixo do mínimo e compre.</li>
+        <li>Em <b>Financeiro</b>, olhe contas a pagar dos próximos dias.</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Todo mês</h3>
+  <ul>
+    <li>Cadastre as <b>contas fixas</b> (ou confirme as recorrentes).</li>
+    <li>Gere os <b>Relatórios</b> do mês: faturamento, serviços, prestadores e estoque.</li>
+    <li>Compare lucro por prestador: qual parceiro compensa mais?</li>
+    <li>Revise a equipe em Configurações: alguém a desativar ou convidar?</li>
+  </ul>
+  <div class="caixa dica"><b>Regra de ouro</b>Registre na hora. Pagamento recebido, foto tirada, material usado e status da OS: se o registro é feito no momento, os números do fim do mês fecham sozinhos.</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>14</span></div>
+</section>
+
+<!-- 12. FAQ -->
+<section class="page">
+  <h2><span class="n">12</span>Dúvidas frequentes</h2>
+  <h3>Não recebi o e-mail de confirmação/convite.</h3>
+  <p>Olhe o spam. Na tela de login, com e-mail e senha corretos, use <span class="btn">Reenviar e-mail de confirmação</span>. Para convites, o administrador pode copiar o link direto da tela de Configurações quando o e-mail não estiver ativo, ou enviar de novo.</p>
+  <h3>Não consigo baixar o valor da OS.</h3>
+  <p>O valor não pode ficar menor do que o já recebido. Corrija antes o registro de pagamento (se estiver errado) e depois edite a OS.</p>
+  <h3>A OS sumiu da lista de repasse.</h3>
+  <p>Ela já tem repasse para aquele prestador. Edite o repasse existente ou escolha outro prestador.</p>
+  <h3>Recebi o pagamento, mas a OS continua “em andamento”.</h3>
+  <p>É proposital: pagamento e entrega são coisas diferentes (há carros que saem pagos e outros que pagam na retirada). Marque a entrega quando o carro sair.</p>
+  <h3>Como corrijo uma baixa de material errada?</h3>
+  <p>Na OS, clique na lixeira ao lado do material: a quantidade volta ao estoque.</p>
+
+  <h3>O que ainda não existe</h3>
+  <table>
+    <tr><th>Recurso</th><th>Situação</th></tr>
+    <tr><td>Emissão de nota fiscal (NFS-e)</td><td>Ainda não disponível para novas oficinas.</td></tr>
+    <tr><td>Aviso ao cliente por WhatsApp</td><td>Em preparação. Hoje, o aviso de “veículo pronto” sai por e-mail quando o sistema de e-mail está ativo.</td></tr>
+    <tr><td>Editar o catálogo de tipos de serviço</td><td>Você usa o catálogo padrão; peça ao suporte para incluir um serviço novo.</td></tr>
+    <tr><td>Planos pagos</td><td>Durante o lançamento o uso é gratuito (teste de 30 dias); os planos serão anunciados antes de qualquer cobrança.</td></tr>
+  </table>
+  <div class="caixa dica"><b>Precisa de ajuda?</b>Fale com o suporte do sistema descrevendo o que tentou fazer e o que apareceu na tela (um print ajuda muito).</div>
+  <div class="pe"><span>Guia do dono de oficina</span><span>15</span></div>
+</section>
+
+</body>
+</html>
