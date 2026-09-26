@@ -47,7 +47,7 @@ export async function criarConta(_prev: CadastroState, formData: FormData): Prom
   if (!cadastroAberto()) return { erro: "Cadastro ainda não está aberto." };
 
   // Campo-isca: humanos não veem; robôs preenchem.
-  if (formData.get("site")) return { erro: "Não foi possível criar a conta." };
+  if (formData.get("x_confirmacao_interna")) return { erro: "Não foi possível criar a conta." };
 
   const parsed = CadastroSchema.safeParse({
     nomeOficina: formData.get("nomeOficina"),

@@ -12,7 +12,7 @@ export function CadastroForm() {
     <form action={action} className="space-y-4">
       {/* Campo-isca anti-robô: fica fora da tela e não deve ser preenchido. */}
       <div className="absolute -left-[9999px]" aria-hidden="true">
-        <input type="text" name="site" tabIndex={-1} autoComplete="off" />
+        <input type="text" name="x_confirmacao_interna" tabIndex={-1} autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
       </div>
       <Field label="Nome da oficina *">
         <Input name="nomeOficina" required autoFocus placeholder="Ex: Oficina Martelinho Premium" />
