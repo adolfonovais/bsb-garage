@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { organizacaoAtual } from "@/lib/tenant";
+import { logoDaOrganizacao } from "@/lib/marca";
 import { nomeArquivoImpressao, numeroFormatado } from "@/lib/format";
 import { DocumentoImprimivel } from "@/components/DocumentoImprimivel";
 
@@ -35,6 +36,7 @@ export default async function ImprimirOrcamentoPage({
 
   return (
     <DocumentoImprimivel
+      logoUrl={logoDaOrganizacao(await organizacaoAtual())}
       voltarHref={`/orcamentos/${orcamento.id}`}
       empresa={
         empresa ?? {

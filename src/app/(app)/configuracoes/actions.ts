@@ -6,7 +6,10 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { prismaBase } from "@/lib/prisma-base";
 import { auth } from "@/lib/auth";
-import { organizacaoIdAtual } from "@/lib/tenant";
+import { organizacaoAtual, organizacaoIdAtual } from "@/lib/tenant";
+import { criarToken } from "@/lib/tokens";
+import { removerFoto, salvarFoto } from "@/lib/storage";
+import { enviarEmailConvite, urlBase } from "@/lib/mail";
 
 async function exigirAdmin() {
   const session = await auth();
@@ -83,6 +86,68 @@ export async function criarUsuario(_prevState: EstadoFormulario, formData: FormD
   });
   revalidatePath("/configuracoes");
   return { sucesso: true };
+}
+
+export type EstadoLogo = { sucesso?: boolean; erro?: string } | undefined;
+
+/** Envia (ou troca) a logo da oficina — vira a logo da barra lateral, das impressões e dos relatórios. */
+export async function atualizarLogo(_prev: EstadoLogo, formData: FormData): Promise<EstadoLogo> {
+  await exigirAdmin();
+  const arquivo = formData.get("logo");
+  if (!(arquivo instanceof File) || arquivo.size === 0) return { erro: "Escolha uma imagem." };
+
+  const organizacao = await organizacaoAtual();
+  let url: string;
+  try {
+    url = await salvarFoto(`logos/${organizacao.id}`, arquivo);
+  } catch (erro) {
+    return { erro: erro instanceof Error ? erro.message : "Não foi possível enviar a imagem." };
+  }
+  await prismaBase.organizacao.update({ where: { id: organizacao.id }, data: { logoUrl: url } });
+  if (organizacao.logoUrl) await removerFoto(organizacao.logoUrl);
+  revalidatePath("/", "layout");
+  return { sucesso: true };
+}
+
+export async function removerLogo() {
+  await exigirAdmin();
+  const organizacao = await organizacaoAtual();
+  if (!organizacao.logoUrl) return;
+  await prismaBase.organizacao.update({ where: { id: organizacao.id }, data: { logoUrl: null } });
+  await removerFoto(organizacao.logoUrl);
+  revalidatePath("/", "layout");
+}
+
+export type EstadoConvite = { erro?: string; enviado?: string; link?: string } | undefined;
+
+const ConviteSchema = z.object({
+  email: z.string().trim().email("E-mail inválido."),
+  papel: z.enum(["ADMIN", "FUNCIONARIO"]),
+});
+
+/** Convida alguém por e-mail: a pessoa abre o link, define nome e senha e já entra na organização. */
+export async function convidarUsuario(_prev: EstadoConvite, formData: FormData): Promise<EstadoConvite> {
+  await exigirAdmin();
+  const parsed = ConviteSchema.safeParse({ email: formData.get("email"), papel: formData.get("papel") });
+  if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  const email = parsed.data.email.toLowerCase();
+
+  if (await prismaBase.usuario.findUnique({ where: { email }, select: { id: true } })) {
+    return { erro: "Já existe um usuário com esse e-mail." };
+  }
+
+  const [session, organizacao] = await Promise.all([auth(), organizacaoAtual()]);
+  const token = criarToken({ t: "convite", oid: organizacao.id, email, papel: parsed.data.papel }, 7 * 86400);
+  const link = `${await urlBase()}/convite?token=${token}`;
+
+  const enviado = await enviarEmailConvite({
+    para: email,
+    nomeOrganizacao: organizacao.nome,
+    convidadoPor: session?.user?.name ?? organizacao.nome,
+    link,
+  });
+  // Sem SMTP (ou falha no envio) devolve o link pra o admin mandar por outro meio.
+  return enviado ? { enviado: `Convite enviado para ${email}. O link vale por 7 dias.` } : { link };
 }
 
 export async function alternarAtivoUsuario(usuarioId: string, ativo: boolean) {

@@ -55,6 +55,7 @@ const org = await criarOrganizacaoComAdmin({
   senha,
   slug,
   origemCadastro: "manual",
+  emailVerificado: true,
 });
 
 console.log(`Organização criada: ${org.nome} (slug ${org.slug}, id ${org.id})`);

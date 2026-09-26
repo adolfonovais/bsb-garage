@@ -34,12 +34,17 @@ const links = [
 export function Sidebar({
   isAdmin,
   nomeOrganizacao,
-  comLogo,
+  logoUrl,
+  logoPropria,
+  mostrarAvisoIntegracoes,
   adminPlataforma,
 }: {
   isAdmin: boolean;
   nomeOrganizacao: string;
-  comLogo: boolean;
+  logoUrl: string | null;
+  /** true = logo enviada pela oficina (geralmente larga) — ocupa o cabeçalho todo, sem o nome ao lado. */
+  logoPropria: boolean;
+  mostrarAvisoIntegracoes: boolean;
   adminPlataforma: boolean;
 }) {
   const pathname = usePathname();
@@ -66,17 +71,26 @@ export function Sidebar({
         }`}
       >
         <div className="flex items-center gap-3 border-b border-neutral-800 px-5 py-4">
-          {comLogo ? (
-            // eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev
-            <img src="/brand/logo.png" alt={`Logo ${nomeOrganizacao}`} width={44} height={44} className="shrink-0" />
-          ) : (
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-black">
-              <Wrench className="h-6 w-6" />
+          {logoUrl && logoPropria ? (
+            <div className="flex min-w-0 flex-1 items-center rounded-md bg-white px-2 py-1">
+              {/* eslint-disable-next-line @next/next/no-img-element -- logo vinda do Storage; o otimizador de imagem não roda nesta arquitetura */}
+              <img src={logoUrl} alt={`Logo ${nomeOrganizacao}`} className="mx-auto h-11 w-auto max-w-full object-contain" />
             </div>
+          ) : (
+            <>
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev
+                <img src={logoUrl} alt={`Logo ${nomeOrganizacao}`} width={44} height={44} className="shrink-0" />
+              ) : (
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-black">
+                  <Wrench className="h-6 w-6" />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold leading-tight">{nomeOrganizacao}</p>
+              </div>
+            </>
           )}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold leading-tight">{nomeOrganizacao}</p>
-          </div>
           <button
             type="button"
             onClick={() => setAberto(false)}
@@ -131,7 +145,7 @@ export function Sidebar({
           </Link>
         )}
       </nav>
-        {comLogo && (
+        {mostrarAvisoIntegracoes && (
           <div className="border-t border-neutral-800 px-4 py-3 text-xs text-neutral-500">
             NFS-e e WhatsApp chegam em breve — ver Configurações.
           </div>

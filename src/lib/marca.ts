@@ -12,8 +12,13 @@ export const DIAS_DE_TESTE = 30;
 // CADASTRO_ABERTO=true no ambiente (Vercel), quando você decidir lançar.
 export const cadastroAberto = () => process.env.CADASTRO_ABERTO === "true";
 
-// A organização #1 (BSB Garage) mantém a logo própria; as demais usam o ícone padrão.
+// A organização #1 (BSB Garage) mantém a logo estática de sempre até subir outra;
+// as demais usam a logo enviada em Configurações (ou o ícone padrão, se não houver).
 export const SLUG_ORGANIZACAO_COM_LOGO = "bsb-garage";
+
+export function logoDaOrganizacao(org: { slug: string; logoUrl: string | null }): string | null {
+  return org.logoUrl ?? (org.slug === SLUG_ORGANIZACAO_COM_LOGO ? "/brand/logo.png" : null);
+}
 
 /** Dias restantes do teste grátis (null se a organização não está em teste). */
 export function diasRestantesDoTeste(org: { plano: string; trialTerminaEm: Date | null }): number | null {

@@ -34,7 +34,9 @@ export function DocumentoImprimivel({
   observacoes,
   rodape,
   voltarHref,
+  logoUrl,
 }: {
+  logoUrl?: string | null;
   empresa: Empresa;
   titulo: string;
   numero: string;
@@ -60,8 +62,10 @@ export function DocumentoImprimivel({
       <PrintButton />
 
       <header className="mb-6 flex items-center gap-4 border-b-2 border-slate-900 pb-4">
-        {/* eslint-disable-next-line @next/next/no-img-element -- logo estática, precisa renderizar igual na impressão/PDF */}
-        <img src="/brand/logo.png" alt="" className="h-20 w-20 shrink-0" />
+        {logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element -- logo, precisa renderizar igual na impressão/PDF
+          <img src={logoUrl} alt="" className="h-20 w-auto max-w-[9rem] shrink-0 object-contain" />
+        )}
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-extrabold tracking-tight">{empresa.nome}</h1>
           {empresa.razaoSocial && <p className="text-sm">{empresa.razaoSocial}</p>}
@@ -73,7 +77,7 @@ export function DocumentoImprimivel({
           {empresa.telefones && <p className="text-xs text-slate-600">Telefones: {empresa.telefones}</p>}
         </div>
         {/* espaçador pra manter o texto centralizado apesar da logo à esquerda */}
-        <div className="h-20 w-20 shrink-0" aria-hidden />
+        {logoUrl && <div className="h-20 w-20 shrink-0" aria-hidden />}
       </header>
 
       <div className="mb-4 flex items-center justify-between">

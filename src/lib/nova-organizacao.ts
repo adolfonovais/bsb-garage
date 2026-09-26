@@ -43,6 +43,8 @@ export async function criarOrganizacaoComAdmin(params: {
   senha: string;
   slug?: string;
   origemCadastro: string;
+  /** true = a conta já nasce verificada (criação manual / SMTP ausente). */
+  emailVerificado: boolean;
 }) {
   const senhaHash = await bcrypt.hash(params.senha, 10);
   const trialTerminaEm = new Date(Date.now() + DIAS_DE_TESTE * 24 * 60 * 60 * 1000);
@@ -55,10 +57,17 @@ export async function criarOrganizacaoComAdmin(params: {
       trialTerminaEm,
       origemCadastro: params.origemCadastro,
       usuarios: {
-        create: { nome: params.nomeAdmin, email: params.email.toLowerCase(), senhaHash, papel: "ADMIN" },
+        create: {
+          nome: params.nomeAdmin,
+          email: params.email.toLowerCase(),
+          senhaHash,
+          papel: "ADMIN",
+          emailVerificadoEm: params.emailVerificado ? new Date() : null,
+        },
       },
       empresaConfig: { create: { nome: params.nomeOficina, cidadeUf: params.cidadeUf } },
       tiposServico: { create: TIPOS_SERVICO_PADRAO.map((nome) => ({ nome })) },
     },
+    include: { usuarios: true },
   });
 }

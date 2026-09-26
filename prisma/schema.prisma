@@ -37,6 +37,9 @@ model Organizacao {
   // dona do certificado — as demais não veem o botão de emitir nota.
   nfseHabilitada   Boolean   @default(false)
   origemCadastro   String?
+  // Logo da oficina (URL pública no Storage) — aparece na barra lateral, nas
+  // impressões de Orçamento/OS e nos relatórios. Editável em Configurações.
+  logoUrl          String?
   createdAt        DateTime  @default(now())
 
   usuarios      Usuario[]
@@ -74,6 +77,9 @@ model Usuario {
   senhaHash    String
   papel        PapelUsuario @default(FUNCIONARIO)
   ativo        Boolean      @default(true)
+  // Preenchido quando o e-mail é confirmado (link enviado no cadastro) ou quando
+  // a conta nasce de um convite/criação manual. Sem isso, não faz login.
+  emailVerificadoEm DateTime?
   createdAt    DateTime     @default(now())
 
   orcamentos     Orcamento[]

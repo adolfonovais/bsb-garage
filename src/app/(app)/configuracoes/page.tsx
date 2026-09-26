@@ -9,6 +9,9 @@ import {
 } from "@/app/(app)/configuracoes/actions";
 import { Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
 import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
+import { ConviteForm } from "@/components/ConviteForm";
+import { LogoForm } from "@/components/LogoForm";
+import { logoDaOrganizacao } from "@/lib/marca";
 import { nfseConfigurada } from "@/lib/nfse";
 import { organizacaoAtual } from "@/lib/tenant";
 import { whatsappConfigurado } from "@/lib/whatsapp";
@@ -28,6 +31,15 @@ export default async function ConfiguracoesPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <PageHeader title="Configurações" subtitle="Dados da empresa e usuários do sistema" />
+
+      <Card className="p-6">
+        <h2 className="mb-1 text-sm font-semibold text-slate-900">Logo da oficina</h2>
+        <p className="mb-4 text-xs text-slate-500">
+          Aparece na barra lateral, no cabeçalho dos Orçamentos e Ordens de Serviço impressos e nos relatórios.
+          PNG, JPG ou WEBP de até 10MB — de preferência com fundo branco ou transparente.
+        </p>
+        <LogoForm logoUrl={logoDaOrganizacao(organizacao)} personalizada={!!organizacao.logoUrl} />
+      </Card>
 
       <Card className="p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-900">
@@ -105,6 +117,8 @@ export default async function ConfiguracoesPage() {
             </div>
           ))}
         </div>
+
+        <ConviteForm />
 
         <DetailsForm
           resumo="+ Novo usuário"

@@ -8,6 +8,10 @@ import { SubmitButton } from "@/components/SubmitButton";
 export function CadastroForm() {
   const [state, action] = useActionState<CadastroState, FormData>(criarConta, undefined);
 
+  if (state?.sucesso) {
+    return <p className="rounded-md bg-emerald-50 px-3 py-3 text-sm text-emerald-800">{state.sucesso}</p>;
+  }
+
   return (
     <form action={action} className="space-y-4">
       {/* Campo-isca anti-robô: fica fora da tela e não deve ser preenchido. */}

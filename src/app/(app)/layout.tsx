@@ -4,7 +4,7 @@ import { Topbar } from "@/components/Topbar";
 import { MobileMenuProvider } from "@/components/MobileMenu";
 import { ValoresPrivacidadeProvider } from "@/components/ValoresPrivacidade";
 import { organizacaoAtual, ehAdminDaPlataforma } from "@/lib/tenant";
-import { diasRestantesDoTeste, SLUG_ORGANIZACAO_COM_LOGO } from "@/lib/marca";
+import { diasRestantesDoTeste, logoDaOrganizacao } from "@/lib/marca";
 import { sairAction } from "@/components/topbar-actions";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -41,7 +41,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Sidebar
             isAdmin={papel === "ADMIN"}
             nomeOrganizacao={organizacao.nome}
-            comLogo={organizacao.slug === SLUG_ORGANIZACAO_COM_LOGO}
+            logoUrl={logoDaOrganizacao(organizacao)}
+            logoPropria={!!organizacao.logoUrl}
+            mostrarAvisoIntegracoes={organizacao.nfseHabilitada}
             adminPlataforma={ehAdminDaPlataforma(session?.user?.email)}
           />
           <div className="flex min-h-screen min-w-0 flex-1 flex-col">

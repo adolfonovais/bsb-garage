@@ -27,7 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: email.toLowerCase().trim() },
           include: { organizacao: { select: { ativa: true } } },
         });
-        if (!usuario || !usuario.ativo || !usuario.organizacao.ativa) return null;
+        if (!usuario || !usuario.ativo || !usuario.emailVerificadoEm || !usuario.organizacao.ativa) return null;
 
         const senhaValida = await bcrypt.compare(senha, usuario.senhaHash);
         if (!senhaValida) return null;

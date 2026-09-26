@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { organizacaoAtual } from "@/lib/tenant";
+import { logoDaOrganizacao } from "@/lib/marca";
 import {
   buscarRelatorioEstoque,
   buscarRelatorioFinanceiro,
@@ -57,6 +58,7 @@ export default async function RelatoriosPage({
   const inicio = new Date(`${inicioStr}T00:00:00`);
   const fim = new Date(`${fimStr}T00:00:00`);
 
+  const logoUrl = logoDaOrganizacao(await organizacaoAtual());
   const [empresa, tiposServico] = await Promise.all([
     prisma.empresaConfig.findFirst(),
     prisma.tipoServico.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
@@ -161,8 +163,10 @@ export default async function RelatoriosPage({
       {gerado && (
         <div className="space-y-6">
           <header className="flex items-center gap-4 border-b-2 border-slate-900 pb-3">
-            {/* eslint-disable-next-line @next/next/no-img-element -- logo estática, precisa renderizar igual na impressão/PDF */}
-            <img src="/brand/logo.png" alt="" className="h-16 w-16 shrink-0" />
+            {logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element -- logo, precisa renderizar igual na impressão/PDF
+              <img src={logoUrl} alt="" className="h-16 w-auto max-w-[8rem] shrink-0 object-contain" />
+            )}
             <div className="flex-1 text-center">
               <h1 className="text-xl font-extrabold">{empresa?.nome ?? (await organizacaoAtual()).nome}</h1>
               <p className="text-sm text-slate-600">
