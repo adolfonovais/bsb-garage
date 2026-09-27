@@ -1,7 +1,7 @@
-// Marca da plataforma (a que aparece em login, cadastro e no título do site).
-// Nome PROVISÓRIO — enquanto o nome/domínio definitivo não existe, troque aqui
-// (ou pela env NEXT_PUBLIC_PLATAFORMA_NOME) e o resto do app acompanha.
-export const NOME_PLATAFORMA = process.env.NEXT_PUBLIC_PLATAFORMA_NOME || "Oficina Gestão";
+// Marca da plataforma (a que aparece em login, cadastro, convites, e-mails e no
+// título do site). Pra trocar o nome, mude aqui (ou defina a env
+// NEXT_PUBLIC_PLATAFORMA_NOME) e o resto do app acompanha.
+export const NOME_PLATAFORMA = process.env.NEXT_PUBLIC_PLATAFORMA_NOME || "Garage Flow";
 export const SLOGAN_PLATAFORMA = "Orçamentos, ordens de serviço, repasses e financeiro da sua oficina em um só lugar.";
 
 // Dias de teste grátis de uma organização nova (sem cobrança por enquanto —
