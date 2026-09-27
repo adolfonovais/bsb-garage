@@ -235,7 +235,7 @@ export default async function RelatoriosPage({
                           <td className="px-4 py-2">
                             <Link
                               href={`/ordens-servico`}
-                              className="text-amber-700 hover:underline print:text-slate-900 print:no-underline"
+                              className="text-brand-700 hover:underline print:text-slate-900 print:no-underline"
                             >
                               {numeroFormatado(os.numero, os.ano)}
                             </Link>

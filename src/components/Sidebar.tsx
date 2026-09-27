@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useMobileMenu } from "@/components/MobileMenu";
+import { MarcaGarageFlow } from "@/components/MarcaGarageFlow";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -60,13 +61,13 @@ export function Sidebar({
     <>
       {aberto && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden print:hidden"
+          className="fixed inset-0 z-40 bg-brand-dark/50 md:hidden print:hidden"
           onClick={() => setAberto(false)}
           aria-hidden="true"
         />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-neutral-800 bg-black text-neutral-100 transition-transform duration-200 md:static md:translate-x-0 md:flex print:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-neutral-800 bg-brand-dark text-neutral-100 transition-transform duration-200 md:static md:translate-x-0 md:flex print:hidden ${
           aberto ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -82,7 +83,7 @@ export function Sidebar({
                 // eslint-disable-next-line @next/next/no-img-element -- o otimizador de imagem (sharp) não roda nesta arquitetura (Windows ARM64) em dev
                 <img src={logoUrl} alt={`Logo ${nomeOrganizacao}`} width={44} height={44} className="shrink-0" />
               ) : (
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-black">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white">
                   <Wrench className="h-6 w-6" />
                 </div>
               )}
@@ -109,7 +110,7 @@ export function Sidebar({
               href={href}
               className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 active
-                  ? "bg-amber-500 text-black"
+                  ? "bg-brand-500 text-white"
                   : "text-neutral-300 hover:bg-neutral-900 hover:text-white"
               }`}
             >
@@ -123,7 +124,7 @@ export function Sidebar({
             href="/configuracoes"
             className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               pathname.startsWith("/configuracoes")
-                ? "bg-amber-500 text-black"
+                ? "bg-brand-500 text-white"
                 : "text-neutral-300 hover:bg-neutral-900 hover:text-white"
             }`}
           >
@@ -136,7 +137,7 @@ export function Sidebar({
             href="/plataforma"
             className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               pathname.startsWith("/plataforma")
-                ? "bg-amber-500 text-black"
+                ? "bg-brand-500 text-white"
                 : "text-neutral-300 hover:bg-neutral-900 hover:text-white"
             }`}
           >
@@ -150,6 +151,9 @@ export function Sidebar({
             NFS-e e WhatsApp chegam em breve — ver Configurações.
           </div>
         )}
+        <div className="border-t border-neutral-800 px-4 py-3">
+          <MarcaGarageFlow variante="compact-dark" className="h-5 w-auto opacity-80" />
+        </div>
       </aside>
     </>
   );

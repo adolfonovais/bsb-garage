@@ -2,7 +2,7 @@ import { ButtonHTMLAttributes, InputHTMLAttributes, LabelHTMLAttributes, ReactNo
 import Link from "next/link";
 
 export const inputClass =
-  "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-slate-100 disabled:text-slate-500";
+  "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-100 disabled:text-slate-500";
 
 export function Label(props: LabelHTMLAttributes<HTMLLabelElement>) {
   return (
@@ -44,7 +44,7 @@ export function Field({
 }
 
 export const buttonVariants = {
-  primary: "bg-amber-500 text-slate-900 hover:bg-amber-400 focus-visible:outline-amber-500",
+  primary: "bg-brand-500 text-white hover:bg-brand-400 focus-visible:outline-brand-500",
   secondary: "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50",
   danger: "bg-red-600 text-white hover:bg-red-500",
   ghost: "text-slate-600 hover:bg-slate-100",

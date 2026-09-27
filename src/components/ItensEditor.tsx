@@ -147,7 +147,7 @@ export function ItensEditor({
       <button
         type="button"
         onClick={adicionar}
-        className="mt-3 flex items-center gap-1.5 text-sm font-medium text-amber-700 hover:text-amber-800"
+        className="mt-3 flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800"
       >
         <Plus className="h-4 w-4" /> Adicionar item
       </button>

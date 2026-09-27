@@ -151,7 +151,7 @@ export default async function PecaDetalhePage({
                   </td>
                   <td className="px-4 py-2 text-slate-600">
                     {mov.os ? (
-                      <Link href={`/ordens-servico/${mov.os.id}`} className="text-amber-700 hover:underline">
+                      <Link href={`/ordens-servico/${mov.os.id}`} className="text-brand-700 hover:underline">
                         OS {numeroFormatado(mov.os.numero, mov.os.ano)}
                       </Link>
                     ) : (

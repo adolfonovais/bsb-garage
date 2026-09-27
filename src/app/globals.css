@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #0f172a;
+  --foreground: #14181f;
 }
 
 @theme inline {
@@ -12,21 +12,23 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Substitui o amarelo/laranja padrão do Tailwind (amber-*) pelo dourado da
-   logo do BSB Garage Martelinho de Ouro. Como o app usa as classes amber-*
-   em vários componentes, redefinir os tons aqui atualiza a cor em todo lugar
-   de uma vez, sem precisar trocar classe por classe. */
+/* Identidade Garage Flow (kit de marca v1): azul #005DF8, grafite #22262D e
+   fundo escuro #14181F. O app usa as classes brand-* pra tudo que é "cor da
+   marca" (botão principal, links, item ativo do menu); amber-* fica só pros
+   avisos/alertas (amarelo padrão do Tailwind). */
 @theme {
-  --color-amber-50: #fdf6e3;
-  --color-amber-100: #faecc0;
-  --color-amber-200: #f5db8a;
-  --color-amber-300: #f0c754;
-  --color-amber-400: #eab82f;
-  --color-amber-500: #d9a316;
-  --color-amber-600: #b8870f;
-  --color-amber-700: #92690c;
-  --color-amber-800: #6f4f0a;
-  --color-amber-900: #543d08;
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dbe7ff;
+  --color-brand-200: #b9d0ff;
+  --color-brand-300: #8db1ff;
+  --color-brand-400: #4f89fb;
+  --color-brand-500: #005df8;
+  --color-brand-600: #0050d6;
+  --color-brand-700: #0043b3;
+  --color-brand-800: #003690;
+  --color-brand-900: #002a70;
+  --color-brand-graphite: #22262d;
+  --color-brand-dark: #14181f;
 }
 
 body {

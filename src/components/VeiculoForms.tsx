@@ -14,7 +14,7 @@ export function EditarVeiculoForm({
 }) {
   return (
     <DetailsForm
-      resumo={<Pencil className="h-4 w-4 text-slate-400 hover:text-amber-700" />}
+      resumo={<Pencil className="h-4 w-4 text-slate-400 hover:text-brand-700" />}
       action={atualizarVeiculo}
       formClassName="mt-3 grid grid-cols-2 gap-3"
     >

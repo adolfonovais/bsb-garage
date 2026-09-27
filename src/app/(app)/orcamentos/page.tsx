@@ -69,7 +69,7 @@ export default async function OrcamentosPage({
                 {orcamentos.map((orc) => (
                   <tr key={orc.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2">
-                      <Link href={`/orcamentos/${orc.id}`} className="font-medium text-amber-700 hover:underline">
+                      <Link href={`/orcamentos/${orc.id}`} className="font-medium text-brand-700 hover:underline">
                         {numeroFormatado(orc.numero, orc.ano)}
                       </Link>
                     </td>

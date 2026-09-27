@@ -118,7 +118,7 @@ export default async function DashboardPage({
           </div>
         </Card>
         <Card className="flex items-center gap-4 p-4">
-          <div className="rounded-full bg-amber-100 p-3 text-amber-700">
+          <div className="rounded-full bg-brand-100 p-3 text-brand-700">
             <FileText className="h-5 w-5" />
           </div>
           <div>
@@ -174,7 +174,7 @@ export default async function DashboardPage({
                 {osFiltradas.map((os) => (
                   <tr key={os.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2">
-                      <Link href={`/ordens-servico/${os.id}`} className="font-medium text-amber-700 hover:underline">
+                      <Link href={`/ordens-servico/${os.id}`} className="font-medium text-brand-700 hover:underline">
                         {numeroFormatado(os.numero, os.ano)}
                       </Link>
                     </td>

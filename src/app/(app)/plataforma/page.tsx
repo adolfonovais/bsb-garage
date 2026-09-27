@@ -77,7 +77,7 @@ export default async function PlataformaPage() {
                       <div className="flex gap-2 text-xs">
                         {o.plano === "trial" && (
                           <form action={estenderTeste.bind(null, o.id)}>
-                            <button type="submit" className="text-amber-700 hover:underline">
+                            <button type="submit" className="text-brand-700 hover:underline">
                               +30 dias
                             </button>
                           </form>

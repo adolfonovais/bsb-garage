@@ -1,0 +1,15 @@
+{
+  "name": "Garage Flow",
+  "short_name": "Garage Flow",
+  "description": "Gestão de oficinas: orçamentos, ordens de serviço, repasses e financeiro.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#005DF8",
+  "icons": [
+    { "src": "/brand/garage-flow/icons/app-blue-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/garage-flow/icons/app-blue-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/garage-flow/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/brand/garage-flow/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -51,7 +51,7 @@ export default async function OficinasPage() {
                   return (
                     <tr key={oficina.id} className="hover:bg-slate-50">
                       <td className="px-4 py-2">
-                        <Link href={`/oficinas/${oficina.id}`} className="font-medium text-amber-700 hover:underline">
+                        <Link href={`/oficinas/${oficina.id}`} className="font-medium text-brand-700 hover:underline">
                           {oficina.nome}
                         </Link>
                         {!oficina.ativo && <span className="ml-2 text-xs text-slate-400">(inativo)</span>}

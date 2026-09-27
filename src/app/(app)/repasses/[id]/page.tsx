@@ -67,7 +67,7 @@ export default async function RepasseDetalhePage({
       {repasse.os && (
         <p className="text-sm text-slate-600">
           Vinculado à{" "}
-          <Link href={`/ordens-servico/${repasse.os.id}`} className="font-medium text-amber-700 hover:underline">
+          <Link href={`/ordens-servico/${repasse.os.id}`} className="font-medium text-brand-700 hover:underline">
             OS {numeroFormatado(repasse.os.numero, repasse.os.ano)}
           </Link>
         </p>

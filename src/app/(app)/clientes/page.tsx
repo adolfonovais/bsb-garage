@@ -66,7 +66,7 @@ export default async function ClientesPage({
                 {clientes.map((cliente) => (
                   <tr key={cliente.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2">
-                      <Link href={`/clientes/${cliente.id}`} className="font-medium text-amber-700 hover:underline">
+                      <Link href={`/clientes/${cliente.id}`} className="font-medium text-brand-700 hover:underline">
                         {cliente.nome}
                       </Link>
                     </td>

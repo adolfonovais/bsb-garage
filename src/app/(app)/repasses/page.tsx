@@ -114,7 +114,7 @@ export default async function RepassesPage({
                 {repasses.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2">
-                      <Link href={`/repasses/${r.id}`} className="font-medium text-amber-700 hover:underline">
+                      <Link href={`/repasses/${r.id}`} className="font-medium text-brand-700 hover:underline">
                         {formatarData(r.dataEntrada)}
                       </Link>
                     </td>
@@ -122,7 +122,7 @@ export default async function RepassesPage({
                       {r.os ? (
                         <Link
                           href={`/ordens-servico/${r.os.id}`}
-                          className="font-medium text-amber-700 hover:underline"
+                          className="font-medium text-brand-700 hover:underline"
                         >
                           {numeroFormatado(r.os.numero, r.os.ano)}
                         </Link>

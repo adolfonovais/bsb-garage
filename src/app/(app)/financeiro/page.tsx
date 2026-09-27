@@ -93,7 +93,7 @@ export default async function FinanceiroPage() {
       </div>
 
       <Card className="flex items-center gap-4 p-4">
-        <div className="rounded-full bg-amber-100 p-3 text-amber-700">
+        <div className="rounded-full bg-brand-100 p-3 text-brand-700">
           <Wallet className="h-5 w-5" />
         </div>
         <div>
@@ -115,7 +115,7 @@ export default async function FinanceiroPage() {
             <ul className="divide-y divide-slate-100 text-sm">
               {osComSaldo.map(({ os, saldo }) => (
                 <li key={os.id} className="flex items-center justify-between px-4 py-2">
-                  <Link href={`/ordens-servico/${os.id}`} className="text-amber-700 hover:underline">
+                  <Link href={`/ordens-servico/${os.id}`} className="text-brand-700 hover:underline">
                     {numeroFormatado(os.numero, os.ano)} — {os.cliente.nome}
                   </Link>
                   <span className="font-medium"><Valor valor={saldo} /></span>
@@ -137,7 +137,7 @@ export default async function FinanceiroPage() {
             <ul className="divide-y divide-slate-100 text-sm">
               {repassesPendentes.map((r) => (
                 <li key={r.id} className="flex items-center justify-between px-4 py-2">
-                  <Link href={`/repasses/${r.id}`} className="text-amber-700 hover:underline">
+                  <Link href={`/repasses/${r.id}`} className="text-brand-700 hover:underline">
                     {r.oficina.nome} — {r.carro}
                   </Link>
                   <span className="font-medium"><Valor valor={paraNumero(r.custoTotal)} /></span>

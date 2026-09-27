@@ -57,7 +57,7 @@ export function DetailsForm({
 
   return (
     <details ref={detailsRef} className={detailsClassName}>
-      <summary className="cursor-pointer list-none text-sm font-medium text-amber-700 [&::-webkit-details-marker]:hidden">
+      <summary className="cursor-pointer list-none text-sm font-medium text-brand-700 [&::-webkit-details-marker]:hidden">
         {resumo}
       </summary>
       <FecharContext.Provider value={fechar}>

@@ -48,7 +48,7 @@ export default async function EstoquePage() {
                   return (
                     <tr key={peca.id} className="hover:bg-slate-50">
                       <td className="px-4 py-2">
-                        <Link href={`/estoque/${peca.id}`} className="font-medium text-amber-700 hover:underline">
+                        <Link href={`/estoque/${peca.id}`} className="font-medium text-brand-700 hover:underline">
                           {peca.nome}
                         </Link>
                       </td>

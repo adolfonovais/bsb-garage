@@ -67,7 +67,7 @@ export default async function OrdensServicoPage({
                 {ordens.map((os) => (
                   <tr key={os.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2">
-                      <Link href={`/ordens-servico/${os.id}`} className="font-medium text-amber-700 hover:underline">
+                      <Link href={`/ordens-servico/${os.id}`} className="font-medium text-brand-700 hover:underline">
                         {numeroFormatado(os.numero, os.ano)}
                       </Link>
                     </td>

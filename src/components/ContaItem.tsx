@@ -121,7 +121,7 @@ export function ContaItem({
         <Badge status={conta.status} label={STATUS_CONTA_LABEL[conta.status]} />
         {conta.status !== "PAGA" ? (
           <form action={acaoMarcarPaga.bind(null, conta.id)}>
-            <button type="submit" className="text-xs font-medium text-amber-700 hover:underline">
+            <button type="submit" className="text-xs font-medium text-brand-700 hover:underline">
               Marcar paga
             </button>
           </form>
@@ -135,7 +135,7 @@ export function ContaItem({
         <button
           type="button"
           onClick={() => setEditando(true)}
-          className="text-slate-400 hover:text-amber-700"
+          className="text-slate-400 hover:text-brand-700"
           title="Editar"
         >
           <Pencil className="h-4 w-4" />

@@ -402,7 +402,7 @@ function FotoGrupo({
               <form action={excluirFotoComId.bind(null, foto.id)} className="absolute right-1 top-1">
                 <button
                   type="submit"
-                  className="rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  className="rounded-full bg-brand-dark/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                   title="Remover foto"
                 >
                   <Trash2 className="h-3 w-3" />

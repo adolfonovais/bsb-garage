@@ -25,7 +25,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         <button
           type="submit"
           formAction={reenviar}
-          className="w-full text-sm font-medium text-amber-700 hover:underline"
+          className="w-full text-sm font-medium text-brand-700 hover:underline"
         >
           Reenviar e-mail de confirmação
         </button>

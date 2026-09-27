@@ -50,7 +50,7 @@ export default async function NovoRepassePage({
               {repassesAbertos.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="px-4 py-2">
-                    <Link href={`/repasses/${r.id}`} className="font-medium text-amber-700 hover:underline">
+                    <Link href={`/repasses/${r.id}`} className="font-medium text-brand-700 hover:underline">
                       {formatarData(r.dataEntrada)}
                     </Link>
                   </td>
