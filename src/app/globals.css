@@ -35,6 +35,11 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  /* Rede de segurança: se algum texto longo sem quebra (chave de acesso,
+     link...) escapar de um elemento, ele não deve conseguir arrastar a
+     página inteira pro lado no celular — a rolagem horizontal legítima
+     (tabelas) continua funcionando, porque tem o próprio scroll interno. */
+  overflow-x: hidden;
 }
 
 /* Páginas de impressão (Orçamento / OS): margens de página e fundo sempre branco.

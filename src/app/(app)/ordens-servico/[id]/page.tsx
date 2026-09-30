@@ -155,7 +155,7 @@ export default async function OSDetalhePage({
         {os.nfseChaveAcesso && (
           <p className="mt-4 border-t border-slate-200 pt-4 text-xs text-slate-500">
             <span className="font-medium text-slate-600">Chave de acesso da NFS-e: </span>
-            <span className="font-mono">{os.nfseChaveAcesso}</span>
+            <span className="break-all font-mono">{os.nfseChaveAcesso}</span>
             {os.nfseEmitidaEm && ` · emitida em ${formatarData(os.nfseEmitidaEm)}`}
           </p>
         )}
