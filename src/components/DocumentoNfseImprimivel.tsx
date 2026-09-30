@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
-import { formatarData, formatarMoeda } from "@/lib/format";
+import { formatarData, formatarMoeda, formatarVeiculo } from "@/lib/format";
 import { PrintButton } from "@/components/PrintButton";
 import type { NfseDados } from "@/lib/nfse-parse";
 
@@ -22,6 +22,7 @@ export function DocumentoNfseImprimivel({
   ambiente,
   urlVisualizacao,
   cliente,
+  veiculo,
   itens,
   valorTotal,
   dados,
@@ -38,6 +39,7 @@ export function DocumentoNfseImprimivel({
   ambiente: string | null;
   urlVisualizacao: string | null;
   cliente: { nome: string; cpf?: string | null; telefone?: string | null };
+  veiculo?: { modelo: string; placa: string | null } | null;
   itens: ItemServico[];
   valorTotal: number;
   dados: NfseDados;
@@ -111,6 +113,13 @@ export function DocumentoNfseImprimivel({
           {cliente.telefone && <p className="text-slate-500">Telefone: {cliente.telefone}</p>}
         </div>
       </section>
+
+      {veiculo && (
+        <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
+          <p className="text-xs font-semibold uppercase text-slate-500">Veículo</p>
+          <p>{formatarVeiculo(veiculo)}</p>
+        </section>
+      )}
 
       <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
         <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Discriminação dos serviços</p>

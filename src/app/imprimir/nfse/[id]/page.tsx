@@ -28,6 +28,7 @@ export default async function ImprimirNfsePage({ params }: { params: Promise<{ i
         ano: true,
         valorTotal: true,
         cliente: { select: { nome: true, cpf: true, telefone: true } },
+        veiculo: { select: { modelo: true, placa: true } },
         itens: {
           orderBy: { ordem: "asc" },
           select: { descricao: true, valorTotal: true, tipoServico: { select: { nome: true } } },
@@ -57,6 +58,7 @@ export default async function ImprimirNfsePage({ params }: { params: Promise<{ i
       ambiente={os.nfseAmbiente}
       urlVisualizacao={os.nfseUrlVisualizacao}
       cliente={os.cliente}
+      veiculo={os.veiculo}
       itens={os.itens.map((item) => ({
         descricao: item.tipoServico ? `${item.tipoServico.nome} — ${item.descricao}` : item.descricao,
         valorTotal: item.valorTotal,
