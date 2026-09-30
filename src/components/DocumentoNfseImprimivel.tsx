@@ -98,21 +98,20 @@ export function DocumentoNfseImprimivel({
         </p>
       </div>
 
-      <section className="mb-4 grid grid-cols-2 gap-4 rounded-md border border-slate-300 p-3 text-sm">
-        <div>
-          <p className="text-xs font-semibold uppercase text-slate-500">Prestador do serviço</p>
-          <p className="font-medium">{dados.prestador.nome ?? nomeEmpresa}</p>
-          {dados.prestador.cnpj && <p>CNPJ: {dados.prestador.cnpj}</p>}
-          {dados.prestador.im && <p>Inscrição Municipal: {dados.prestador.im}</p>}
-          {enderecoPrestador && <p className="text-slate-500">{enderecoPrestador}</p>}
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase text-slate-500">Tomador do serviço</p>
-          <p className="font-medium">{cliente.nome}</p>
-          {cliente.cpf && <p>CPF: {cliente.cpf}</p>}
-          {cliente.telefone && <p className="text-slate-500">Telefone: {cliente.telefone}</p>}
-          {veiculo && <p className="text-slate-500">Veículo: {formatarVeiculo(veiculo)}</p>}
-        </div>
+      <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
+        <p className="text-xs font-semibold uppercase text-slate-500">Prestador do serviço</p>
+        <p className="font-medium">{dados.prestador.nome ?? nomeEmpresa}</p>
+        {dados.prestador.cnpj && <p>CNPJ: {dados.prestador.cnpj}</p>}
+        {dados.prestador.im && <p>Inscrição Municipal: {dados.prestador.im}</p>}
+        {enderecoPrestador && <p className="text-slate-500">{enderecoPrestador}</p>}
+      </section>
+
+      <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
+        <p className="text-xs font-semibold uppercase text-slate-500">Tomador do serviço</p>
+        <p className="font-medium">{cliente.nome}</p>
+        {cliente.cpf && <p>CPF: {cliente.cpf}</p>}
+        {cliente.telefone && <p className="text-slate-500">Telefone: {cliente.telefone}</p>}
+        {veiculo && <p className="text-slate-500">Veículo: {formatarVeiculo(veiculo)}</p>}
       </section>
 
       <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
