@@ -87,6 +87,9 @@ export default async function OSDetalhePage({
                   status="ENTREGUE"
                   label={`NFS-e emitida${os.nfseAmbiente === "homologacao" ? " (teste)" : ""}`}
                 />
+                <LinkButton href={`/imprimir/nfse/${os.id}`} variant="secondary">
+                  <FileText className="h-4 w-4" /> Comprovante da NFS-e
+                </LinkButton>
                 {os.nfseUrlVisualizacao && (
                   <a
                     href={os.nfseUrlVisualizacao}
@@ -94,7 +97,7 @@ export default async function OSDetalhePage({
                     rel="noopener noreferrer"
                     className={`inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold shadow-sm transition-colors ${buttonVariants.secondary}`}
                   >
-                    <FileText className="h-4 w-4" /> Ver NFS-e
+                    <FileText className="h-4 w-4" /> Ver na Fazenda-DF
                   </a>
                 )}
                 <LinkButton href={`/api/ordens-servico/${os.id}/nfse-xml`} variant="secondary">
