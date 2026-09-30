@@ -365,9 +365,23 @@ export async function emitirNfseAction(
     };
   }
 
-  const ano = new Date().getFullYear();
-  const numero = await proximoNumero("NFSE", ano);
-  const serie = String(ano);
+  // Série FIXA "3" — não é um valor arbitrário: é a série homologada pro
+  // prestador em Brasília/DF (confirmado pelo suporte da Nota Control, chamado
+  // 0550666, em 18/09/2026, depois do erro EM016 "Série da DPS inválida" com
+  // série = ano). A numeração da DPS é a liberada pelo próprio portal da
+  // Fazenda-DF pra essa série (1 a 50, sequencial, sem reset anual — por isso
+  // usa "ano" fixo em 0 no contador, ao contrário de Orçamento/OS) — se
+  // precisar de mais números, solicite em
+  // https://iss.fazenda.df.gov.br/online/Login/Login.aspx (Solicitação de
+  // documentos fiscais) e ajuste NFSE_DPS_MAXIMO.
+  const serie = process.env.NFSE_SERIE_DF || "3";
+  const numeroMaximo = Number(process.env.NFSE_DPS_MAXIMO || 50);
+  const numero = await proximoNumero(`NFSE_SERIE_${serie}`, 0);
+  if (numero > numeroMaximo) {
+    return {
+      erro: `Acabaram os números de DPS liberados pra série ${serie} (máximo ${numeroMaximo}). Solicite mais em https://iss.fazenda.df.gov.br (Solicitação de documentos fiscais) e avise o suporte do sistema.`,
+    };
+  }
   // "Intermediação de serviços automotivos" reflete a classificação fiscal
   // real (LC 116 item 10.09 — representação comercial): a Primea intermedia
   // entre o cliente e as oficinas terceirizadas, não executa o reparo ela

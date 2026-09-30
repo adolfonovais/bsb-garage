@@ -9,7 +9,7 @@ type ClientOuTx = typeof prisma | Parameters<Parameters<typeof prisma.$transacti
  * o próprio banco serializa incrementos concorrentes pela constraint única.
  */
 export async function proximoNumero(
-  chave: "ORCAMENTO" | "OS" | "NFSE",
+  chave: "ORCAMENTO" | "OS" | "NFSE" | `NFSE_SERIE_${string}`,
   ano: number,
   tx?: ClientOuTx
 ): Promise<number> {
