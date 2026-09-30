@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ImprimirNfsePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [os, organizacao] = await Promise.all([
+  const [os, organizacao, empresa] = await Promise.all([
     prisma.ordemServico.findUnique({
       where: { id },
       select: {
@@ -28,7 +28,7 @@ export default async function ImprimirNfsePage({ params }: { params: Promise<{ i
         ano: true,
         valorTotal: true,
         cliente: { select: { nome: true, cpf: true, telefone: true } },
-        itens: { orderBy: { ordem: "asc" }, select: { descricao: true } },
+        itens: { orderBy: { ordem: "asc" }, select: { descricao: true, valorTotal: true } },
         nfseChaveAcesso: true,
         nfseXml: true,
         nfseAmbiente: true,
@@ -36,27 +36,25 @@ export default async function ImprimirNfsePage({ params }: { params: Promise<{ i
       },
     }),
     organizacaoAtual(),
+    prisma.empresaConfig.findFirst(),
   ]);
 
   // Sem NFS-e emitida ainda não tem o que mostrar aqui — nada pra reformatar.
   if (!os || !os.nfseChaveAcesso || !os.nfseXml) notFound();
 
   const dados = parseNfseXml(os.nfseXml);
-  const descricaoServico =
-    dados.tributacaoNacional ??
-    os.itens.map((item) => item.descricao).join("; ") ??
-    "Serviço prestado";
 
   return (
     <DocumentoNfseImprimivel
       logoUrl={logoDaOrganizacao(organizacao)}
       nomeEmpresa={organizacao.nome}
+      enderecoLoja={empresa?.endereco}
       osReferencia={numeroFormatado(os.numero, os.ano)}
       chaveAcesso={os.nfseChaveAcesso}
       ambiente={os.nfseAmbiente}
       urlVisualizacao={os.nfseUrlVisualizacao}
       cliente={os.cliente}
-      descricaoServico={descricaoServico}
+      itens={os.itens}
       valorTotal={paraNumero(os.valorTotal)}
       dados={dados}
       voltarHref={`/ordens-servico/${os.id}`}

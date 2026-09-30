@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { formatarData, formatarMoeda } from "@/lib/format";
@@ -9,40 +10,49 @@ import type { NfseDados } from "@/lib/nfse-parse";
 // verdade e não muda; esta página só reformata os mesmos dados pra leitura
 // humana, no mesmo padrão visual do Orçamento/OS impressos.
 
+type Numerico = number | string | Prisma.Decimal;
+type ItemServico = { descricao: string; valorTotal: Numerico };
+
 export function DocumentoNfseImprimivel({
   logoUrl,
   nomeEmpresa,
+  enderecoLoja,
   osReferencia,
   chaveAcesso,
   ambiente,
   urlVisualizacao,
   cliente,
-  descricaoServico,
+  itens,
   valorTotal,
   dados,
   voltarHref,
 }: {
   logoUrl?: string | null;
   nomeEmpresa: string;
+  /** Endereço da loja/oficina (Configurações → Dados da empresa) — mostrado no
+   * lugar do endereço cadastrado na Receita (geralmente o do escritório), que
+   * não é o que o cliente reconhece. Sem CEP: não agrega nada pro cliente aqui. */
+  enderecoLoja?: string | null;
   osReferencia: string;
   chaveAcesso: string;
   ambiente: string | null;
   urlVisualizacao: string | null;
   cliente: { nome: string; cpf?: string | null; telefone?: string | null };
-  descricaoServico: string;
+  itens: ItemServico[];
   valorTotal: number;
   dados: NfseDados;
   voltarHref?: string;
 }) {
   const homologacao = ambiente === "homologacao";
-  const enderecoPrestador = [
-    dados.prestador.logradouro && `${dados.prestador.logradouro}${dados.prestador.numero ? `, ${dados.prestador.numero}` : ""}`,
-    dados.prestador.bairro,
-    [dados.prestador.cidade, dados.prestador.uf].filter(Boolean).join(" - "),
-    dados.prestador.cep,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const enderecoPrestador =
+    enderecoLoja ||
+    [
+      dados.prestador.logradouro && `${dados.prestador.logradouro}${dados.prestador.numero ? `, ${dados.prestador.numero}` : ""}`,
+      dados.prestador.bairro,
+      [dados.prestador.cidade, dados.prestador.uf].filter(Boolean).join(" - "),
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
   return (
     <div className="relative mx-auto max-w-3xl bg-white p-10 text-slate-900 print:p-0">
@@ -103,8 +113,23 @@ export function DocumentoNfseImprimivel({
       </section>
 
       <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
-        <p className="mb-1 text-xs font-semibold uppercase text-slate-500">Discriminação do serviço</p>
-        <p>{descricaoServico}</p>
+        <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Discriminação dos serviços</p>
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-slate-300 text-left">
+              <th className="pb-1">Descrição</th>
+              <th className="pb-1 text-right">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            {itens.map((item, i) => (
+              <tr key={i} className="border-b border-slate-100">
+                <td className="py-1">{item.descricao}</td>
+                <td className="py-1 text-right">{formatarMoeda(item.valorTotal)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         {dados.tributacaoNacional && (
           <p className="mt-2 text-xs text-slate-500">Tributação nacional: {dados.tributacaoNacional}</p>
         )}
