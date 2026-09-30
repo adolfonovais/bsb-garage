@@ -165,36 +165,38 @@ export default async function OSDetalhePage({
         <div className="border-b border-slate-200 px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-900">Itens de serviço</h2>
         </div>
-        <table className="w-full text-left text-sm">
-          <thead className="text-xs uppercase text-slate-500">
-            <tr>
-              <th className="px-4 py-2">Tipo de serviço</th>
-              <th className="px-4 py-2">Descrição</th>
-              <th className="px-4 py-2">Qtd.</th>
-              <th className="px-4 py-2">Valor unit.</th>
-              <th className="px-4 py-2">Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {os.itens.map((item) => (
-              <tr key={item.id}>
-                <td className="px-4 py-2 text-slate-500">{item.tipoServico?.nome ?? "-"}</td>
-                <td className="px-4 py-2">{item.descricao}</td>
-                <td className="px-4 py-2">{Number(item.quantidade)}</td>
-                <td className="px-4 py-2"><Valor valor={paraNumero(item.valorUnit)} /></td>
-                <td className="px-4 py-2"><Valor valor={paraNumero(item.valorTotal)} /></td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-2">Tipo de serviço</th>
+                <th className="px-4 py-2">Descrição</th>
+                <th className="px-4 py-2">Qtd.</th>
+                <th className="px-4 py-2">Valor unit.</th>
+                <th className="px-4 py-2">Total</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="border-t border-slate-200">
-              <td className="px-4 py-2 font-semibold" colSpan={4}>
-                Total
-              </td>
-              <td className="px-4 py-2 font-semibold"><Valor valor={paraNumero(os.valorTotal)} /></td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {os.itens.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-4 py-2 text-slate-500">{item.tipoServico?.nome ?? "-"}</td>
+                  <td className="px-4 py-2">{item.descricao}</td>
+                  <td className="px-4 py-2">{Number(item.quantidade)}</td>
+                  <td className="px-4 py-2"><Valor valor={paraNumero(item.valorUnit)} /></td>
+                  <td className="px-4 py-2"><Valor valor={paraNumero(item.valorTotal)} /></td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-slate-200">
+                <td className="px-4 py-2 font-semibold" colSpan={4}>
+                  Total
+                </td>
+                <td className="px-4 py-2 font-semibold"><Valor valor={paraNumero(os.valorTotal)} /></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </Card>
 
       <Card className="p-4">
@@ -240,25 +242,27 @@ export default async function OSDetalhePage({
         {os.movEstoque.length === 0 ? (
           <p className="p-4 text-sm text-slate-500">Nenhum material dado baixa nesta OS ainda.</p>
         ) : (
-          <table className="w-full text-left text-sm">
-            <tbody className="divide-y divide-slate-100">
-              {os.movEstoque.map((mov) => (
-                <tr key={mov.id}>
-                  <td className="px-4 py-2">{mov.peca.nome}</td>
-                  <td className="px-4 py-2">
-                    {paraNumero(mov.quantidade)} {mov.peca.unidade}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    <form action={removerUsoPeca.bind(null, os.id, mov.id)}>
-                      <button type="submit" className="text-slate-400 hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <tbody className="divide-y divide-slate-100">
+                {os.movEstoque.map((mov) => (
+                  <tr key={mov.id}>
+                    <td className="px-4 py-2">{mov.peca.nome}</td>
+                    <td className="px-4 py-2">
+                      {paraNumero(mov.quantidade)} {mov.peca.unidade}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <form action={removerUsoPeca.bind(null, os.id, mov.id)}>
+                        <button type="submit" className="text-slate-400 hover:text-red-600">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         {pecas.length === 0 ? (
           <p className="border-t border-slate-200 p-4 text-xs text-slate-500">
@@ -304,34 +308,36 @@ export default async function OSDetalhePage({
         </div>
 
         {os.pagamentos.length > 0 && (
-          <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-2">Data</th>
-                <th className="px-4 py-2">Descrição</th>
-                <th className="px-4 py-2">Forma</th>
-                <th className="px-4 py-2">Valor</th>
-                <th className="px-4 py-2" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {os.pagamentos.map((p) => (
-                <tr key={p.id}>
-                  <td className="px-4 py-2">{formatarData(p.data)}</td>
-                  <td className="px-4 py-2">{p.descricao ?? "-"}</td>
-                  <td className="px-4 py-2">{p.formaPagamento ?? "-"}</td>
-                  <td className="px-4 py-2"><Valor valor={paraNumero(p.valor)} /></td>
-                  <td className="px-4 py-2 text-right">
-                    <form action={excluirPagamento.bind(null, os.id, p.id)}>
-                      <button type="submit" className="text-slate-400 hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </form>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-2">Data</th>
+                  <th className="px-4 py-2">Descrição</th>
+                  <th className="px-4 py-2">Forma</th>
+                  <th className="px-4 py-2">Valor</th>
+                  <th className="px-4 py-2" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {os.pagamentos.map((p) => (
+                  <tr key={p.id}>
+                    <td className="px-4 py-2">{formatarData(p.data)}</td>
+                    <td className="px-4 py-2">{p.descricao ?? "-"}</td>
+                    <td className="px-4 py-2">{p.formaPagamento ?? "-"}</td>
+                    <td className="px-4 py-2"><Valor valor={paraNumero(p.valor)} /></td>
+                    <td className="px-4 py-2 text-right">
+                      <form action={excluirPagamento.bind(null, os.id, p.id)}>
+                        <button type="submit" className="text-slate-400 hover:text-red-600">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         <DetailsForm

@@ -79,34 +79,36 @@ export default async function OrcamentoDetalhePage({
         <div className="border-b border-slate-200 px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-900">Itens</h2>
         </div>
-        <table className="w-full text-left text-sm">
-          <thead className="text-xs uppercase text-slate-500">
-            <tr>
-              <th className="px-4 py-2">Descrição</th>
-              <th className="px-4 py-2">Qtd.</th>
-              <th className="px-4 py-2">Valor unit.</th>
-              <th className="px-4 py-2">Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {orcamento.itens.map((item) => (
-              <tr key={item.id}>
-                <td className="px-4 py-2">{item.descricao}</td>
-                <td className="px-4 py-2">{Number(item.quantidade)}</td>
-                <td className="px-4 py-2"><Valor valor={paraNumero(item.valorUnit)} /></td>
-                <td className="px-4 py-2"><Valor valor={paraNumero(item.valorTotal)} /></td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-2">Descrição</th>
+                <th className="px-4 py-2">Qtd.</th>
+                <th className="px-4 py-2">Valor unit.</th>
+                <th className="px-4 py-2">Total</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="border-t border-slate-200">
-              <td className="px-4 py-2 font-semibold" colSpan={3}>
-                Total
-              </td>
-              <td className="px-4 py-2 font-semibold"><Valor valor={paraNumero(orcamento.valorTotal)} /></td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {orcamento.itens.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-4 py-2">{item.descricao}</td>
+                  <td className="px-4 py-2">{Number(item.quantidade)}</td>
+                  <td className="px-4 py-2"><Valor valor={paraNumero(item.valorUnit)} /></td>
+                  <td className="px-4 py-2"><Valor valor={paraNumero(item.valorTotal)} /></td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-slate-200">
+                <td className="px-4 py-2 font-semibold" colSpan={3}>
+                  Total
+                </td>
+                <td className="px-4 py-2 font-semibold"><Valor valor={paraNumero(orcamento.valorTotal)} /></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
         {orcamento.observacoes && (
           <div className="border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
             <span className="font-medium">Observações: </span>

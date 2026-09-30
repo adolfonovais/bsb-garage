@@ -128,47 +128,49 @@ export default async function PecaDetalhePage({
             <EmptyState>Nenhuma movimentação registrada ainda.</EmptyState>
           </div>
         ) : (
-          <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-2">Data</th>
-                <th className="px-4 py-2">Tipo</th>
-                <th className="px-4 py-2">Quantidade</th>
-                <th className="px-4 py-2">Observação / OS</th>
-                <th className="px-4 py-2" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {peca.movimentacoes.map((mov) => (
-                <tr key={mov.id}>
-                  <td className="px-4 py-2">{formatarData(mov.data)}</td>
-                  <td className={`px-4 py-2 ${mov.tipo === "ENTRADA" ? "text-emerald-700" : "text-red-700"}`}>
-                    {mov.tipo === "ENTRADA" ? "Entrada" : "Saída"}
-                  </td>
-                  <td className="px-4 py-2">
-                    {mov.tipo === "ENTRADA" ? "+" : "-"}
-                    {paraNumero(mov.quantidade)} {peca.unidade}
-                  </td>
-                  <td className="px-4 py-2 text-slate-600">
-                    {mov.os ? (
-                      <Link href={`/ordens-servico/${mov.os.id}`} className="text-brand-700 hover:underline">
-                        OS {numeroFormatado(mov.os.numero, mov.os.ano)}
-                      </Link>
-                    ) : (
-                      mov.observacao ?? "-"
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    <form action={excluirMovimentacao.bind(null, peca.id, mov.id)}>
-                      <button type="submit" className="text-slate-400 hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </form>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-2">Data</th>
+                  <th className="px-4 py-2">Tipo</th>
+                  <th className="px-4 py-2">Quantidade</th>
+                  <th className="px-4 py-2">Observação / OS</th>
+                  <th className="px-4 py-2" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {peca.movimentacoes.map((mov) => (
+                  <tr key={mov.id}>
+                    <td className="px-4 py-2">{formatarData(mov.data)}</td>
+                    <td className={`px-4 py-2 ${mov.tipo === "ENTRADA" ? "text-emerald-700" : "text-red-700"}`}>
+                      {mov.tipo === "ENTRADA" ? "Entrada" : "Saída"}
+                    </td>
+                    <td className="px-4 py-2">
+                      {mov.tipo === "ENTRADA" ? "+" : "-"}
+                      {paraNumero(mov.quantidade)} {peca.unidade}
+                    </td>
+                    <td className="px-4 py-2 text-slate-600">
+                      {mov.os ? (
+                        <Link href={`/ordens-servico/${mov.os.id}`} className="text-brand-700 hover:underline">
+                          OS {numeroFormatado(mov.os.numero, mov.os.ano)}
+                        </Link>
+                      ) : (
+                        mov.observacao ?? "-"
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <form action={excluirMovimentacao.bind(null, peca.id, mov.id)}>
+                        <button type="submit" className="text-slate-400 hover:text-red-600">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         <DetailsForm
