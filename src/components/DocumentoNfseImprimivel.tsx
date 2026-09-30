@@ -111,15 +111,9 @@ export function DocumentoNfseImprimivel({
           <p className="font-medium">{cliente.nome}</p>
           {cliente.cpf && <p>CPF: {cliente.cpf}</p>}
           {cliente.telefone && <p className="text-slate-500">Telefone: {cliente.telefone}</p>}
+          {veiculo && <p className="text-slate-500">Veículo: {formatarVeiculo(veiculo)}</p>}
         </div>
       </section>
-
-      {veiculo && (
-        <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
-          <p className="text-xs font-semibold uppercase text-slate-500">Veículo</p>
-          <p>{formatarVeiculo(veiculo)}</p>
-        </section>
-      )}
 
       <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
         <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Discriminação dos serviços</p>
