@@ -75,7 +75,9 @@ import xpath from "xpath";
 import { codigoMunicipioIBGE } from "@/lib/ibge";
 
 const PRESTADOR_CNPJ = "64531214000177";
-const PRESTADOR_NOME = "PRIMEA GESTAO DE SERVICOS LTDA";
+// Nome/razão social do prestador (PRIMEA GESTAO DE SERVICOS LTDA) não entra
+// na DPS: com tpEmit=1 o padrão nacional PROÍBE informá-lo (erro E0121) — o
+// governo já sabe o nome pelo CNPJ.
 const PRESTADOR_IM_DF = "0846247900116"; // Inscrição Municipal no DF, só usada no canal "df"
 const COD_MUNICIPIO = "5300108"; // Brasília - DF (IBGE)
 const C_TRIB_NAC = "100901"; // LC 116, item 10.09 — representação comercial (intermediação)
@@ -314,10 +316,12 @@ async function montarXmlDps(
     `<dCompet>${dataCompetencia}</dCompet>` +
     `<tpEmit>1</tpEmit>` +
     `<cLocEmi>${codMunicipio}</cLocEmi>` +
+    // xNome do prestador fica de fora aqui: com tpEmit=1 (o próprio prestador
+    // é quem emite a DPS) o padrão nacional PROÍBE informar o nome/razão
+    // social dele nesse bloco (erro E0121) — o nome já é conhecido pelo CNPJ.
     `<prest>` +
     `<CNPJ>${PRESTADOR_CNPJ}</CNPJ>` +
     `${blocoIM}` +
-    `<xNome>${escapeXml(PRESTADOR_NOME)}</xNome>` +
     `<regTrib>` +
     `<opSimpNac>3</opSimpNac>` +
     `<regApTribSN>1</regApTribSN>` +
