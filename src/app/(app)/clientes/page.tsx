@@ -18,6 +18,7 @@ export default async function ClientesPage({
           OR: [
             { nome: { contains: termo, mode: "insensitive" } },
             { cpf: { contains: termo, mode: "insensitive" } },
+            { cnpj: { contains: termo, mode: "insensitive" } },
             { telefone: { contains: termo, mode: "insensitive" } },
             { veiculos: { some: { placa: { contains: termo, mode: "insensitive" } } } },
           ],
@@ -43,7 +44,7 @@ export default async function ClientesPage({
             type="search"
             name="q"
             defaultValue={termo}
-            placeholder="Buscar por nome, CPF, telefone ou placa..."
+            placeholder="Buscar por nome, CPF, CNPJ, telefone ou placa..."
             className="pl-9"
           />
         </div>

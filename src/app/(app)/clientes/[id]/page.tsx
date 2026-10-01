@@ -76,6 +76,10 @@ export default async function ClienteDetalhePage({
                   <p className="text-slate-900">{cliente.cpf || "-"}</p>
                 </div>
                 <div>
+                  <p className="text-xs uppercase text-slate-500">CNPJ</p>
+                  <p className="text-slate-900">{cliente.cnpj || "-"}</p>
+                </div>
+                <div>
                   <p className="text-xs uppercase text-slate-500">Telefone</p>
                   <p className="text-slate-900">{cliente.telefone || "-"}</p>
                 </div>
@@ -98,8 +102,11 @@ export default async function ClienteDetalhePage({
                 <Field label="Nome *">
                   <Input name="nome" defaultValue={cliente.nome} required />
                 </Field>
-                <Field label="CPF">
+                <Field label="CPF (pessoa física)">
                   <Input name="cpf" defaultValue={cliente.cpf ?? ""} placeholder="000.000.000-00" />
+                </Field>
+                <Field label="CNPJ (pessoa jurídica)" hint="Cliente é outra empresa — frota própria ou intermediária que traz carros de clientes dela.">
+                  <Input name="cnpj" defaultValue={cliente.cnpj ?? ""} placeholder="00.000.000/0000-00" />
                 </Field>
                 <Field label="Telefone">
                   <Input name="telefone" defaultValue={cliente.telefone ?? ""} />

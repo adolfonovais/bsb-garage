@@ -38,7 +38,7 @@ export function DocumentoNfseImprimivel({
   chaveAcesso: string;
   ambiente: string | null;
   urlVisualizacao: string | null;
-  cliente: { nome: string; cpf?: string | null; telefone?: string | null };
+  cliente: { nome: string; cpf?: string | null; cnpj?: string | null; telefone?: string | null };
   veiculo?: { modelo: string; placa: string | null } | null;
   itens: ItemServico[];
   valorTotal: number;
@@ -109,6 +109,7 @@ export function DocumentoNfseImprimivel({
       <section className="mb-4 rounded-md border border-slate-300 p-3 text-sm">
         <p className="text-xs font-semibold uppercase text-slate-500">Tomador do serviço</p>
         <p className="font-medium">{cliente.nome}</p>
+        {cliente.cnpj && <p>CNPJ: {cliente.cnpj}</p>}
         {cliente.cpf && <p>CPF: {cliente.cpf}</p>}
         {cliente.telefone && <p className="text-slate-500">Telefone: {cliente.telefone}</p>}
         {veiculo && <p className="text-slate-500">Veículo: {formatarVeiculo(veiculo)}</p>}

@@ -397,6 +397,7 @@ export async function emitirNfseAction(
       descricaoServico,
       tomador: {
         cpf: os.cliente.cpf,
+        cnpj: os.cliente.cnpj,
         nome: os.cliente.nome,
         endereco:
           os.cliente.logradouro && os.cliente.bairro && os.cliente.cep && os.cliente.cidade && os.cliente.uf

@@ -27,7 +27,7 @@ export default async function ImprimirNfsePage({ params }: { params: Promise<{ i
         numero: true,
         ano: true,
         valorTotal: true,
-        cliente: { select: { nome: true, cpf: true, telefone: true } },
+        cliente: { select: { nome: true, cpf: true, cnpj: true, telefone: true } },
         veiculo: { select: { modelo: true, placa: true } },
         itens: {
           orderBy: { ordem: "asc" },

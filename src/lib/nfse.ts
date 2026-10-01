@@ -222,6 +222,10 @@ export type DadosEmissaoNFSe = {
   descricaoServico: string;
   tomador: {
     cpf?: string | null;
+    // Tomador pessoa jurídica (outra empresa com frota, ou intermediária) —
+    // alternativa ao cpf, nunca os dois juntos no XML (CNPJ tem prioridade
+    // se os dois vierem preenchidos).
+    cnpj?: string | null;
     nome: string;
     // Obrigatório no canal "df" (cIndOp 100301 exige endereço do tomador
     // conforme o schema) — não usado no canal "nacional".
@@ -258,14 +262,15 @@ async function montarXmlDps(
   const versao = opts.canal === "df" ? "1.01" : "1.00";
 
   const cpfTomador = dados.tomador.cpf ? somenteDigitos(dados.tomador.cpf) : "";
+  const cnpjTomador = dados.tomador.cnpj ? somenteDigitos(dados.tomador.cnpj) : "";
 
-  // O webservice do DF exige CPF e endereço do tomador pro nosso cIndOp
+  // O webservice do DF exige CPF/CNPJ e endereço do tomador pro nosso cIndOp
   // (100301 está entre os códigos que disparam essa exigência no schema).
   // Nunca inventar esses dados — se faltar, é melhor bloquear a emissão
   // com um erro claro do que mandar dado falso num documento fiscal real.
-  if (opts.canal === "df" && cpfTomador.length !== 11) {
+  if (opts.canal === "df" && cpfTomador.length !== 11 && cnpjTomador.length !== 14) {
     throw new Error(
-      "CPF do cliente é obrigatório pra emitir NFS-e pelo webservice do DF. Cadastre o CPF do cliente antes de emitir."
+      "CPF ou CNPJ do cliente é obrigatório pra emitir NFS-e pelo webservice do DF. Cadastre o documento do cliente antes de emitir."
     );
   }
   let blocoEndereco = "";
@@ -283,10 +288,13 @@ async function montarXmlDps(
       `<xLgr>${escapeXml(end.logradouro)}</xLgr><nro>${escapeXml(end.numero)}</nro>` +
       `<xBairro>${escapeXml(end.bairro)}</xBairro></end>`;
   }
-  const blocoTomador =
-    cpfTomador.length === 11
-      ? `<CPF>${cpfTomador}</CPF><xNome>${escapeXml(dados.tomador.nome)}</xNome>${blocoEndereco}`
-      : `<xNome>${escapeXml(dados.tomador.nome)}</xNome>${blocoEndereco}`;
+  const documentoTomador =
+    cnpjTomador.length === 14
+      ? `<CNPJ>${cnpjTomador}</CNPJ>`
+      : cpfTomador.length === 11
+        ? `<CPF>${cpfTomador}</CPF>`
+        : "";
+  const blocoTomador = `${documentoTomador}<xNome>${escapeXml(dados.tomador.nome)}</xNome>${blocoEndereco}`;
 
   const descricao = escapeXml(dados.descricaoServico.slice(0, 2000) || "Serviços automotivos");
   const valor = dados.valor.toFixed(2);

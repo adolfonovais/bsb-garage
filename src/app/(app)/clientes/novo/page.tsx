@@ -11,8 +11,11 @@ export default function NovoClientePage() {
           <Field label="Nome *">
             <Input name="nome" required autoFocus />
           </Field>
-          <Field label="CPF">
+          <Field label="CPF (pessoa física)">
             <Input name="cpf" placeholder="000.000.000-00" />
+          </Field>
+          <Field label="CNPJ (pessoa jurídica)" hint="Cliente é outra empresa — frota própria ou intermediária que traz carros de clientes dela.">
+            <Input name="cnpj" placeholder="00.000.000/0000-00" />
           </Field>
           <Field label="Telefone">
             <Input name="telefone" placeholder="(61) 90000-0000" />

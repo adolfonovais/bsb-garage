@@ -11,6 +11,7 @@ import type { EstadoFormulario } from "@/components/EdicaoInline";
 const ClienteSchema = z.object({
   nome: z.string().trim().min(2, "Informe o nome do cliente."),
   cpf: z.string().trim().optional(),
+  cnpj: z.string().trim().optional(),
   telefone: z.string().trim().optional(),
   email: z.string().trim().optional(),
   // Endereço estruturado — usado na emissão de NFS-e pelo webservice do DF.
@@ -29,6 +30,7 @@ export async function criarCliente(formData: FormData) {
   const dados = ClienteSchema.parse({
     nome: formData.get("nome"),
     cpf: formData.get("cpf"),
+    cnpj: formData.get("cnpj"),
     telefone: formData.get("telefone"),
     email: formData.get("email"),
     cep: formData.get("cep"),
@@ -55,6 +57,7 @@ export async function atualizarCliente(
   const dados = ClienteSchema.parse({
     nome: formData.get("nome"),
     cpf: formData.get("cpf"),
+    cnpj: formData.get("cnpj"),
     telefone: formData.get("telefone"),
     email: formData.get("email"),
     cep: formData.get("cep"),
