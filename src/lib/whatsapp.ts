@@ -188,4 +188,14 @@ export async function enviarWhatsAppOSConcluida(params: {
   }
 }
 
+// Reduz um telefone (vindo da Meta ou do cadastro do cliente, com ou sem
+// DDI/9º dígito) a DDD + 8 dígitos, pra comparar os dois lados sem depender
+// de como cada um foi digitado. Mesma lógica usada no webhook do Maytra.
+export function telefoneCanonico(numero: string): string {
+  let digitos = (numero || "").replace(/\D/g, "");
+  if (digitos.startsWith("55") && digitos.length >= 12) digitos = digitos.slice(2);
+  if (digitos.length === 11 && digitos[2] === "9") digitos = digitos.slice(0, 2) + digitos.slice(3);
+  return digitos;
+}
+
 export const WHATSAPP_TEMPLATES = TEMPLATES_PADRAO;
