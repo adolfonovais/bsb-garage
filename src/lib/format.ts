@@ -38,6 +38,15 @@ export function formatarDataHora(data: Date | string | null | undefined): string
   return `${formatarData(d)} ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+export function formatarTelefone(telefone: string | null | undefined): string {
+  if (!telefone) return "-";
+  let digitos = telefone.replace(/\D/g, "");
+  if (digitos.startsWith("55") && digitos.length >= 12) digitos = digitos.slice(2);
+  if (digitos.length === 11) return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+  if (digitos.length === 10) return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
+  return telefone;
+}
+
 /**
  * Converte o valor de um <input type="date"> ("AAAA-MM-DD") em Date sem sofrer
  * o "bug do dia anterior": interpretar a string como UTC meia-noite e depois

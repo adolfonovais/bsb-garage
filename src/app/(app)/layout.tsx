@@ -6,6 +6,7 @@ import { ValoresPrivacidadeProvider } from "@/components/ValoresPrivacidade";
 import { organizacaoAtual, ehAdminDaPlataforma } from "@/lib/tenant";
 import { diasRestantesDoTeste, logoDaOrganizacao } from "@/lib/marca";
 import { sairAction } from "@/components/topbar-actions";
+import { whatsappConfigurado } from "@/lib/whatsapp";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -45,6 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             logoPropria={!!organizacao.logoUrl}
             mostrarAvisoIntegracoes={organizacao.nfseHabilitada}
             adminPlataforma={ehAdminDaPlataforma(session?.user?.email)}
+            whatsappHabilitado={whatsappConfigurado(organizacao.whatsappPhoneId)}
           />
           <div className="flex min-h-screen min-w-0 flex-1 flex-col">
             <Topbar nome={nome} papel={papel} nomeOrganizacao={organizacao.nome} />

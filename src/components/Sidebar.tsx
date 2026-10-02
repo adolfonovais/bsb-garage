@@ -15,6 +15,7 @@ import {
   Boxes,
   BarChart3,
   Building2,
+  MessageCircle,
   X,
 } from "lucide-react";
 import { useMobileMenu } from "@/components/MobileMenu";
@@ -39,6 +40,7 @@ export function Sidebar({
   logoPropria,
   mostrarAvisoIntegracoes,
   adminPlataforma,
+  whatsappHabilitado,
 }: {
   isAdmin: boolean;
   nomeOrganizacao: string;
@@ -47,9 +49,13 @@ export function Sidebar({
   logoPropria: boolean;
   mostrarAvisoIntegracoes: boolean;
   adminPlataforma: boolean;
+  whatsappHabilitado: boolean;
 }) {
   const pathname = usePathname();
   const { aberto, setAberto } = useMobileMenu();
+  const todosOsLinks = whatsappHabilitado
+    ? [...links, { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle }]
+    : links;
 
   // Fecha o menu mobile sozinho quando o usuário navega pra outra página.
   useEffect(() => {
@@ -102,7 +108,7 @@ export function Sidebar({
           </button>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
-        {links.map(({ href, label, icon: Icon }) => {
+        {todosOsLinks.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
