@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { organizacaoAtual } from "@/lib/tenant";
+import { prismaBase } from "@/lib/prisma-base";
+import { organizacaoParaImpressao } from "@/lib/doc-acesso";
 import { logoDaOrganizacao } from "@/lib/marca";
 import { nomeArquivoImpressao, numeroFormatado, paraNumero } from "@/lib/format";
 import { parseNfseXml } from "@/lib/nfse-parse";
@@ -8,7 +8,7 @@ import { DocumentoNfseImprimivel } from "@/components/DocumentoNfseImprimivel";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const os = await prisma.ordemServico.findUnique({
+  const os = await prismaBase.ordemServico.findUnique({
     where: { id },
     select: { numero: true, ano: true, veiculo: true, cliente: { select: { nome: true } } },
   });
@@ -16,12 +16,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: `NFS-e — ${nomeArquivoImpressao("OS", os.numero, os.ano, os.veiculo, os.cliente.nome)}` };
 }
 
-export default async function ImprimirNfsePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function ImprimirNfsePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ token?: string }>;
+}) {
+  const [{ id }, { token }] = await Promise.all([params, searchParams]);
+  const organizacaoId = await organizacaoParaImpressao("nfse", id, token);
 
   const [os, organizacao, empresa] = await Promise.all([
-    prisma.ordemServico.findUnique({
-      where: { id },
+    prismaBase.ordemServico.findUnique({
+      where: { id, organizacaoId },
       select: {
         id: true,
         numero: true,
@@ -39,8 +46,8 @@ export default async function ImprimirNfsePage({ params }: { params: Promise<{ i
         nfseUrlVisualizacao: true,
       },
     }),
-    organizacaoAtual(),
-    prisma.empresaConfig.findFirst(),
+    prismaBase.organizacao.findUniqueOrThrow({ where: { id: organizacaoId } }),
+    prismaBase.empresaConfig.findUnique({ where: { organizacaoId } }),
   ]);
 
   // Sem NFS-e emitida ainda não tem o que mostrar aqui — nada pra reformatar.

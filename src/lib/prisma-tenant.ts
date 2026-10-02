@@ -37,6 +37,7 @@ const ESCOPO: Record<string, Escopo> = {
   MovimentacaoEstoque: { tipo: "raiz" },
   ContaFinanceira: { tipo: "raiz" },
   EmpresaConfig: { tipo: "raiz" },
+  MensagemWhatsApp: { tipo: "raiz" },
   OrcamentoItem: { tipo: "filho", relacao: "orcamento" },
   OrdemServicoItem: { tipo: "filho", relacao: "os" },
   Pagamento: { tipo: "filho", relacao: "os" },
@@ -63,6 +64,7 @@ const FKS: Record<string, Record<string, string>> = {
   Pagamento: { osId: "OrdemServico" },
   FotoOS: { osId: "OrdemServico" },
   RepasseItem: { repasseId: "RepasseOficina", itemId: "OrdemServicoItem" },
+  MensagemWhatsApp: { clienteId: "Cliente" },
 };
 
 // Nome do delegate no client ("OrdemServico" → "ordemServico").

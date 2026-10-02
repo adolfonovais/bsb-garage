@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import {
   adicionarFoto,
   atualizarStatusOS,
+  enviarNfPorWhatsApp,
+  enviarOsPorWhatsApp,
   excluirFoto,
   excluirOS,
   excluirPagamento,
@@ -16,10 +18,12 @@ import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { Valor } from "@/components/ValoresPrivacidade";
 import { nfseConfigurada } from "@/lib/nfse";
+import { whatsappConfigurado } from "@/lib/whatsapp";
 import { organizacaoAtual } from "@/lib/tenant";
 import { Download, FileText, Pencil, Printer, Receipt, Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { EmitirNfseButton } from "@/components/EmitirNfseButton";
+import { EnviarWhatsAppButton } from "@/components/EnviarWhatsAppButton";
 
 const PROXIMO_STATUS: Record<string, { valor: string; label: string }[]> = {
   ABERTA: [
@@ -81,6 +85,9 @@ export default async function OSDetalhePage({
             <LinkButton href={`/imprimir/os/${os.id}`} variant="secondary">
               <Printer className="h-4 w-4" /> Imprimir / PDF
             </LinkButton>
+            {whatsappConfigurado(organizacao.whatsappPhoneId) && (
+              <EnviarWhatsAppButton acao={enviarOsPorWhatsApp.bind(null, os.id)} rotulo="Enviar OS" />
+            )}
             {os.nfseChaveAcesso ? (
               <>
                 <Badge
@@ -90,6 +97,9 @@ export default async function OSDetalhePage({
                 <LinkButton href={`/imprimir/nfse/${os.id}`} variant="secondary">
                   <FileText className="h-4 w-4" /> Comprovante da NFS-e
                 </LinkButton>
+                {whatsappConfigurado(organizacao.whatsappPhoneId) && (
+                  <EnviarWhatsAppButton acao={enviarNfPorWhatsApp.bind(null, os.id)} rotulo="Enviar NF" />
+                )}
                 {os.nfseUrlVisualizacao && (
                   <a
                     href={os.nfseUrlVisualizacao}

@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Pacotes com binário/lógica específica de runtime (Chromium baixado em
+  // tempo de execução) — não deixar o bundler do Next tentar empacotá-los.
+  serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium-min"],
   experimental: {
     serverActions: {
       // Padrão do Next.js é 1MB — pequeno demais para o upload de fotos das

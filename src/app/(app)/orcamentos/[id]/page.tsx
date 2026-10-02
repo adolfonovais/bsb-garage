@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import {
   atualizarStatusOrcamento,
   converterEmOS,
+  enviarOrcamentoPorWhatsApp,
   excluirOrcamento,
 } from "@/app/(app)/orcamentos/actions";
 import { Badge, Card, LinkButton, PageHeader } from "@/components/ui";
@@ -11,6 +12,9 @@ import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_ORCA
 import { Valor } from "@/components/ValoresPrivacidade";
 import { Pencil, Printer, Trash2 } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
+import { EnviarWhatsAppButton } from "@/components/EnviarWhatsAppButton";
+import { whatsappConfigurado } from "@/lib/whatsapp";
+import { organizacaoAtual } from "@/lib/tenant";
 
 export default async function OrcamentoDetalhePage({
   params,
@@ -31,6 +35,7 @@ export default async function OrcamentoDetalhePage({
 
   if (!orcamento) notFound();
 
+  const organizacao = await organizacaoAtual();
   const jaConvertido = orcamento.ordensServico.length > 0;
   const aprovarAction = atualizarStatusOrcamento.bind(null, orcamento.id, "APROVADO");
   const recusarAction = atualizarStatusOrcamento.bind(null, orcamento.id, "RECUSADO");
@@ -51,6 +56,9 @@ export default async function OrcamentoDetalhePage({
             <LinkButton href={`/imprimir/orcamento/${orcamento.id}`} variant="secondary">
               <Printer className="h-4 w-4" /> Imprimir / PDF
             </LinkButton>
+            {whatsappConfigurado(organizacao.whatsappPhoneId) && (
+              <EnviarWhatsAppButton acao={enviarOrcamentoPorWhatsApp.bind(null, orcamento.id)} rotulo="Enviar orçamento" />
+            )}
           </>
         }
       />

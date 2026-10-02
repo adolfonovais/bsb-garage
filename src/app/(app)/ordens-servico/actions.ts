@@ -12,6 +12,8 @@ import { dataDoFormulario, formatarMoeda, numeroFormatado, paraNumero } from "@/
 import { salvarFoto, removerFoto } from "@/lib/storage";
 import { notificarClienteOSConcluida } from "@/lib/notificacoes";
 import { emitirNFSe } from "@/lib/nfse";
+import { enviarPdfPorWhatsApp, type EstadoEnvioWhatsApp } from "@/lib/envio-documentos-whatsapp";
+import { WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
 
 const OSSchema = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
@@ -195,17 +197,18 @@ export async function atualizarStatusOS(osId: string, status: string) {
     revalidatePath("/repasses");
   }
 
-  // Avisa o cliente quando o carro fica pronto (e-mail hoje, WhatsApp assim
-  // que o Maytra for aprovado — ver src/lib/notificacoes.ts). Não trava a
-  // atualização de status caso o aviso falhe.
+  // Avisa o cliente quando o carro fica pronto (e-mail + WhatsApp — ver
+  // src/lib/notificacoes.ts). Não trava a atualização de status caso o
+  // aviso falhe.
   if (status === "CONCLUIDA") {
-    const empresa = await prisma.empresaConfig.findFirst();
+    const [empresa, organizacao] = await Promise.all([prisma.empresaConfig.findFirst(), organizacaoAtual()]);
     await notificarClienteOSConcluida({
       paraEmail: os.cliente.email,
       paraTelefone: os.cliente.telefone,
       nomeCliente: os.cliente.nome,
       numeroOS: numeroFormatado(os.numero, os.ano),
-      nomeEmpresa: empresa?.nome ?? (await organizacaoAtual()).nome,
+      nomeEmpresa: empresa?.nome ?? organizacao.nome,
+      whatsappPhoneId: organizacao.whatsappPhoneId,
     });
   }
 }
@@ -437,6 +440,60 @@ export async function emitirNfseAction(
     revalidatePath(`/ordens-servico/${osId}`);
     return { erro: mensagem };
   }
+}
+
+export async function enviarOsPorWhatsApp(osId: string, _prevState: EstadoEnvioWhatsApp, _formData: FormData): Promise<EstadoEnvioWhatsApp> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const os = await prisma.ordemServico.findUniqueOrThrow({
+    where: { id: osId },
+    select: { numero: true, ano: true, cliente: { select: { id: true, nome: true, telefone: true } } },
+  });
+  const numeroOS = numeroFormatado(os.numero, os.ano);
+
+  return enviarPdfPorWhatsApp({
+    doc: "os",
+    id: osId,
+    caminhoImpressao: `/imprimir/os/${osId}`,
+    nomeArquivo: `OS-${numeroOS}.pdf`,
+    template: process.env.WHATSAPP_TEMPLATE_ENVIO_OS || WHATSAPP_TEMPLATES.envioOs,
+    telefone: os.cliente.telefone,
+    nomeCliente: os.cliente.nome,
+    numeroDocumento: `OS ${numeroOS}`,
+    clienteId: os.cliente.id,
+  });
+}
+
+export async function enviarNfPorWhatsApp(osId: string, _prevState: EstadoEnvioWhatsApp, _formData: FormData): Promise<EstadoEnvioWhatsApp> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const os = await prisma.ordemServico.findUniqueOrThrow({
+    where: { id: osId },
+    select: {
+      numero: true,
+      ano: true,
+      nfseChaveAcesso: true,
+      cliente: { select: { id: true, nome: true, telefone: true } },
+    },
+  });
+  if (!os.nfseChaveAcesso) {
+    return { erro: "Esta OS ainda não tem NFS-e emitida." };
+  }
+  const numeroOS = numeroFormatado(os.numero, os.ano);
+
+  return enviarPdfPorWhatsApp({
+    doc: "nfse",
+    id: osId,
+    caminhoImpressao: `/imprimir/nfse/${osId}`,
+    nomeArquivo: `NFSe-${numeroOS}.pdf`,
+    template: process.env.WHATSAPP_TEMPLATE_ENVIO_NF || WHATSAPP_TEMPLATES.envioNf,
+    telefone: os.cliente.telefone,
+    nomeCliente: os.cliente.nome,
+    numeroDocumento: `OS ${numeroOS}`,
+    clienteId: os.cliente.id,
+  });
 }
 
 export async function removerUsoPeca(osId: string, movimentacaoId: string) {

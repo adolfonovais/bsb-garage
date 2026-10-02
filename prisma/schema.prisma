@@ -40,9 +40,15 @@ model Organizacao {
   // Logo da oficina (URL pública no Storage) — aparece na barra lateral, nas
   // impressões de Orçamento/OS e nos relatórios. Editável em Configurações.
   logoUrl          String?
+  // WhatsApp (Meta Cloud API): Phone Number ID do número dedicado a essa
+  // organização — usado pra rotear as mensagens recebidas no webhook pra
+  // organização certa (o token/app é compartilhado, o número é que isola).
+  // Sem isso, a integração de WhatsApp dessa organização fica desligada.
+  whatsappPhoneId  String?   @unique
   createdAt        DateTime  @default(now())
 
-  usuarios      Usuario[]
+  usuarios        Usuario[]
+  mensagensWhatsApp MensagemWhatsApp[]
   clientes      Cliente[]
   veiculos      Veiculo[]
   tiposServico  TipoServico[]
@@ -121,6 +127,7 @@ model Cliente {
   veiculos      Veiculo[]
   orcamentos    Orcamento[]
   ordensServico OrdemServico[]
+  mensagensWhatsApp MensagemWhatsApp[]
 
   @@index([nome])
   @@index([organizacaoId])
@@ -513,6 +520,53 @@ model ContaFinanceira {
   createdAt       DateTime    @default(now())
 
   @@index([organizacaoId])
+  @@schema("bsb_garage")
+}
+
+// ---------- WhatsApp (caixa de entrada) ----------
+
+enum DirecaoMensagemWhatsApp {
+  ENTRADA
+  SAIDA
+
+  @@schema("bsb_garage")
+}
+
+enum StatusMensagemWhatsApp {
+  ENVIADA
+  ENTREGUE
+  LIDA
+  FALHOU
+
+  @@schema("bsb_garage")
+}
+
+// Histórico de conversas por WhatsApp. "Entrada" vem do webhook da Meta;
+// "saída" é tanto os avisos automáticos (OS pronta, envio de OS/orçamento/NF)
+// quanto respostas manuais dadas na caixa de entrada do Garage Flow — texto
+// livre só é entregue dentro da janela de 24h aberta pelo cliente (regra da
+// própria Meta), fora dela é preciso usar um template aprovado.
+model MensagemWhatsApp {
+  id             String                  @id @default(cuid())
+  organizacaoId  String
+  organizacao    Organizacao             @relation(fields: [organizacaoId], references: [id])
+  // Telefone normalizado (E.164 sem "+", ex: 5561999998888) — é por ele que
+  // agrupamos a conversa, já que nem sempre dá pra casar com um Cliente.
+  telefone       String
+  clienteId      String?
+  cliente        Cliente?                @relation(fields: [clienteId], references: [id])
+  direcao        DirecaoMensagemWhatsApp
+  corpo          String                  @db.Text
+  // Nome do template usado (mensagens automáticas) — null quando é texto
+  // livre (resposta manual na caixa de entrada, ou mensagem recebida).
+  template       String?
+  status         StatusMensagemWhatsApp  @default(ENVIADA)
+  // Id da mensagem na Meta (wamid) — usado pra não duplicar em reentregas de
+  // webhook e pra casar atualizações de status (entregue/lida) com a mensagem.
+  wamid          String?                 @unique
+  createdAt      DateTime                @default(now())
+
+  @@index([organizacaoId, telefone])
   @@schema("bsb_garage")
 }
 

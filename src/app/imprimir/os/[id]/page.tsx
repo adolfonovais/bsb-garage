@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { organizacaoAtual } from "@/lib/tenant";
+import { prismaBase } from "@/lib/prisma-base";
+import { organizacaoParaImpressao } from "@/lib/doc-acesso";
 import { logoDaOrganizacao } from "@/lib/marca";
 import { formatarData, formatarMoeda, nomeArquivoImpressao, numeroFormatado, paraNumero } from "@/lib/format";
 import { DocumentoImprimivel } from "@/components/DocumentoImprimivel";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const os = await prisma.ordemServico.findUnique({
+  const os = await prismaBase.ordemServico.findUnique({
     where: { id },
     select: { numero: true, ano: true, veiculo: true, cliente: { select: { nome: true } } },
   });
@@ -17,14 +17,17 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ImprimirOSPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
-  const { id } = await params;
+  const [{ id }, { token }] = await Promise.all([params, searchParams]);
+  const organizacaoId = await organizacaoParaImpressao("os", id, token);
 
-  const [os, empresa] = await Promise.all([
-    prisma.ordemServico.findUnique({
-      where: { id },
+  const [os, organizacao, empresa] = await Promise.all([
+    prismaBase.ordemServico.findUnique({
+      where: { id, organizacaoId },
       include: {
         cliente: true,
         veiculo: true,
@@ -32,7 +35,8 @@ export default async function ImprimirOSPage({
         pagamentos: { orderBy: { data: "asc" } },
       },
     }),
-    prisma.empresaConfig.findFirst(),
+    prismaBase.organizacao.findUniqueOrThrow({ where: { id: organizacaoId } }),
+    prismaBase.empresaConfig.findUnique({ where: { organizacaoId } }),
   ]);
 
   if (!os) notFound();
@@ -42,11 +46,11 @@ export default async function ImprimirOSPage({
 
   return (
     <DocumentoImprimivel
-      logoUrl={logoDaOrganizacao(await organizacaoAtual())}
+      logoUrl={logoDaOrganizacao(organizacao)}
       voltarHref={`/ordens-servico/${os.id}`}
       empresa={
         empresa ?? {
-          nome: (await organizacaoAtual()).nome,
+          nome: organizacao.nome,
           razaoSocial: null,
           cnpj: null,
           ie: null,

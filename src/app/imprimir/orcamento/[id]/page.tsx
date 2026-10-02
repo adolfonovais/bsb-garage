@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { organizacaoAtual } from "@/lib/tenant";
+import { prismaBase } from "@/lib/prisma-base";
+import { organizacaoParaImpressao } from "@/lib/doc-acesso";
 import { logoDaOrganizacao } from "@/lib/marca";
 import { nomeArquivoImpressao, numeroFormatado } from "@/lib/format";
 import { DocumentoImprimivel } from "@/components/DocumentoImprimivel";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const orcamento = await prisma.orcamento.findUnique({
+  const orcamento = await prismaBase.orcamento.findUnique({
     where: { id },
     select: { numero: true, ano: true, veiculo: true, cliente: { select: { nome: true } } },
   });
@@ -19,28 +19,32 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ImprimirOrcamentoPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
-  const { id } = await params;
+  const [{ id }, { token }] = await Promise.all([params, searchParams]);
+  const organizacaoId = await organizacaoParaImpressao("orcamento", id, token);
 
-  const [orcamento, empresa] = await Promise.all([
-    prisma.orcamento.findUnique({
-      where: { id },
+  const [orcamento, organizacao, empresa] = await Promise.all([
+    prismaBase.orcamento.findUnique({
+      where: { id, organizacaoId },
       include: { cliente: true, veiculo: true, itens: { orderBy: { ordem: "asc" } } },
     }),
-    prisma.empresaConfig.findFirst(),
+    prismaBase.organizacao.findUniqueOrThrow({ where: { id: organizacaoId } }),
+    prismaBase.empresaConfig.findUnique({ where: { organizacaoId } }),
   ]);
 
   if (!orcamento) notFound();
 
   return (
     <DocumentoImprimivel
-      logoUrl={logoDaOrganizacao(await organizacaoAtual())}
+      logoUrl={logoDaOrganizacao(organizacao)}
       voltarHref={`/orcamentos/${orcamento.id}`}
       empresa={
         empresa ?? {
-          nome: (await organizacaoAtual()).nome,
+          nome: organizacao.nome,
           razaoSocial: null,
           cnpj: null,
           ie: null,

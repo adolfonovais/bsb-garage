@@ -8,6 +8,9 @@ import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
+import { numeroFormatado } from "@/lib/format";
+import { enviarPdfPorWhatsApp, type EstadoEnvioWhatsApp } from "@/lib/envio-documentos-whatsapp";
+import { WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
 
 const OrcamentoSchema = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
@@ -202,4 +205,27 @@ export async function converterEmOS(orcamentoId: string) {
   revalidatePath("/orcamentos");
   revalidatePath("/ordens-servico");
   redirect(`/ordens-servico/${os.id}`);
+}
+
+export async function enviarOrcamentoPorWhatsApp(orcamentoId: string, _prevState: EstadoEnvioWhatsApp, _formData: FormData): Promise<EstadoEnvioWhatsApp> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const orcamento = await prisma.orcamento.findUniqueOrThrow({
+    where: { id: orcamentoId },
+    select: { numero: true, ano: true, cliente: { select: { id: true, nome: true, telefone: true } } },
+  });
+  const numeroOrcamento = numeroFormatado(orcamento.numero, orcamento.ano);
+
+  return enviarPdfPorWhatsApp({
+    doc: "orcamento",
+    id: orcamentoId,
+    caminhoImpressao: `/imprimir/orcamento/${orcamentoId}`,
+    nomeArquivo: `Orcamento-${numeroOrcamento}.pdf`,
+    template: process.env.WHATSAPP_TEMPLATE_ENVIO_ORCAMENTO || WHATSAPP_TEMPLATES.envioOrcamento,
+    telefone: orcamento.cliente.telefone,
+    nomeCliente: orcamento.cliente.nome,
+    numeroDocumento: `Orçamento ${numeroOrcamento}`,
+    clienteId: orcamento.cliente.id,
+  });
 }

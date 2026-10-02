@@ -12,6 +12,7 @@ export async function notificarClienteOSConcluida(params: {
   nomeCliente: string;
   numeroOS: string;
   nomeEmpresa: string;
+  whatsappPhoneId: string | null | undefined;
 }) {
   await Promise.all([
     enviarEmailOSConcluida({
@@ -21,6 +22,7 @@ export async function notificarClienteOSConcluida(params: {
       nomeEmpresa: params.nomeEmpresa,
     }),
     enviarWhatsAppOSConcluida({
+      phoneId: params.whatsappPhoneId,
       paraTelefone: params.paraTelefone,
       nomeCliente: params.nomeCliente,
       numeroOS: params.numeroOS,

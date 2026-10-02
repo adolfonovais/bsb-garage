@@ -15,7 +15,11 @@ const assinar = (corpo: string) => createHmac("sha256", segredo()).update(corpo)
 
 export type PayloadToken =
   | { t: "verificar"; uid: string }
-  | { t: "convite"; oid: string; email: string; papel: "ADMIN" | "FUNCIONARIO" };
+  | { t: "convite"; oid: string; email: string; papel: "ADMIN" | "FUNCIONARIO" }
+  // Acesso interno às páginas de impressão sem sessão de login — só usado
+  // pelo próprio servidor (Chromium headless gerando o PDF pra WhatsApp),
+  // nunca exposto ao cliente final. Validade curta de propósito.
+  | { t: "pdf-interno"; doc: "os" | "orcamento" | "nfse"; id: string };
 
 export function criarToken(payload: PayloadToken, validadeSegundos: number): string {
   const corpo = Buffer.from(JSON.stringify({ ...payload, exp: Math.floor(Date.now() / 1000) + validadeSegundos })).toString("base64url");

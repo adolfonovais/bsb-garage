@@ -6,7 +6,19 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
-  const isPublicRoute = pathname === "/login" || pathname === "/cadastro" || pathname === "/verificar-email" || pathname === "/convite" || pathname.startsWith("/api/auth");
+  // /imprimir fica fora da checagem daqui: cada página de impressão decide
+  // sozinha se autoriza (sessão normal OU um token interno de curta duração
+  // pro Chromium headless que gera o PDF pra anexar no WhatsApp — ver
+  // src/lib/doc-acesso.ts). Sem isso, o Chromium (sem cookie de sessão)
+  // cairia num loop de redirecionamento pro login.
+  const isPublicRoute =
+    pathname === "/login" ||
+    pathname === "/cadastro" ||
+    pathname === "/verificar-email" ||
+    pathname === "/convite" ||
+    pathname.startsWith("/imprimir/") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/whatsapp/webhook");
 
   if (!isLoggedIn && !isPublicRoute) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
