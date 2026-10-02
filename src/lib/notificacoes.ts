@@ -1,7 +1,7 @@
-// Ponto único pra avisar o cliente quando a OS fica pronta. Hoje só manda
-// e-mail; o WhatsApp entra aqui também assim que o Maytra for aprovado
-// (ver src/lib/whatsapp.ts) — quem chama notificarClienteOSConcluida não
-// precisa saber por quais canais o aviso realmente saiu.
+// Ponto único pra avisar o cliente quando a OS fica pronta, por e-mail e por
+// WhatsApp (ver src/lib/whatsapp.ts) — quem chama notificarClienteOSConcluida
+// não precisa saber por quais canais o aviso realmente saiu, nem se algum
+// deles ainda não está configurado (cada função trata isso sozinha).
 
 import { enviarEmailOSConcluida } from "@/lib/mail";
 import { enviarWhatsAppOSConcluida } from "@/lib/whatsapp";
@@ -24,6 +24,7 @@ export async function notificarClienteOSConcluida(params: {
       paraTelefone: params.paraTelefone,
       nomeCliente: params.nomeCliente,
       numeroOS: params.numeroOS,
+      nomeEmpresa: params.nomeEmpresa,
     }),
   ]);
 }

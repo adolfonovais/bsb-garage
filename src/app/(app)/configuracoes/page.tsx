@@ -180,10 +180,11 @@ export default async function ConfiguracoesPage() {
               <Circle className="mt-0.5 h-4 w-4 shrink-0 text-slate-300" />
             )}
             <div>
-              <p className="font-medium text-slate-900">Aviso por WhatsApp (Maytra)</p>
+              <p className="font-medium text-slate-900">Aviso por WhatsApp</p>
               <p className="text-xs text-slate-500">
-                Pendente: aprovação do app Maytra pela Meta. Até lá, o aviso de OS concluída sai
-                só por e-mail.
+                {whatsappConfigurado()
+                  ? "Número e template aprovados pela Meta configurados — aviso de OS concluída sai por WhatsApp além do e-mail."
+                  : "Pendente: número de telefone registrado no WhatsApp Manager da Meta e template de mensagem aprovado. Até lá, o aviso de OS concluída sai só por e-mail."}
               </p>
             </div>
           </li>
