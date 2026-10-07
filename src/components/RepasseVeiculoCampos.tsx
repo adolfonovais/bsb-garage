@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Field, Input, Select } from "@/components/ui";
-import { formatarVeiculo, numeroFormatado, STATUS_REPASSE_LABEL } from "@/lib/format";
+import { formatarVeiculo, numeroFormatado } from "@/lib/format";
 import { Valor } from "@/components/ValoresPrivacidade";
 
 type RepasseExistente = {
@@ -77,23 +77,6 @@ export function RepasseVeiculoCampos({
   const ordensDisponiveis = ordens.filter((os) => osTemItemDisponivel(os, oficinaId));
   const osSelecionada = ordensDisponiveis.find((o) => o.id === osId);
   const itensDisponiveis = osSelecionada ? osSelecionada.itens.filter((item) => itemDisponivel(item, oficinaId)) : [];
-
-  // Pra explicar pro usuário por que uma OS sumiu do dropdown — sem isso,
-  // uma OS já repassada (ainda que "Entregue") simplesmente desaparecia
-  // sem nenhuma pista do motivo.
-  const jaRepassadoParaOficina = oficinaId
-    ? ordens
-        .map((os) => {
-          const repassesDessaOficina = os.repassesOS.filter((r) => r.oficinaId === oficinaId);
-          if (repassesDessaOficina.length === 0) return null;
-          const itensCobertos = os.itens.filter((item) =>
-            item.repassesExistentes.some((r) => r.oficinaId === oficinaId)
-          );
-          const statuses = [...new Set(repassesDessaOficina.map((r) => r.status))];
-          return { os, itensCobertos, statuses };
-        })
-        .filter((x): x is { os: OS; itensCobertos: ItemOS[]; statuses: string[] } => x !== null)
-    : [];
 
   function selecionarOficina(novoOficinaId: string) {
     setOficinaId(novoOficinaId);
@@ -172,24 +155,6 @@ export function RepasseVeiculoCampos({
       </Field>
 
       <div className="space-y-4 sm:col-span-2">
-        {jaRepassadoParaOficina.length > 0 && (
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            <p className="font-medium">
-              Já tem repasse pra esse prestador (por isso não aparecem acima) — edite o repasse existente pra
-              adicionar mais itens:
-            </p>
-            <ul className="mt-1 list-disc space-y-0.5 pl-4">
-              {jaRepassadoParaOficina.map(({ os, itensCobertos, statuses }) => (
-                <li key={os.id}>
-                  {numeroFormatado(os.numero, os.ano)} — {os.cliente.nome}:{" "}
-                  {itensCobertos.length > 0 ? itensCobertos.map((item) => item.descricao).join(", ") : "OS inteira"} (
-                  {statuses.map((s) => STATUS_REPASSE_LABEL[s] ?? s).join(", ")})
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         {osSelecionada && itensDisponiveis.length > 0 && (
           <Field
             label="Serviços da OS repassados"
