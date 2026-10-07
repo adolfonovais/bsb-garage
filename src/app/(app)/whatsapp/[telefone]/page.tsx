@@ -50,6 +50,8 @@ export default async function WhatsAppConversaPage({
               <p className="whitespace-pre-wrap">{msg.corpo}</p>
               <p className={`mt-1 text-right text-[10px] ${msg.direcao === "SAIDA" ? "text-brand-100" : "text-slate-400"}`}>
                 {formatarDataHora(msg.createdAt)}
+                {msg.direcao === "SAIDA" &&
+                  ` · ${{ ENVIADA: "Enviada", ENTREGUE: "Entregue", LIDA: "Lida", FALHOU: "Falhou" }[msg.status]}`}
               </p>
             </div>
           </div>

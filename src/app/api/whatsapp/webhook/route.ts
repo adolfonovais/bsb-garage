@@ -43,6 +43,10 @@ export async function POST(req: NextRequest) {
       for (const statusEntry of statuses) {
         const wamid = statusEntry?.id;
         const novoStatus = STATUS_META[String(statusEntry?.status || "")];
+        console.log(
+          `[whatsapp/webhook] status ${statusEntry?.status} wamid=${wamid} para=${statusEntry?.recipient_id}` +
+            (statusEntry?.errors ? ` erro=${JSON.stringify(statusEntry.errors)}` : "")
+        );
         if (!wamid || !novoStatus) continue;
         await prismaBase.mensagemWhatsApp
           .update({ where: { wamid }, data: { status: novoStatus as never } })
