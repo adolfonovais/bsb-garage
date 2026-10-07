@@ -61,8 +61,21 @@ async function chamarGraphApi(phoneId: string, caminho: string, body: unknown): 
   });
   const corpo = await resposta.json().catch(() => null);
   if (!resposta.ok) {
-    const mensagem = (corpo as { error?: { message?: string } } | null)?.error?.message;
-    throw new Error(`WhatsApp (HTTP ${resposta.status}): ${mensagem ?? JSON.stringify(corpo)}`);
+    const erro = (corpo as { error?: Record<string, unknown> } | null)?.error;
+    if (!erro) throw new Error(`WhatsApp (HTTP ${resposta.status}): ${JSON.stringify(corpo)}`);
+    // A Meta costuma mandar mais detalhe útil em error_user_title/error_user_msg
+    // e error_subcode do que em message — sem isso, erros de permissão (ex:
+    // token sem acesso a esse número) só mostravam "Authorization Error",
+    // sem dar pista nenhuma de qual permissão faltava.
+    const partes = [
+      erro.message,
+      erro.error_user_title,
+      erro.error_user_msg,
+      erro.code !== undefined ? `code ${erro.code}` : null,
+      erro.error_subcode !== undefined ? `subcode ${erro.error_subcode}` : null,
+      erro.fbtrace_id ? `trace ${erro.fbtrace_id}` : null,
+    ].filter(Boolean);
+    throw new Error(`WhatsApp (HTTP ${resposta.status}): ${partes.join(" — ")}`);
   }
   return corpo;
 }
