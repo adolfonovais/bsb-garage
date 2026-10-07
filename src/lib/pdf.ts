@@ -29,16 +29,38 @@ export async function gerarPdfDeUrl(url: string): Promise<Buffer> {
     );
   }
 
+  const inicio = Date.now();
+  const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
+  console.log(`[pdf] Chromium pronto em ${Date.now() - inicio}ms`);
   const browser = await puppeteer.launch({
     args: chromium.args,
-    executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
-    headless: true,
+    executablePath,
+    headless: "shell",
   });
+  console.log(`[pdf] Chromium aberto em ${Date.now() - inicio}ms`);
 
   try {
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "networkidle0", timeout: 20_000 });
+    const semToken = (u: string) => u.split("?")[0].slice(0, 120);
+    page.on("response", (r) => console.log(`[pdf] ${r.status()} ${semToken(r.url())}`));
+    page.on("requestfailed", (r) => console.log(`[pdf] FALHOU ${semToken(r.url())} ${r.failure()?.errorText}`));
+
+    // "load" (e não networkidle0): a página de impressão não tem polling, mas
+    // qualquer requisição pendurada (prefetch, fonte externa) faria o
+    // networkidle0 nunca resolver e estourar o timeout.
+    await page.goto(url, { waitUntil: "load", timeout: 45_000 });
+    console.log(`[pdf] Página carregada em ${Date.now() - inicio}ms`);
+    await page.evaluate(() =>
+      Promise.all([
+        document.fonts.ready,
+        ...Array.from(document.images).map((img) =>
+          img.complete ? null : new Promise((ok) => { img.onload = img.onerror = ok; })
+        ),
+      ])
+    );
+
     const pdf = await page.pdf({ format: "a4", printBackground: true, margin: { top: 0, bottom: 0, left: 0, right: 0 } });
+    console.log(`[pdf] PDF gerado em ${Date.now() - inicio}ms (${pdf.length} bytes)`);
     return Buffer.from(pdf);
   } finally {
     await browser.close();
