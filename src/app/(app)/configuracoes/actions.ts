@@ -150,6 +150,27 @@ export async function convidarUsuario(_prev: EstadoConvite, formData: FormData):
   return enviado ? { enviado: `Convite enviado para ${email}. O link vale por 7 dias.` } : { link };
 }
 
+export type EstadoWhatsApp = { sucesso?: boolean; erro?: string } | undefined;
+
+/** Vincula (ou desvincula, se vazio) o Phone Number ID do WhatsApp Business dessa organização. */
+export async function salvarWhatsApp(_prev: EstadoWhatsApp, formData: FormData): Promise<EstadoWhatsApp> {
+  await exigirAdmin();
+  const phoneId = String(formData.get("whatsappPhoneId") ?? "").trim();
+  if (phoneId && !/^\d{10,20}$/.test(phoneId)) {
+    return { erro: "O Phone Number ID tem só números (de 10 a 20 dígitos) — copie do WhatsApp Manager da Meta." };
+  }
+
+  const organizacaoId = await organizacaoIdAtual();
+  if (phoneId) {
+    const outra = await prismaBase.organizacao.findUnique({ where: { whatsappPhoneId: phoneId }, select: { id: true } });
+    if (outra && outra.id !== organizacaoId) return { erro: "Esse número já está vinculado a outra conta." };
+  }
+
+  await prismaBase.organizacao.update({ where: { id: organizacaoId }, data: { whatsappPhoneId: phoneId || null } });
+  revalidatePath("/", "layout");
+  return { sucesso: true };
+}
+
 export async function alternarAtivoUsuario(usuarioId: string, ativo: boolean) {
   await exigirAdmin();
   await prisma.usuario.update({ where: { id: usuarioId }, data: { ativo } });

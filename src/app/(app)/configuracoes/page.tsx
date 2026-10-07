@@ -11,6 +11,7 @@ import { Card, Field, Input, PageHeader, Select, Textarea } from "@/components/u
 import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import { ConviteForm } from "@/components/ConviteForm";
 import { LogoForm } from "@/components/LogoForm";
+import { WhatsAppConfigForm } from "@/components/WhatsAppConfigForm";
 import { logoDaOrganizacao } from "@/lib/marca";
 import { nfseConfigurada } from "@/lib/nfse";
 import { organizacaoAtual } from "@/lib/tenant";
@@ -147,6 +148,26 @@ export default async function ConfiguracoesPage() {
             <SubmitButton>Criar usuário</SubmitButton>
           </div>
         </DetailsForm>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-900">
+          WhatsApp
+          {organizacao.whatsappPhoneId && whatsappConfigurado(organizacao.whatsappPhoneId) ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+              <CheckCircle2 className="h-3 w-3" /> Ativo
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+              <Circle className="h-3 w-3" /> Desligado
+            </span>
+          )}
+        </h2>
+        <p className="mb-4 text-xs text-slate-500">
+          Número do WhatsApp Business da oficina. Com ele ativo, aparecem o botão de enviar OS, orçamento e NF em PDF
+          e a caixa de entrada de conversas.
+        </p>
+        <WhatsAppConfigForm phoneIdAtual={organizacao.whatsappPhoneId ?? ""} />
       </Card>
 
       {/* Integrações globais (certificado da Primea, WhatsApp Maytra) — só a organização dona delas vê. */}
