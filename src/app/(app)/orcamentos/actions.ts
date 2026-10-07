@@ -225,7 +225,7 @@ export async function enviarOrcamentoPorWhatsApp(orcamentoId: string, _prevState
     template: process.env.WHATSAPP_TEMPLATE_ENVIO_ORCAMENTO || WHATSAPP_TEMPLATES.envioOrcamento,
     telefone: orcamento.cliente.telefone,
     nomeCliente: orcamento.cliente.nome,
-    numeroDocumento: `Orçamento ${numeroOrcamento}`,
+    numeroDocumento: numeroOrcamento,
     clienteId: orcamento.cliente.id,
   });
 }
