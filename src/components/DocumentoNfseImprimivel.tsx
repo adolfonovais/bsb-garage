@@ -88,7 +88,7 @@ export function DocumentoNfseImprimivel({
 
       <div className="mb-4 flex items-center justify-between text-sm">
         <div>
-          <p className="font-semibold">Nº {dados.numero ?? "-"}</p>
+          <p className="font-semibold">Nº {dados.numero ? dados.numero.padStart(4, "0") : "-"}</p>
           <p className="text-slate-500">
             {dados.dataProcessamento ? `Emitida em ${formatarData(dados.dataProcessamento)}` : ""}
           </p>
