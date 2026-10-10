@@ -5,16 +5,19 @@ import { Paperclip, Send, X } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Textarea } from "@/components/ui";
 import { responderWhatsApp } from "@/app/(app)/whatsapp/actions";
+import { PedirRetornoButton } from "@/components/PedirRetornoButton";
 
 export function ResponderWhatsAppForm({
   canonico,
   telefone,
   clienteId,
+  nomeCliente,
   janelaAberta,
 }: {
   canonico: string;
   telefone: string;
   clienteId: string | null;
+  nomeCliente: string;
   /** false = passou de 24h do último contato do cliente: a Meta recusa mensagem livre. */
   janelaAberta: boolean;
 }) {
@@ -27,9 +30,17 @@ export function ResponderWhatsAppForm({
       <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
         <p className="font-medium">Passaram mais de 24h desde a última mensagem do cliente.</p>
         <p className="mt-1 text-xs">
-          O WhatsApp só entrega mensagem livre dentro de 24h do último contato dele. Para falar agora, use
-          &quot;Enviar OS/orçamento/NF&quot; na tela do documento — ou espere o cliente escrever de novo.
+          O WhatsApp só entrega mensagem livre dentro de 24h do último contato dele. Peça que ele responda:
+          ele recebe um aviso de que há um assunto do interesse dele e, ao responder, a conversa reabre.
         </p>
+        <div className="mt-2">
+          <PedirRetornoButton
+            telefone={telefone}
+            clienteId={clienteId}
+            nomeCliente={nomeCliente}
+            rotulo="Pedir retorno ao cliente"
+          />
+        </div>
       </div>
     );
   }

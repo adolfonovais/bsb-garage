@@ -209,6 +209,8 @@ export async function atualizarStatusOS(osId: string, status: string) {
       numeroOS: numeroFormatado(os.numero, os.ano),
       nomeEmpresa: empresa?.nome ?? organizacao.nome,
       whatsappPhoneId: organizacao.whatsappPhoneId,
+      organizacaoId: organizacao.id,
+      clienteId: os.cliente.id,
     });
   }
 }

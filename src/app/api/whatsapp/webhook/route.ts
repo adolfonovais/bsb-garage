@@ -88,6 +88,13 @@ export async function POST(req: NextRequest) {
         let midiaTipo: string | undefined;
         if (msg.type === "text") {
           corpo = msg.text?.body || "[mensagem sem texto]";
+        } else if (msg.type === "button") {
+          corpo = msg.button?.text || msg.button?.payload || "[resposta de botão]";
+        } else if (msg.type === "interactive") {
+          corpo =
+            msg.interactive?.button_reply?.title ||
+            msg.interactive?.list_reply?.title ||
+            "[resposta interativa]";
         } else if (msg.type === "reaction") {
           corpo = msg.reaction?.emoji ? `Reagiu ${msg.reaction.emoji}` : "Reagiu a uma mensagem";
         } else if (["image", "video", "audio", "sticker", "document"].includes(msg.type)) {

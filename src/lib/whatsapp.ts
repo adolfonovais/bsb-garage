@@ -30,6 +30,9 @@ const TEMPLATES_PADRAO = {
   envioOs: "envio_os",
   envioOrcamento: "envio_orcamento",
   envioNf: "envio_nf",
+  // Abre conversa: avisa que há um assunto do interesse do cliente e pede retorno
+  // (a resposta dele abre a janela de 24h pra conversa livre).
+  retorno: "contato_com_cliente",
 };
 
 export function whatsappConfigurado(phoneId?: string | null): boolean {
@@ -230,7 +233,7 @@ export async function enviarWhatsAppOSConcluida(params: {
   nomeCliente: string;
   numeroOS: string;
   nomeEmpresa: string;
-}): Promise<void> {
+}): Promise<EnvioAutomaticoRegistravel | null> {
   const { paraTelefone, nomeCliente, numeroOS, nomeEmpresa } = params;
   const phoneId = params.phoneId || process.env.WHATSAPP_PHONE_ID;
 
@@ -238,25 +241,42 @@ export async function enviarWhatsAppOSConcluida(params: {
     console.log(
       `[whatsapp] Integração ainda não configurada (WHATSAPP_TOKEN/Phone Number ID) — aviso da OS ${numeroOS} não enviado por WhatsApp.`
     );
-    return;
+    return null;
   }
   if (!paraTelefone) {
     console.log(`[whatsapp] Cliente "${nomeCliente}" sem telefone cadastrado — aviso da OS ${numeroOS} não enviado por WhatsApp.`);
-    return;
+    return null;
   }
 
   try {
-    await enviarTemplateTextoWhatsApp({
+    const telefone = paraE164Brasil(paraTelefone);
+    const template = process.env.WHATSAPP_TEMPLATE_OS_PRONTA || TEMPLATES_PADRAO.osPronta;
+    const { wamid } = await enviarTemplateTextoWhatsApp({
       phoneId: phoneId!,
-      telefone: paraE164Brasil(paraTelefone),
-      template: process.env.WHATSAPP_TEMPLATE_OS_PRONTA || TEMPLATES_PADRAO.osPronta,
+      telefone,
+      template,
       variaveisCorpo: [nomeCliente, numeroOS, nomeEmpresa],
     });
     console.log(`[whatsapp] Aviso da OS ${numeroOS} enviado por WhatsApp.`);
+    return {
+      telefone,
+      template,
+      wamid,
+      corpo: `Olá, ${nomeCliente}! Seu veículo referente à Ordem de Serviço ${numeroOS} já está pronto para retirada na ${nomeEmpresa}. Qualquer dúvida, entre em contato conosco.`,
+    };
   } catch (erro) {
     console.error(`[whatsapp] Falha ao enviar aviso da OS ${numeroOS} por WhatsApp:`, erro);
+    return null;
   }
 }
+
+/** Dados de um envio automático feito com sucesso, pra registrar na conversa. */
+export type EnvioAutomaticoRegistravel = {
+  telefone: string;
+  template: string;
+  wamid: string | null;
+  corpo: string;
+};
 
 const EXTENSAO_POR_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -305,6 +325,14 @@ export function telefoneCanonico(numero: string): string {
   if (digitos.startsWith("55") && digitos.length >= 12) digitos = digitos.slice(2);
   if (digitos.length === 11 && digitos[2] === "9") digitos = digitos.slice(0, 2) + digitos.slice(3);
   return digitos;
+}
+
+/** Texto do template de retorno (igual ao aprovado na Meta) — usado pra registrar na conversa. */
+export function textoPedidoDeRetorno(nomeCliente: string, nomeEmpresa: string): string {
+  return (
+    `Olá, ${nomeCliente}! Aqui é da ${nomeEmpresa}. Temos um assunto do seu interesse para tratar com você. ` +
+    "Pode nos responder esta mensagem para continuarmos a conversa?"
+  );
 }
 
 export const WHATSAPP_TEMPLATES = TEMPLATES_PADRAO;

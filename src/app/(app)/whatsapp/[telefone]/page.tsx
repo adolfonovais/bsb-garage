@@ -89,6 +89,7 @@ export default async function WhatsAppConversaPage({
           canonico={canonico}
           telefone={ultima.telefone}
           clienteId={cliente?.id ?? null}
+          nomeCliente={cliente?.nome ?? formatarTelefone(ultima.telefone)}
           janelaAberta={janelaAberta}
         />
       </Card>

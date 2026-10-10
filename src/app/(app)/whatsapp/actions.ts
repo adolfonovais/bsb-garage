@@ -9,9 +9,13 @@ import {
   enviarMediaWhatsApp,
   enviarMidiaWhatsApp,
   enviarTextoLivreWhatsApp,
+  enviarTemplateTextoWhatsApp,
   marcarMensagemComoLidaNaMeta,
+  paraE164Brasil,
   telefoneCanonico,
+  textoPedidoDeRetorno,
   tipoMidiaPorMime,
+  WHATSAPP_TEMPLATES,
   whatsappConfigurado,
 } from "@/lib/whatsapp";
 
@@ -157,4 +161,59 @@ export async function marcarConversaComoLida(canonico: string): Promise<void> {
   }
 
   revalidatePath("/", "layout");
+}
+
+export type EstadoPedidoRetorno = { sucesso?: boolean; erro?: string } | undefined;
+
+/**
+ * Manda o template "contato_com_cliente": avisa que há um assunto do interesse
+ * do cliente e pede que ele responda. É a forma de abrir conversa (ou
+ * retomá-la depois das 24h) — quando ele responde, a janela livre reabre.
+ */
+export async function pedirRetornoWhatsApp(
+  telefone: string,
+  clienteId: string | null,
+  nomeCliente: string,
+  _prevState: EstadoPedidoRetorno,
+  _formData: FormData
+): Promise<EstadoPedidoRetorno> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const organizacao = await organizacaoAtual();
+  const phoneId = organizacao.whatsappPhoneId;
+  if (!phoneId || !whatsappConfigurado(phoneId)) return { erro: "WhatsApp ainda não configurado pra essa conta." };
+  if (!telefone.replace(/\D/g, "")) return { erro: "Esse cliente não tem telefone cadastrado." };
+
+  const empresa = await prisma.empresaConfig.findFirst({ select: { nome: true } });
+  const nomeEmpresa = empresa?.nome || organizacao.nome;
+  const primeiroNome = nomeCliente.trim().split(/\s+/)[0] || "cliente";
+  const destino = paraE164Brasil(telefone);
+  const template = process.env.WHATSAPP_TEMPLATE_RETORNO || WHATSAPP_TEMPLATES.retorno;
+
+  try {
+    const { wamid } = await enviarTemplateTextoWhatsApp({
+      phoneId,
+      telefone: destino,
+      template,
+      variaveisCorpo: [primeiroNome, nomeEmpresa],
+    });
+    await prisma.mensagemWhatsApp.create({
+      data: {
+        organizacaoId: await organizacaoIdAtual(),
+        telefone: destino,
+        clienteId: clienteId || undefined,
+        direcao: "SAIDA",
+        corpo: textoPedidoDeRetorno(primeiroNome, nomeEmpresa),
+        template,
+        wamid,
+      },
+    });
+  } catch (erro) {
+    return { erro: erro instanceof Error ? erro.message : "Falha ao enviar a mensagem." };
+  }
+
+  revalidatePath("/whatsapp");
+  revalidatePath(`/whatsapp/${telefoneCanonico(destino)}`);
+  return { sucesso: true };
 }

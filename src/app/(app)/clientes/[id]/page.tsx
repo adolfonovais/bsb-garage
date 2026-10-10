@@ -22,6 +22,9 @@ import { Valor } from "@/components/ValoresPrivacidade";
 import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { EditarVeiculoForm, NovoVeiculoForm } from "@/components/VeiculoForms";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PedirRetornoButton } from "@/components/PedirRetornoButton";
+import { organizacaoAtual } from "@/lib/tenant";
+import { whatsappConfigurado } from "@/lib/whatsapp";
 
 export default async function ClienteDetalhePage({
   params,
@@ -43,6 +46,10 @@ export default async function ClienteDetalhePage({
 
   if (!cliente) notFound();
 
+  const organizacao = await organizacaoAtual();
+  const podeChamarNoWhatsApp =
+    !!cliente.telefone && !!organizacao.whatsappPhoneId && whatsappConfigurado(organizacao.whatsappPhoneId);
+
   const atualizarComId = atualizarCliente.bind(null, cliente.id);
   const excluirComId = excluirCliente.bind(null, cliente.id);
   const criarVeiculoComId = criarVeiculo.bind(null, cliente.id);
@@ -53,11 +60,21 @@ export default async function ClienteDetalhePage({
         title={cliente.nome}
         subtitle="Dados do cliente, veículos e histórico de serviços"
         actions={
-          <form action={excluirComId}>
-            <SubmitButton variant="danger">
-              <Trash2 className="h-4 w-4" /> Excluir cliente
-            </SubmitButton>
-          </form>
+          <>
+            {podeChamarNoWhatsApp && (
+              <PedirRetornoButton
+                telefone={cliente.telefone!}
+                clienteId={cliente.id}
+                nomeCliente={cliente.nome}
+                rotulo="Chamar no WhatsApp"
+              />
+            )}
+            <form action={excluirComId}>
+              <SubmitButton variant="danger">
+                <Trash2 className="h-4 w-4" /> Excluir cliente
+              </SubmitButton>
+            </form>
+          </>
         }
       />
 

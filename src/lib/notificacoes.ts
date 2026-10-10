@@ -4,6 +4,7 @@
 // deles ainda não está configurado (cada função trata isso sozinha).
 
 import { enviarEmailOSConcluida } from "@/lib/mail";
+import { prismaBase } from "@/lib/prisma-base";
 import { enviarWhatsAppOSConcluida } from "@/lib/whatsapp";
 
 export async function notificarClienteOSConcluida(params: {
@@ -13,8 +14,10 @@ export async function notificarClienteOSConcluida(params: {
   numeroOS: string;
   nomeEmpresa: string;
   whatsappPhoneId: string | null | undefined;
+  organizacaoId: string;
+  clienteId: string;
 }) {
-  await Promise.all([
+  const [, whatsapp] = await Promise.all([
     enviarEmailOSConcluida({
       paraEmail: params.paraEmail,
       nomeCliente: params.nomeCliente,
@@ -29,4 +32,24 @@ export async function notificarClienteOSConcluida(params: {
       nomeEmpresa: params.nomeEmpresa,
     }),
   ]);
+
+  // Mensagem automática também aparece na conversa do cliente no sistema
+  // (e recebe as atualizações de entregue/lida pelo wamid).
+  if (whatsapp) {
+    try {
+      await prismaBase.mensagemWhatsApp.create({
+        data: {
+          organizacaoId: params.organizacaoId,
+          telefone: whatsapp.telefone,
+          clienteId: params.clienteId,
+          direcao: "SAIDA",
+          corpo: whatsapp.corpo,
+          template: whatsapp.template,
+          wamid: whatsapp.wamid,
+        },
+      });
+    } catch (erro) {
+      console.error("[whatsapp] Aviso enviado, mas não foi possível registrar na conversa:", erro);
+    }
+  }
 }

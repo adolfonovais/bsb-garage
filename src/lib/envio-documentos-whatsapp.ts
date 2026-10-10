@@ -57,7 +57,7 @@ export async function enviarPdfPorWhatsApp(params: {
         telefone: paraE164Brasil(params.telefone),
         clienteId: params.clienteId,
         direcao: "SAIDA",
-        corpo: `[PDF] ${params.nomeArquivo}`,
+        corpo: `📎 ${params.nomeArquivo} — ${params.numeroDocumento} enviado a ${params.nomeCliente}`,
         template: params.template,
         wamid,
       },
