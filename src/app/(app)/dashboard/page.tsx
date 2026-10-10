@@ -166,7 +166,7 @@ export default async function DashboardPage({
             <Clock className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs text-slate-500">A receber ({osAReceber.length} OS não pagas)</p>
+            <p className="text-xs text-slate-500">A receber ({osAReceber.length} {osAReceber.length === 1 ? "OS não paga" : "OS não pagas"})</p>
             <p className="text-xl font-bold text-slate-900">
               <Valor valor={totalAReceber} />
             </p>
