@@ -41,6 +41,7 @@ export function Sidebar({
   mostrarAvisoIntegracoes,
   adminPlataforma,
   whatsappHabilitado,
+  whatsappNaoLidas,
 }: {
   isAdmin: boolean;
   nomeOrganizacao: string;
@@ -50,6 +51,7 @@ export function Sidebar({
   mostrarAvisoIntegracoes: boolean;
   adminPlataforma: boolean;
   whatsappHabilitado: boolean;
+  whatsappNaoLidas: number;
 }) {
   const pathname = usePathname();
   const { aberto, setAberto } = useMobileMenu();
@@ -122,6 +124,11 @@ export function Sidebar({
             >
               <Icon className="h-4 w-4" />
               {label}
+              {href === "/whatsapp" && whatsappNaoLidas > 0 && (
+                <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[11px] font-semibold text-white">
+                  {whatsappNaoLidas}
+                </span>
+              )}
             </Link>
           );
         })}

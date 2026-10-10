@@ -132,3 +132,19 @@ export function nomeArquivoImpressao(
   // Remove caracteres inválidos em nome de arquivo no Windows.
   return partes.join(" - ").replace(/[\\/:*?"<>|]/g, "");
 }
+
+export type StatusPagamento = "PAGO" | "PARCIAL" | "NAO_PAGO";
+
+/** Situação do pagamento de uma OS: quitada, com parte paga ou sem nada pago. */
+export function statusPagamentoOS(valorTotal: Numerico, totalPago: number): StatusPagamento {
+  const total = paraNumero(valorTotal);
+  const saldo = total - totalPago;
+  if (saldo <= 0.01) return "PAGO";
+  return totalPago > 0.01 ? "PARCIAL" : "NAO_PAGO";
+}
+
+export const STATUS_PAGAMENTO_LABEL: Record<StatusPagamento, string> = {
+  PAGO: "Pago",
+  PARCIAL: "Pago em parte",
+  NAO_PAGO: "Não pago",
+};

@@ -64,6 +64,35 @@ export async function salvarFoto(pasta: string, arquivo: File): Promise<string> 
   return data.publicUrl;
 }
 
+const BUCKET_WHATSAPP = "bsb-garage-whatsapp";
+let bucketWhatsappGarantido = false;
+
+/**
+ * Guarda uma mídia recebida pelo WhatsApp (foto, áudio, vídeo, documento) e
+ * devolve a URL pública. Bucket próprio, sem restrição de tipo — o das fotos
+ * da OS só aceita imagem. O caminho leva um UUID, então a URL não é adivinhável.
+ */
+export async function salvarMidiaWhatsApp(
+  pasta: string,
+  bytes: Buffer,
+  contentType: string,
+  extensao: string
+): Promise<string> {
+  const supabase = supabaseAdmin();
+  if (!bucketWhatsappGarantido) {
+    const { error } = await supabase.storage.createBucket(BUCKET_WHATSAPP, { public: true });
+    const jaExiste =
+      error && (/already exists/i.test(error.message) || (error as { statusCode?: string }).statusCode === "409");
+    if (error && !jaExiste) throw new Error(`Não foi possível preparar o armazenamento do WhatsApp: ${error.message}`);
+    bucketWhatsappGarantido = true;
+  }
+
+  const caminho = `${pasta}/${randomUUID()}.${extensao}`;
+  const { error } = await supabase.storage.from(BUCKET_WHATSAPP).upload(caminho, bytes, { contentType, upsert: false });
+  if (error) throw new Error(`Falha ao guardar a mídia: ${error.message}`);
+  return supabase.storage.from(BUCKET_WHATSAPP).getPublicUrl(caminho).data.publicUrl;
+}
+
 export async function removerFoto(url: string): Promise<void> {
   const marcador = `/storage/v1/object/public/${BUCKET}/`;
   const indice = url.indexOf(marcador);

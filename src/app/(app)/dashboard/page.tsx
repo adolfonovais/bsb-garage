@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatarData, formatarVeiculo, paraNumero, STATUS_OS_LABEL, numeroFormatado } from "@/lib/format";
+import {
+  formatarData,
+  formatarVeiculo,
+  paraNumero,
+  STATUS_OS_LABEL,
+  STATUS_PAGAMENTO_LABEL,
+  statusPagamentoOS,
+  numeroFormatado,
+} from "@/lib/format";
 import { Badge, Card, LinkButton, PageHeader } from "@/components/ui";
 import { Valor } from "@/components/ValoresPrivacidade";
 import { StatusTabLink } from "@/components/StatusTabLink";
@@ -53,7 +61,7 @@ export default async function DashboardPage({
     ...(status ? { status: status as never } : {}),
   };
 
-  const [osAbertas, orcamentosPendentes, osDoPeriodo, pagamentosDoPeriodo, osFiltradas] = await Promise.all([
+  const [osAbertas, orcamentosPendentes, osDoPeriodo, osFiltradas, osNaoCanceladas] = await Promise.all([
     prisma.ordemServico.count({
       where: { status: { in: ["ABERTA", "EM_ANDAMENTO", "AGUARDANDO_PECA"] } },
     }),
@@ -63,21 +71,37 @@ export default async function DashboardPage({
       _sum: { valorTotal: true },
       _count: true,
     }),
-    prisma.pagamento.aggregate({
-      where: { data: { gte: inicio, lte: fim } },
-      _sum: { valor: true },
-    }),
     prisma.ordemServico.findMany({
       where: filtroOSPeriodo,
       orderBy: { dataEntrada: "desc" },
       take: 100,
-      include: { cliente: true, veiculo: true, itens: { include: { tipoServico: true } } },
+      include: {
+        cliente: true,
+        veiculo: true,
+        itens: { include: { tipoServico: true } },
+        pagamentos: { select: { valor: true } },
+      },
+    }),
+    // "A receber" olha TODAS as OS ainda não quitadas, de qualquer período.
+    prisma.ordemServico.findMany({
+      where: { status: { not: "CANCELADA" } },
+      orderBy: { dataEntrada: "asc" },
+      include: { cliente: true, veiculo: true, pagamentos: { select: { valor: true } } },
     }),
   ]);
 
   const totalPrevistoPeriodo = paraNumero(osDoPeriodo._sum.valorTotal);
-  const totalRecebidoPeriodo = paraNumero(pagamentosDoPeriodo._sum.valor);
-  const aReceberPeriodo = Math.max(totalPrevistoPeriodo - totalRecebidoPeriodo, 0);
+
+  const somaPagamentos = (pagamentos: { valor: unknown }[]) =>
+    pagamentos.reduce((soma, p) => soma + paraNumero(p.valor as number), 0);
+
+  const osAReceber = osNaoCanceladas
+    .map((os) => {
+      const pago = somaPagamentos(os.pagamentos);
+      return { os, pago, saldo: paraNumero(os.valorTotal) - pago };
+    })
+    .filter((x) => x.saldo > 0.01);
+  const totalAReceber = osAReceber.reduce((soma, x) => soma + x.saldo, 0);
 
   return (
     <div>
@@ -142,13 +166,67 @@ export default async function DashboardPage({
             <Clock className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs text-slate-500">A receber no período</p>
+            <p className="text-xs text-slate-500">A receber ({osAReceber.length} OS não pagas)</p>
             <p className="text-xl font-bold text-slate-900">
-              <Valor valor={aReceberPeriodo} />
+              <Valor valor={totalAReceber} />
             </p>
           </div>
         </Card>
       </div>
+
+      {osAReceber.length > 0 && (
+        <Card className="mb-6">
+          <div className="border-b border-slate-200 px-4 py-3">
+            <h2 className="text-sm font-semibold text-slate-900">OS a receber (ainda não pagas)</h2>
+            <p className="text-xs text-slate-500">Todas as ordens de serviço com saldo em aberto, de qualquer período.</p>
+          </div>
+          <div className="max-h-96 overflow-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="sticky top-0 bg-white text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-2">Número</th>
+                  <th className="px-4 py-2">Cliente</th>
+                  <th className="hidden px-4 py-2 sm:table-cell">Veículo</th>
+                  <th className="hidden px-4 py-2 sm:table-cell">Entrada</th>
+                  <th className="px-4 py-2">Valor</th>
+                  <th className="hidden px-4 py-2 sm:table-cell">Pago</th>
+                  <th className="px-4 py-2">A receber</th>
+                  <th className="px-4 py-2">Pagamento</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {osAReceber.map(({ os, pago, saldo }) => {
+                  const situacao = statusPagamentoOS(os.valorTotal, pago);
+                  return (
+                    <tr key={os.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-2">
+                        <Link href={`/ordens-servico/${os.id}`} className="font-medium text-brand-700 hover:underline">
+                          {numeroFormatado(os.numero, os.ano)}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-2">{os.cliente?.nome}</td>
+                      <td className="hidden px-4 py-2 sm:table-cell">{formatarVeiculo(os.veiculo)}</td>
+                      <td className="hidden px-4 py-2 sm:table-cell">{formatarData(os.dataEntrada)}</td>
+                      <td className="px-4 py-2">
+                        <Valor valor={paraNumero(os.valorTotal)} />
+                      </td>
+                      <td className="hidden px-4 py-2 sm:table-cell">
+                        <Valor valor={pago} />
+                      </td>
+                      <td className="px-4 py-2 font-medium text-red-700">
+                        <Valor valor={saldo} />
+                      </td>
+                      <td className="px-4 py-2">
+                        <Badge status={situacao} label={STATUS_PAGAMENTO_LABEL[situacao]} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
       <Card>
         <div className="border-b border-slate-200 px-4 py-3">
@@ -168,6 +246,7 @@ export default async function DashboardPage({
                   <th className="px-4 py-2">Tipo de serviço</th>
                   <th className="px-4 py-2">Valor</th>
                   <th className="px-4 py-2">Status</th>
+                  <th className="px-4 py-2">Pagamento</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -187,6 +266,16 @@ export default async function DashboardPage({
                     </td>
                     <td className="px-4 py-2">
                       <Badge status={os.status} label={STATUS_OS_LABEL[os.status]} />
+                    </td>
+                    <td className="px-4 py-2">
+                      {os.status === "CANCELADA" ? (
+                        <span className="text-slate-400">-</span>
+                      ) : (
+                        (() => {
+                          const situacao = statusPagamentoOS(os.valorTotal, somaPagamentos(os.pagamentos));
+                          return <Badge status={situacao} label={STATUS_PAGAMENTO_LABEL[situacao]} />;
+                        })()
+                      )}
                     </td>
                   </tr>
                 ))}

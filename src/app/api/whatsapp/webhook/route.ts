@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaBase } from "@/lib/prisma-base";
-import { telefoneCanonico } from "@/lib/whatsapp";
+import { baixarMidiaWhatsApp, telefoneCanonico } from "@/lib/whatsapp";
+import { salvarMidiaWhatsApp } from "@/lib/storage";
+
+const MIDIA_ROTULO: Record<string, string> = {
+  image: "📷 Foto",
+  video: "🎥 Vídeo",
+  audio: "🎤 Áudio",
+  sticker: "Figurinha",
+  document: "📎 Documento",
+};
 
 /**
  * Recebe eventos do WhatsApp encaminhados pelo webhook do Maytra (swift-api)
@@ -68,14 +77,28 @@ export async function POST(req: NextRequest) {
         const clienteEncontrado = clientes.find((c) => c.telefone && telefoneCanonico(c.telefone) === deCanonico);
 
         let corpo: string;
+        let midiaUrl: string | undefined;
+        let midiaTipo: string | undefined;
         if (msg.type === "text") {
           corpo = msg.text?.body || "[mensagem sem texto]";
         } else if (msg.type === "reaction") {
           corpo = msg.reaction?.emoji ? `Reagiu ${msg.reaction.emoji}` : "Reagiu a uma mensagem";
+        } else if (["image", "video", "audio", "sticker", "document"].includes(msg.type)) {
+          const midia = msg[msg.type] as { id?: string; caption?: string; filename?: string } | undefined;
+          const rotulo = MIDIA_ROTULO[msg.type];
+          corpo = midia?.caption || midia?.filename || rotulo;
+          const baixada = midia?.id ? await baixarMidiaWhatsApp(midia.id) : null;
+          if (baixada) {
+            try {
+              midiaUrl = await salvarMidiaWhatsApp(organizacao.id, baixada.bytes, baixada.contentType, baixada.extensao);
+              midiaTipo = msg.type;
+            } catch (erro) {
+              console.error("[whatsapp/webhook] Falha ao guardar mídia:", erro);
+            }
+          }
+          if (!midiaUrl) corpo = `${rotulo} (não foi possível baixar o arquivo)`;
         } else if (msg.type) {
-          // Mídia (foto, áudio, documento...) ainda sem download nessa caixa
-          // de entrada — só registra que chegou, pra não perder o evento.
-          corpo = `[${msg.type}, sem suporte de visualização ainda]`;
+          corpo = `[${msg.type}, sem suporte de visualização]`;
         } else {
           corpo = "[mensagem sem conteúdo]";
         }
@@ -87,6 +110,8 @@ export async function POST(req: NextRequest) {
             clienteId: clienteEncontrado?.id,
             direcao: "ENTRADA",
             corpo,
+            midiaUrl,
+            midiaTipo,
             wamid: msg.id || null,
           },
         });

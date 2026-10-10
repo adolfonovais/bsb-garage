@@ -564,6 +564,11 @@ model MensagemWhatsApp {
   // Id da mensagem na Meta (wamid) — usado pra não duplicar em reentregas de
   // webhook e pra casar atualizações de status (entregue/lida) com a mensagem.
   wamid          String?                 @unique
+  // Mídia recebida (foto/áudio/vídeo/documento/figurinha): URL no Storage e o tipo.
+  midiaUrl       String?
+  midiaTipo      String?
+  // Só pra ENTRADA: null = ainda não vista por ninguém na caixa de entrada.
+  lidaEm         DateTime?
   createdAt      DateTime                @default(now())
 
   @@index([organizacaoId, telefone])

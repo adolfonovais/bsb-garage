@@ -201,6 +201,45 @@ export async function enviarWhatsAppOSConcluida(params: {
   }
 }
 
+const EXTENSAO_POR_MIME: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "video/mp4": "mp4",
+  "video/3gpp": "3gp",
+  "audio/ogg": "ogg",
+  "audio/mpeg": "mp3",
+  "audio/mp4": "m4a",
+  "audio/amr": "amr",
+  "application/pdf": "pdf",
+};
+
+/** Baixa uma mídia recebida (pelo media id da Meta). Devolve null se não conseguir. */
+export async function baixarMidiaWhatsApp(
+  mediaId: string
+): Promise<{ bytes: Buffer; contentType: string; extensao: string } | null> {
+  const token = process.env.WHATSAPP_TOKEN;
+  if (!token) return null;
+  try {
+    const meta = await fetch(`https://graph.facebook.com/${GRAPH_API_VERSION}/${mediaId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!meta.ok) return null;
+    const info = (await meta.json()) as { url?: string; mime_type?: string };
+    if (!info.url) return null;
+
+    const arquivo = await fetch(info.url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!arquivo.ok) return null;
+
+    const contentType = String(info.mime_type || "application/octet-stream").split(";")[0].trim();
+    const extensao = EXTENSAO_POR_MIME[contentType] || contentType.split("/")[1] || "bin";
+    return { bytes: Buffer.from(await arquivo.arrayBuffer()), contentType, extensao };
+  } catch {
+    return null;
+  }
+}
+
 // Reduz um telefone (vindo da Meta ou do cadastro do cliente, com ou sem
 // DDI/9º dígito) a DDD + 8 dígitos, pra comparar os dois lados sem depender
 // de como cada um foi digitado. Mesma lógica usada no webhook do Maytra.

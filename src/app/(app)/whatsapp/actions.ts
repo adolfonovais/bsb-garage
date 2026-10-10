@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { organizacaoAtual, organizacaoIdAtual } from "@/lib/tenant";
-import { enviarTextoLivreWhatsApp, whatsappConfigurado } from "@/lib/whatsapp";
+import { enviarTextoLivreWhatsApp, telefoneCanonico, whatsappConfigurado } from "@/lib/whatsapp";
 
 export type EstadoRespostaWhatsApp = { erro?: string } | undefined;
 
@@ -49,4 +49,20 @@ export async function responderWhatsApp(
 
   revalidatePath(`/whatsapp/${canonico}`);
   return undefined;
+}
+
+/** Marca como lidas as mensagens recebidas dessa conversa (ao abri-la). */
+export async function marcarConversaComoLida(canonico: string): Promise<void> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const naoLidas = await prisma.mensagemWhatsApp.findMany({
+    where: { direcao: "ENTRADA", lidaEm: null },
+    select: { id: true, telefone: true },
+  });
+  const ids = naoLidas.filter((m) => telefoneCanonico(m.telefone) === canonico).map((m) => m.id);
+  if (ids.length === 0) return;
+
+  await prisma.mensagemWhatsApp.updateMany({ where: { id: { in: ids } }, data: { lidaEm: new Date() } });
+  revalidatePath("/", "layout");
 }

@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/Sidebar";
 import { Topbar } from "@/components/Topbar";
 import { MobileMenuProvider } from "@/components/MobileMenu";
@@ -34,6 +35,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const diasDeTeste = diasRestantesDoTeste(organizacao);
+  const whatsappHabilitado = whatsappConfigurado(organizacao.whatsappPhoneId);
+  const whatsappNaoLidas = whatsappHabilitado
+    ? await prisma.mensagemWhatsApp.count({ where: { direcao: "ENTRADA", lidaEm: null } })
+    : 0;
 
   return (
     <ValoresPrivacidadeProvider>
@@ -46,7 +51,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             logoPropria={!!organizacao.logoUrl}
             mostrarAvisoIntegracoes={organizacao.nfseHabilitada}
             adminPlataforma={ehAdminDaPlataforma(session?.user?.email)}
-            whatsappHabilitado={whatsappConfigurado(organizacao.whatsappPhoneId)}
+            whatsappHabilitado={whatsappHabilitado}
+            whatsappNaoLidas={whatsappNaoLidas}
           />
           <div className="flex min-h-screen min-w-0 flex-1 flex-col">
             <Topbar nome={nome} papel={papel} nomeOrganizacao={organizacao.nome} />

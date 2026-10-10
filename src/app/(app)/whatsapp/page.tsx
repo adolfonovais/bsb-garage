@@ -14,6 +14,7 @@ type Conversa = {
   ultimoCorpo: string;
   ultimaData: Date;
   ultimaDirecao: "ENTRADA" | "SAIDA";
+  naoLidas: number;
 };
 
 export default async function WhatsAppInboxPage() {
@@ -39,8 +40,12 @@ export default async function WhatsAppInboxPage() {
         ultimoCorpo: msg.corpo,
         ultimaData: msg.createdAt,
         ultimaDirecao: msg.direcao as "ENTRADA" | "SAIDA",
+        naoLidas: 0,
       });
-    } else if (!existente.clienteNome && msg.cliente?.nome) {
+    }
+    const atual = conversas.get(canonico)!;
+    if (msg.direcao === "ENTRADA" && !msg.lidaEm) atual.naoLidas += 1;
+    if (existente && !existente.clienteNome && msg.cliente?.nome) {
       existente.clienteNome = msg.cliente.nome;
       existente.clienteId = msg.cliente.id;
     }
@@ -64,7 +69,7 @@ export default async function WhatsAppInboxPage() {
                 className="flex items-start justify-between gap-4 px-4 py-3 hover:bg-slate-50"
               >
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-slate-900">
+                  <p className={`truncate text-slate-900 ${conversa.naoLidas > 0 ? "font-bold" : "font-medium"}`}>
                     {conversa.clienteNome || formatarTelefone(conversa.telefone)}
                   </p>
                   <p className="truncate text-sm text-slate-500">
@@ -72,9 +77,14 @@ export default async function WhatsAppInboxPage() {
                     {conversa.ultimoCorpo}
                   </p>
                 </div>
-                <span className="shrink-0 whitespace-nowrap text-xs text-slate-400">
-                  {formatarDataHora(conversa.ultimaData)}
-                </span>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span className="whitespace-nowrap text-xs text-slate-400">{formatarDataHora(conversa.ultimaData)}</span>
+                  {conversa.naoLidas > 0 && (
+                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1.5 text-[11px] font-semibold text-white">
+                      {conversa.naoLidas}
+                    </span>
+                  )}
+                </div>
               </Link>
             ))}
           </div>
