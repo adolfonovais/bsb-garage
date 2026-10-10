@@ -49,6 +49,7 @@ model Organizacao {
 
   usuarios        Usuario[]
   mensagensWhatsApp MensagemWhatsApp[]
+  inscricoesPush    PushInscricao[]
   clientes      Cliente[]
   veiculos      Veiculo[]
   tiposServico  TipoServico[]
@@ -569,6 +570,8 @@ model MensagemWhatsApp {
   midiaTipo      String?
   // Só pra ENTRADA: null = ainda não vista por ninguém na caixa de entrada.
   lidaEm         DateTime?
+  // Motivo da falha de entrega informado pela Meta (status FALHOU).
+  erro           String?   @db.Text
   createdAt      DateTime                @default(now())
 
   @@index([organizacaoId, telefone])
@@ -589,5 +592,21 @@ model EmpresaConfig {
   endereco     String?
   cidadeUf     String  @default("Brasília - DF")
 
+  @@schema("bsb_garage")
+}
+
+// Dispositivo/navegador de um usuário que ativou as notificações push do
+// WhatsApp (Web Push). Uma linha por endpoint do navegador.
+model PushInscricao {
+  id            String      @id @default(cuid())
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
+  usuarioId     String
+  endpoint      String      @unique
+  p256dh        String
+  auth          String
+  createdAt     DateTime    @default(now())
+
+  @@index([organizacaoId])
   @@schema("bsb_garage")
 }

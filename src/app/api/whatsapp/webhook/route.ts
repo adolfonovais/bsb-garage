@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaBase } from "@/lib/prisma-base";
 import { baixarMidiaWhatsApp, telefoneCanonico } from "@/lib/whatsapp";
+import { formatarTelefone } from "@/lib/format";
 import { salvarMidiaWhatsApp } from "@/lib/storage";
+import { enviarPushParaOrganizacao } from "@/lib/push";
 
 const MIDIA_ROTULO: Record<string, string> = {
   image: "📷 Foto",
@@ -57,8 +59,13 @@ export async function POST(req: NextRequest) {
             (statusEntry?.errors ? ` erro=${JSON.stringify(statusEntry.errors)}` : "")
         );
         if (!wamid || !novoStatus) continue;
+        const erro = statusEntry?.errors?.[0];
+        const motivo =
+          novoStatus === "FALHOU" && erro
+            ? [erro.title, erro.error_data?.details || erro.message].filter(Boolean).join(" — ").slice(0, 500)
+            : undefined;
         await prismaBase.mensagemWhatsApp
-          .update({ where: { wamid }, data: { status: novoStatus as never } })
+          .update({ where: { wamid }, data: { status: novoStatus as never, ...(motivo ? { erro: motivo } : {}) } })
           .catch(() => null); // mensagem pode não existir (ex: evento antigo) — ignora
       }
     }
@@ -67,7 +74,7 @@ export async function POST(req: NextRequest) {
     if (Array.isArray(mensagens) && mensagens.length > 0) {
       const clientes = await prismaBase.cliente.findMany({
         where: { organizacaoId: organizacao.id, telefone: { not: null } },
-        select: { id: true, telefone: true },
+        select: { id: true, nome: true, telefone: true },
       });
 
       for (const msg of mensagens) {
@@ -114,6 +121,14 @@ export async function POST(req: NextRequest) {
             midiaTipo,
             wamid: msg.id || null,
           },
+        });
+
+        const nomeContato = clienteEncontrado?.nome || formatarTelefone(de);
+        await enviarPushParaOrganizacao(organizacao.id, {
+          title: "Nova mensagem no WhatsApp",
+          body: `${nomeContato}: ${corpo.slice(0, 120)}`,
+          url: `/whatsapp/${deCanonico}`,
+          tag: `whatsapp-${deCanonico}`,
         });
       }
     }

@@ -38,6 +38,7 @@ const ESCOPO: Record<string, Escopo> = {
   ContaFinanceira: { tipo: "raiz" },
   EmpresaConfig: { tipo: "raiz" },
   MensagemWhatsApp: { tipo: "raiz" },
+  PushInscricao: { tipo: "raiz" },
   OrcamentoItem: { tipo: "filho", relacao: "orcamento" },
   OrdemServicoItem: { tipo: "filho", relacao: "os" },
   Pagamento: { tipo: "filho", relacao: "os" },

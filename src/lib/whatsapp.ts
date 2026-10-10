@@ -81,10 +81,16 @@ async function chamarGraphApi(phoneId: string, caminho: string, body: unknown): 
 }
 
 /** Sobe um PDF pra Meta e devolve o media id, pra anexar numa mensagem de documento. */
-export async function enviarMediaWhatsApp(phoneId: string, pdf: Buffer, nomeArquivo: string): Promise<string> {
+export async function enviarMediaWhatsApp(
+  phoneId: string,
+  pdf: Buffer,
+  nomeArquivo: string,
+  contentType = "application/pdf"
+): Promise<string> {
   const form = new FormData();
   form.append("messaging_product", "whatsapp");
-  form.append("file", new Blob([new Uint8Array(pdf)], { type: "application/pdf" }), nomeArquivo);
+  form.append("type", contentType);
+  form.append("file", new Blob([new Uint8Array(pdf)], { type: contentType }), nomeArquivo);
 
   const resposta = await fetch(graphUrl(phoneId, "media"), {
     method: "POST",
@@ -165,6 +171,57 @@ export async function enviarTextoLivreWhatsApp(phoneId: string, telefone: string
     text: { body: texto },
   })) as { messages?: { id?: string }[] };
   return { wamid: resultado.messages?.[0]?.id ?? null };
+}
+
+/** A Meta só entrega mensagem livre até 24h depois do último contato do cliente. */
+export function janelaDe24hAberta(ultimoContatoDoCliente: Date | null | undefined): boolean {
+  if (!ultimoContatoDoCliente) return false;
+  return Date.now() - ultimoContatoDoCliente.getTime() < 24 * 60 * 60 * 1000;
+}
+
+export type TipoMidiaWhatsApp ="image" | "video" | "audio" | "document";
+
+/** Tipo da mensagem do WhatsApp a partir do mime do arquivo anexado. */
+export function tipoMidiaPorMime(mime: string): TipoMidiaWhatsApp {
+  if (mime === "image/jpeg" || mime === "image/png") return "image";
+  if (mime === "video/mp4" || mime === "video/3gpp") return "video";
+  if (mime.startsWith("audio/")) return "audio";
+  return "document";
+}
+
+/**
+ * Manda uma mídia já enviada pra Meta (mediaId) como mensagem livre — só é
+ * entregue dentro da janela de 24h, igual ao texto livre.
+ */
+export async function enviarMidiaWhatsApp(params: {
+  phoneId: string;
+  telefone: string;
+  tipo: TipoMidiaWhatsApp;
+  mediaId: string;
+  nomeArquivo: string;
+  legenda?: string;
+}): Promise<{ wamid: string | null }> {
+  const { tipo, mediaId, nomeArquivo, legenda } = params;
+  const midia: Record<string, string> = { id: mediaId };
+  if (legenda && tipo !== "audio") midia.caption = legenda;
+  if (tipo === "document") midia.filename = nomeArquivo;
+
+  const resultado = (await chamarGraphApi(params.phoneId, "messages", {
+    messaging_product: "whatsapp",
+    to: params.telefone,
+    type: tipo,
+    [tipo]: midia,
+  })) as { messages?: { id?: string }[] };
+  return { wamid: resultado.messages?.[0]?.id ?? null };
+}
+
+/** Avisa a Meta que a mensagem foi lida — o cliente passa a ver o "visto" azul. Falha em silêncio. */
+export async function marcarMensagemComoLidaNaMeta(phoneId: string, wamid: string): Promise<void> {
+  try {
+    await chamarGraphApi(phoneId, "messages", { messaging_product: "whatsapp", status: "read", message_id: wamid });
+  } catch (erro) {
+    console.error("[whatsapp] Não foi possível marcar como lida na Meta:", erro);
+  }
 }
 
 export async function enviarWhatsAppOSConcluida(params: {

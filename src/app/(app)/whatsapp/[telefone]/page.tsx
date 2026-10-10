@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { organizacaoAtual } from "@/lib/tenant";
-import { telefoneCanonico, whatsappConfigurado } from "@/lib/whatsapp";
+import { janelaDe24hAberta, telefoneCanonico, whatsappConfigurado } from "@/lib/whatsapp";
 import { Card, PageHeader } from "@/components/ui";
 import { formatarDataHora, formatarTelefone } from "@/lib/format";
 import { ResponderWhatsAppForm } from "@/components/ResponderWhatsAppForm";
@@ -28,6 +28,8 @@ export default async function WhatsAppConversaPage({
   const ultima = mensagens[mensagens.length - 1];
   const cliente = mensagens.find((m) => m.cliente)?.cliente ?? null;
   const temNaoLidas = mensagens.some((m) => m.direcao === "ENTRADA" && !m.lidaEm);
+  const ultimaEntrada = [...mensagens].reverse().find((m) => m.direcao === "ENTRADA");
+  const janelaAberta = janelaDe24hAberta(ultimaEntrada?.createdAt);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -74,13 +76,21 @@ export default async function WhatsAppConversaPage({
                 {msg.direcao === "SAIDA" &&
                   ` · ${{ ENVIADA: "Enviada", ENTREGUE: "Entregue", LIDA: "Lida", FALHOU: "Falhou" }[msg.status]}`}
               </p>
+              {msg.direcao === "SAIDA" && msg.status === "FALHOU" && msg.erro && (
+                <p className="mt-1 rounded bg-red-50 px-2 py-1 text-[11px] text-red-700">Não entregue: {msg.erro}</p>
+              )}
             </div>
           </div>
         ))}
       </Card>
 
       <Card className="p-4">
-        <ResponderWhatsAppForm canonico={canonico} telefone={ultima.telefone} clienteId={cliente?.id ?? null} />
+        <ResponderWhatsAppForm
+          canonico={canonico}
+          telefone={ultima.telefone}
+          clienteId={cliente?.id ?? null}
+          janelaAberta={janelaAberta}
+        />
       </Card>
     </div>
   );

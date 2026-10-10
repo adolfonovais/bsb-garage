@@ -5,6 +5,7 @@ import { organizacaoAtual } from "@/lib/tenant";
 import { telefoneCanonico, whatsappConfigurado } from "@/lib/whatsapp";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { formatarDataHora, formatarTelefone } from "@/lib/format";
+import { NotificacoesPush } from "@/components/NotificacoesPush";
 
 type Conversa = {
   canonico: string;
@@ -55,7 +56,11 @@ export default async function WhatsAppInboxPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <PageHeader title="WhatsApp" subtitle="Conversas recebidas e enviadas pelo número da oficina." />
+      <PageHeader
+        title="WhatsApp"
+        subtitle="Conversas recebidas e enviadas pelo número da oficina."
+        actions={<NotificacoesPush />}
+      />
 
       {lista.length === 0 ? (
         <EmptyState>Nenhuma conversa ainda. Mensagens recebidas no número da oficina aparecem aqui.</EmptyState>
