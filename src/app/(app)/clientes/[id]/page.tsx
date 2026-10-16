@@ -23,6 +23,7 @@ import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/co
 import { EditarVeiculoForm, NovoVeiculoForm } from "@/components/VeiculoForms";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PedirRetornoButton } from "@/components/PedirRetornoButton";
+import { ExcluirComConfirmacao } from "@/components/ExcluirComConfirmacao";
 import { organizacaoAtual } from "@/lib/tenant";
 import { whatsappConfigurado } from "@/lib/whatsapp";
 
@@ -69,11 +70,12 @@ export default async function ClienteDetalhePage({
                 rotulo="Chamar no WhatsApp"
               />
             )}
-            <form action={excluirComId}>
-              <SubmitButton variant="danger">
-                <Trash2 className="h-4 w-4" /> Excluir cliente
-              </SubmitButton>
-            </form>
+            <ExcluirComConfirmacao
+              acao={excluirComId}
+              rotulo="Excluir cliente"
+              variant="danger"
+              mensagem={`Excluir o cliente ${cliente.nome}? Só é possível se ele não tiver OS ou orçamentos. Uma cópia fica guardada em Configurações → Exclusões.`}
+            />
           </>
         }
       />

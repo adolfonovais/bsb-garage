@@ -24,6 +24,7 @@ import { Download, FileText, Pencil, Printer, Receipt, Trash2 } from "lucide-rea
 import { SubmitButton } from "@/components/SubmitButton";
 import { EmitirNfseButton } from "@/components/EmitirNfseButton";
 import { EnviarWhatsAppButton } from "@/components/EnviarWhatsAppButton";
+import { ExcluirComConfirmacao } from "@/components/ExcluirComConfirmacao";
 
 const PROXIMO_STATUS: Record<string, { valor: string; label: string }[]> = {
   ABERTA: [
@@ -384,11 +385,11 @@ export default async function OSDetalhePage({
       </Card>
 
       <Card className="flex justify-end p-4">
-        <form action={excluirComId}>
-          <SubmitButton variant="ghost">
-            <Trash2 className="h-4 w-4" /> Excluir OS
-          </SubmitButton>
-        </form>
+        <ExcluirComConfirmacao
+          acao={excluirComId}
+          rotulo="Excluir OS"
+          mensagem={`Excluir a OS ${numeroFormatado(os.numero, os.ano)}? Ela some da lista (uma cópia fica guardada em Configurações → Exclusões).`}
+        />
       </Card>
     </div>
   );

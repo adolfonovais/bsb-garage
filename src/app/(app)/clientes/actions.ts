@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
+import { registrarExclusao } from "@/lib/exclusoes";
 import type { EstadoFormulario } from "@/components/EdicaoInline";
 
 const ClienteSchema = z.object({
@@ -78,7 +79,18 @@ export async function excluirCliente(clienteId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
+  const cliente = await prisma.cliente.findUnique({ where: { id: clienteId }, include: { veiculos: true } });
+
   await prisma.cliente.delete({ where: { id: clienteId } });
+
+  if (cliente) {
+    await registrarExclusao({
+      tipo: "CLIENTE",
+      referencia: cliente.nome,
+      resumo: [cliente.telefone, cliente.cpf, cliente.cnpj].filter(Boolean).join(" · ") || "sem telefone/documento",
+      dados: cliente,
+    });
+  }
   revalidatePath("/clientes");
   redirect("/clientes");
 }

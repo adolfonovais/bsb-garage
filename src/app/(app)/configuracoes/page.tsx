@@ -13,6 +13,7 @@ import { ConviteForm } from "@/components/ConviteForm";
 import { LogoForm } from "@/components/LogoForm";
 import { WhatsAppConfigForm } from "@/components/WhatsAppConfigForm";
 import { logoDaOrganizacao } from "@/lib/marca";
+import { formatarDataHora } from "@/lib/format";
 import { nfseConfigurada } from "@/lib/nfse";
 import { organizacaoAtual } from "@/lib/tenant";
 import { whatsappConfigurado } from "@/lib/whatsapp";
@@ -23,10 +24,11 @@ export default async function ConfiguracoesPage() {
   const session = await auth();
   if (session?.user.papel !== "ADMIN") redirect("/dashboard");
 
-  const [empresa, usuarios, organizacao] = await Promise.all([
+  const [empresa, usuarios, organizacao, exclusoes] = await Promise.all([
     prisma.empresaConfig.findFirst(),
     prisma.usuario.findMany({ orderBy: { nome: "asc" } }),
     organizacaoAtual(),
+    prisma.registroExclusao.findMany({ orderBy: { createdAt: "desc" }, take: 30 }),
   ]);
 
   return (
@@ -168,6 +170,30 @@ export default async function ConfiguracoesPage() {
           e a caixa de entrada de conversas.
         </p>
         <WhatsAppConfigForm phoneIdAtual={organizacao.whatsappPhoneId ?? ""} />
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="mb-1 text-sm font-semibold text-slate-900">Exclusões</h2>
+        <p className="mb-4 text-xs text-slate-500">
+          Tudo que for excluído (OS, orçamento, cliente) fica registrado aqui — quem excluiu, quando e o que era. As
+          últimas 30.
+        </p>
+        {exclusoes.length === 0 ? (
+          <p className="text-sm text-slate-500">Nenhuma exclusão registrada.</p>
+        ) : (
+          <ul className="divide-y divide-slate-100 text-sm">
+            {exclusoes.map((e) => (
+              <li key={e.id} className="py-2">
+                <p className="font-medium text-slate-900">
+                  {e.referencia} <span className="font-normal text-slate-500">· {e.resumo}</span>
+                </p>
+                <p className="text-xs text-slate-500">
+                  Excluído por {e.usuarioNome ?? "—"} em {formatarDataHora(e.createdAt)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       {/* Integrações globais (certificado da Primea, WhatsApp Maytra) — só a organização dona delas vê. */}

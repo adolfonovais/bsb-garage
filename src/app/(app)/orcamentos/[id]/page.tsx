@@ -10,9 +10,10 @@ import {
 import { Badge, Card, LinkButton, PageHeader } from "@/components/ui";
 import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_ORCAMENTO_LABEL } from "@/lib/format";
 import { Valor } from "@/components/ValoresPrivacidade";
-import { Pencil, Printer, Trash2 } from "lucide-react";
+import { Pencil, Printer } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { EnviarWhatsAppButton } from "@/components/EnviarWhatsAppButton";
+import { ExcluirComConfirmacao } from "@/components/ExcluirComConfirmacao";
 import { whatsappConfigurado } from "@/lib/whatsapp";
 import { organizacaoAtual } from "@/lib/tenant";
 
@@ -149,11 +150,12 @@ export default async function OrcamentoDetalhePage({
             Ver Ordem de Serviço gerada
           </LinkButton>
         )}
-        <form action={excluirAction} className="ml-auto">
-          <SubmitButton variant="ghost">
-            <Trash2 className="h-4 w-4" /> Excluir
-          </SubmitButton>
-        </form>
+        <ExcluirComConfirmacao
+          acao={excluirAction}
+          rotulo="Excluir"
+          className="ml-auto"
+          mensagem={`Excluir o orçamento ${numeroFormatado(orcamento.numero, orcamento.ano)}? Uma cópia fica guardada em Configurações → Exclusões.`}
+        />
       </Card>
     </div>
   );

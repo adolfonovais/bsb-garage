@@ -11,6 +11,7 @@ import { proximoNumero } from "@/lib/numero";
 import { dataDoFormulario, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
 import { salvarFoto, removerFoto } from "@/lib/storage";
 import { notificarClienteOSConcluida } from "@/lib/notificacoes";
+import { registrarExclusao } from "@/lib/exclusoes";
 import { emitirNFSe } from "@/lib/nfse";
 import { enviarPdfPorWhatsApp, type EstadoEnvioWhatsApp } from "@/lib/envio-documentos-whatsapp";
 import { WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
@@ -219,7 +220,29 @@ export async function excluirOS(osId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
+  const os = await prisma.ordemServico.findUnique({
+    where: { id: osId },
+    include: {
+      cliente: { select: { nome: true } },
+      veiculo: true,
+      itens: true,
+      pagamentos: true,
+      fotos: true,
+      contas: true,
+    },
+  });
+
   await prisma.ordemServico.delete({ where: { id: osId } });
+
+  // A cópia só é gravada depois que a exclusão deu certo.
+  if (os) {
+    await registrarExclusao({
+      tipo: "OS",
+      referencia: `OS ${numeroFormatado(os.numero, os.ano)}`,
+      resumo: `${os.cliente?.nome ?? "-"} · ${formatarMoeda(os.valorTotal)}`,
+      dados: os,
+    });
+  }
   revalidatePath("/ordens-servico");
   redirect("/ordens-servico");
 }

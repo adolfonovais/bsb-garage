@@ -50,6 +50,7 @@ model Organizacao {
   usuarios        Usuario[]
   mensagensWhatsApp MensagemWhatsApp[]
   inscricoesPush    PushInscricao[]
+  registrosExclusao RegistroExclusao[]
   clientes      Cliente[]
   veiculos      Veiculo[]
   tiposServico  TipoServico[]
@@ -608,5 +609,24 @@ model PushInscricao {
   createdAt     DateTime    @default(now())
 
   @@index([organizacaoId])
+  @@schema("bsb_garage")
+}
+
+// Cópia de tudo que é excluído no sistema (OS, orçamento, cliente): quem
+// excluiu, quando e o conteúdo completo em JSON — dá pra consultar e, se
+// preciso, refazer o registro à mão.
+model RegistroExclusao {
+  id            String      @id @default(cuid())
+  organizacaoId String
+  organizacao   Organizacao @relation(fields: [organizacaoId], references: [id])
+  tipo          String // "OS" | "ORCAMENTO" | "CLIENTE"
+  referencia    String // ex: "OS 2026-0038"
+  resumo        String // ex: "Dan · R$ 2.400,00"
+  dados         Json
+  usuarioId     String?
+  usuarioNome   String?
+  createdAt     DateTime    @default(now())
+
+  @@index([organizacaoId, createdAt])
   @@schema("bsb_garage")
 }

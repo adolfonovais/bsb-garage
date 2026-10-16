@@ -8,7 +8,8 @@ import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
-import { numeroFormatado } from "@/lib/format";
+import { formatarMoeda, numeroFormatado } from "@/lib/format";
+import { registrarExclusao } from "@/lib/exclusoes";
 import { enviarPdfPorWhatsApp, type EstadoEnvioWhatsApp } from "@/lib/envio-documentos-whatsapp";
 import { WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
 
@@ -154,7 +155,21 @@ export async function excluirOrcamento(orcamentoId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
+  const orcamento = await prisma.orcamento.findUnique({
+    where: { id: orcamentoId },
+    include: { cliente: { select: { nome: true } }, veiculo: true, itens: true },
+  });
+
   await prisma.orcamento.delete({ where: { id: orcamentoId } });
+
+  if (orcamento) {
+    await registrarExclusao({
+      tipo: "ORCAMENTO",
+      referencia: `Orçamento ${numeroFormatado(orcamento.numero, orcamento.ano)}`,
+      resumo: `${orcamento.cliente?.nome ?? "-"} · ${formatarMoeda(orcamento.valorTotal)}`,
+      dados: orcamento,
+    });
+  }
   revalidatePath("/orcamentos");
   redirect("/orcamentos");
 }
