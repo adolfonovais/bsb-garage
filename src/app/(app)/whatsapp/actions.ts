@@ -1,10 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { organizacaoAtual, organizacaoIdAtual } from "@/lib/tenant";
 import { salvarMidiaWhatsApp } from "@/lib/storage";
+import { registrarExclusao } from "@/lib/exclusoes";
+import { formatarDataHora, formatarTelefone } from "@/lib/format";
 import {
   enviarMediaWhatsApp,
   enviarMidiaWhatsApp,
@@ -216,4 +219,53 @@ export async function pedirRetornoWhatsApp(
   revalidatePath("/whatsapp");
   revalidatePath(`/whatsapp/${telefoneCanonico(destino)}`);
   return { sucesso: true };
+}
+
+/**
+ * Apaga uma mensagem só do histórico do sistema. NÃO apaga do WhatsApp do
+ * cliente — a API do WhatsApp Business não permite apagar mensagem enviada.
+ */
+export async function excluirMensagemWhatsApp(mensagemId: string): Promise<void> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const mensagem = await prisma.mensagemWhatsApp.findUnique({ where: { id: mensagemId } });
+  if (!mensagem) return;
+
+  await prisma.mensagemWhatsApp.delete({ where: { id: mensagemId } });
+  await registrarExclusao({
+    tipo: "MENSAGEM_WHATSAPP",
+    referencia: `Mensagem de WhatsApp (${formatarTelefone(mensagem.telefone)})`,
+    resumo: `${mensagem.direcao === "SAIDA" ? "Enviada" : "Recebida"} em ${formatarDataHora(mensagem.createdAt)}: ${mensagem.corpo.slice(0, 80)}`,
+    dados: mensagem,
+  });
+
+  const canonico = telefoneCanonico(mensagem.telefone);
+  const restantes = (await prisma.mensagemWhatsApp.findMany({ select: { telefone: true } })).some(
+    (m) => telefoneCanonico(m.telefone) === canonico
+  );
+  revalidatePath("/", "layout");
+  // Era a última da conversa: volta pra lista.
+  if (!restantes) redirect("/whatsapp");
+}
+
+/** Apaga a conversa inteira só do sistema (o cliente continua com as mensagens no WhatsApp dele). */
+export async function excluirConversaWhatsApp(canonico: string): Promise<void> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autenticado.");
+
+  const todas = await prisma.mensagemWhatsApp.findMany({ orderBy: { createdAt: "asc" } });
+  const mensagens = todas.filter((m) => telefoneCanonico(m.telefone) === canonico);
+  if (mensagens.length === 0) redirect("/whatsapp");
+
+  await prisma.mensagemWhatsApp.deleteMany({ where: { id: { in: mensagens.map((m) => m.id) } } });
+  await registrarExclusao({
+    tipo: "CONVERSA_WHATSAPP",
+    referencia: `Conversa de WhatsApp (${formatarTelefone(mensagens[0].telefone)})`,
+    resumo: `${mensagens.length} mensagem${mensagens.length === 1 ? "" : "s"}`,
+    dados: mensagens,
+  });
+
+  revalidatePath("/", "layout");
+  redirect("/whatsapp");
 }

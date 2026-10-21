@@ -7,6 +7,9 @@ import { Card, PageHeader } from "@/components/ui";
 import { formatarDataHora, formatarTelefone } from "@/lib/format";
 import { ResponderWhatsAppForm } from "@/components/ResponderWhatsAppForm";
 import { MarcarConversaLida } from "@/components/MarcarConversaLida";
+import { ExcluirComConfirmacao } from "@/components/ExcluirComConfirmacao";
+import { ExcluirMensagemButton } from "@/components/ExcluirMensagemButton";
+import { excluirConversaWhatsApp, excluirMensagemWhatsApp } from "@/app/(app)/whatsapp/actions";
 
 export default async function WhatsAppConversaPage({
   params,
@@ -37,9 +40,16 @@ export default async function WhatsAppConversaPage({
         title={cliente?.nome || formatarTelefone(ultima.telefone)}
         subtitle={formatarTelefone(ultima.telefone)}
         actions={
-          <Link href="/whatsapp" className="text-sm font-medium text-brand-600 hover:underline">
-            ← Conversas
-          </Link>
+          <>
+            <Link href="/whatsapp" className="text-sm font-medium text-brand-600 hover:underline">
+              ← Conversas
+            </Link>
+            <ExcluirComConfirmacao
+              acao={excluirConversaWhatsApp.bind(null, canonico)}
+              rotulo="Excluir conversa"
+              mensagem={`Excluir toda a conversa com ${cliente?.nome || formatarTelefone(ultima.telefone)} (${mensagens.length} mensagens)? Isso apaga só aqui no sistema — o cliente continua com as mensagens no WhatsApp dele. Uma cópia fica guardada em Configurações → Exclusões.`}
+            />
+          </>
         }
       />
 
@@ -71,11 +81,19 @@ export default async function WhatsAppConversaPage({
               {(!msg.midiaUrl || (msg.corpo && !/^(📷 Foto|🎥 Vídeo|🎤 Áudio|📎 Documento|Figurinha)$/.test(msg.corpo))) && (
                 <p className="whitespace-pre-wrap">{msg.corpo}</p>
               )}
-              <p className={`mt-1 text-right text-[10px] ${msg.direcao === "SAIDA" ? "text-brand-100" : "text-slate-400"}`}>
+              <div
+                className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${msg.direcao === "SAIDA" ? "text-brand-100" : "text-slate-400"}`}
+              >
+                <p>
                 {formatarDataHora(msg.createdAt)}
                 {msg.direcao === "SAIDA" &&
                   ` · ${{ ENVIADA: "Enviada", ENTREGUE: "Entregue", LIDA: "Lida", FALHOU: "Falhou" }[msg.status]}`}
-              </p>
+                </p>
+                <ExcluirMensagemButton
+                  acao={excluirMensagemWhatsApp.bind(null, msg.id)}
+                  mensagem="Excluir esta mensagem do histórico? Isso apaga só aqui no sistema — não some do WhatsApp do cliente."
+                />
+              </div>
               {msg.direcao === "SAIDA" && msg.status === "FALHOU" && msg.erro && (
                 <p className="mt-1 rounded bg-red-50 px-2 py-1 text-[11px] text-red-700">Não entregue: {msg.erro}</p>
               )}
