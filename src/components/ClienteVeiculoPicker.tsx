@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Field, Select } from "@/components/ui";
 
 type Veiculo = { id: string; modelo: string; placa: string | null };
@@ -10,10 +11,12 @@ export function ClienteVeiculoPicker({
   clientes,
   clienteIdInicial,
   veiculoIdInicial,
+  veiculoObrigatorio = false,
 }: {
   clientes: Cliente[];
   clienteIdInicial?: string;
   veiculoIdInicial?: string;
+  veiculoObrigatorio?: boolean;
 }) {
   const [clienteId, setClienteId] = useState(clienteIdInicial ?? "");
 
@@ -34,8 +37,13 @@ export function ClienteVeiculoPicker({
           ))}
         </Select>
       </Field>
-      <Field label="Veículo">
-        <Select name="veiculoId" defaultValue={veiculoIdInicial ?? ""} disabled={!clienteId}>
+      <Field label={veiculoObrigatorio ? "Veículo *" : "Veículo"}>
+        <Select
+          key={clienteId}
+          name="veiculoId"
+          defaultValue={veiculoIdInicial ?? ""}
+          disabled={!clienteId}
+        >
           <option value="">Selecione...</option>
           {veiculos.map((v) => (
             <option key={v.id} value={v.id}>
@@ -43,6 +51,15 @@ export function ClienteVeiculoPicker({
             </option>
           ))}
         </Select>
+        {veiculoObrigatorio && clienteId && veiculos.length === 0 && (
+          <p className="mt-1 text-xs text-red-600">
+            Este cliente ainda não tem veículo.{" "}
+            <Link href={`/clientes/${clienteId}`} className="font-medium underline">
+              Cadastre na página do cliente
+            </Link>{" "}
+            e volte aqui.
+          </p>
+        )}
       </Field>
     </div>
   );

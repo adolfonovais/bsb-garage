@@ -139,7 +139,14 @@ export default async function OrcamentoDetalhePage({
             </form>
           </>
         )}
-        {!jaConvertido ? (
+        {!jaConvertido && !orcamento.veiculoId ? (
+          <p className="text-sm text-amber-800">
+            Para virar Ordem de Serviço, o orçamento precisa de um veículo.{" "}
+            <Link href={`/orcamentos/${orcamento.id}/editar`} className="font-medium underline">
+              Escolher o veículo
+            </Link>
+          </p>
+        ) : !jaConvertido ? (
           <form action={converterAction}>
             <SubmitButton variant="primary">
               Converter em Ordem de Serviço

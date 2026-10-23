@@ -70,6 +70,7 @@ export default async function EditarOSPage({
             clientes={clientes}
             clienteIdInicial={os.clienteId}
             veiculoIdInicial={os.veiculoId ?? undefined}
+            veiculoObrigatorio
           />
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

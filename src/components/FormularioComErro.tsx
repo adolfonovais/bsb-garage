@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
 
 export type EstadoComErro = { sucesso?: boolean; erro?: string } | undefined;
 
@@ -23,11 +23,17 @@ export function FormularioComErro({
   className?: string;
 }) {
   const [estado, formAction] = useActionState(action, undefined);
+  const aviso = useRef<HTMLDivElement>(null);
+
+  // O botão de salvar fica no fim da página; sem rolar, o aviso passava despercebido.
+  useEffect(() => {
+    if (estado?.erro) aviso.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [estado]);
 
   return (
     <form action={formAction} className={className}>
       {estado?.erro && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+        <div ref={aviso} role="alert" className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
           {estado.erro}
         </div>
       )}

@@ -18,18 +18,23 @@ import { WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
 
 const OSSchema = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
-  veiculoId: z.string().optional(),
+  veiculoId: z.string().min(1, "Não é possível salvar a OS sem veículo. Selecione o veículo do cliente (se ele ainda não tem, cadastre na página do cliente)."),
   dataEntrada: z.string().optional(),
   dataSaidaPrevista: z.string().optional(),
   formaPagamento: z.string().optional(),
   observacoes: z.string().optional(),
 });
 
-export async function criarOS(formData: FormData) {
+export type EstadoCriarOS = { erro?: string } | undefined;
+
+// Toda OS é de um veículo, e o veículo precisa ser do cliente escolhido. Os
+// problemas voltam como erro de formulário (aviso na própria tela) em vez de
+// lançar exceção e cair na página de erro genérica.
+export async function criarOS(_prevState: EstadoCriarOS, formData: FormData): Promise<EstadoCriarOS> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  const dados = OSSchema.parse({
+  const parsed = OSSchema.safeParse({
     clienteId: formData.get("clienteId"),
     veiculoId: formData.get("veiculoId"),
     dataEntrada: formData.get("dataEntrada"),
@@ -37,6 +42,13 @@ export async function criarOS(formData: FormData) {
     formaPagamento: formData.get("formaPagamento"),
     observacoes: formData.get("observacoes"),
   });
+  if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  const dados = parsed.data;
+  const veiculoDoCliente = await prisma.veiculo.findFirst({
+    where: { id: dados.veiculoId, clienteId: dados.clienteId },
+    select: { id: true },
+  });
+  if (!veiculoDoCliente) return { erro: "O veículo escolhido não pertence a esse cliente." };
   const itens = parseItens(formData);
   const total = somaItens(itens);
   const ano = new Date().getFullYear();
@@ -49,7 +61,7 @@ export async function criarOS(formData: FormData) {
         numero,
         ano,
         clienteId: dados.clienteId,
-        veiculoId: dados.veiculoId || null,
+        veiculoId: dados.veiculoId,
         dataEntrada: dataDoFormulario(dados.dataEntrada) ?? new Date(),
         dataSaidaPrevista: dataDoFormulario(dados.dataSaidaPrevista),
         formaPagamento: dados.formaPagamento || null,
@@ -84,7 +96,7 @@ export async function atualizarOS(
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  const dados = OSSchema.parse({
+  const parsed = OSSchema.safeParse({
     clienteId: formData.get("clienteId"),
     veiculoId: formData.get("veiculoId"),
     dataEntrada: formData.get("dataEntrada"),
@@ -92,6 +104,13 @@ export async function atualizarOS(
     formaPagamento: formData.get("formaPagamento"),
     observacoes: formData.get("observacoes"),
   });
+  if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  const dados = parsed.data;
+  const veiculoDoCliente = await prisma.veiculo.findFirst({
+    where: { id: dados.veiculoId, clienteId: dados.clienteId },
+    select: { id: true },
+  });
+  if (!veiculoDoCliente) return { erro: "O veículo escolhido não pertence a esse cliente." };
   const itens = parseItens(formData);
   const total = somaItens(itens);
 
@@ -115,7 +134,7 @@ export async function atualizarOS(
       where: { id: osId },
       data: {
         clienteId: dados.clienteId,
-        veiculoId: dados.veiculoId || null,
+        veiculoId: dados.veiculoId,
         dataEntrada: dataDoFormulario(dados.dataEntrada) ?? new Date(),
         dataSaidaPrevista: dataDoFormulario(dados.dataSaidaPrevista),
         formaPagamento: dados.formaPagamento || null,
@@ -143,7 +162,7 @@ export async function atualizarOS(
         where: { id: osAtualizada.origemOrcamentoId },
         data: {
           clienteId: dados.clienteId,
-          veiculoId: dados.veiculoId || null,
+          veiculoId: dados.veiculoId,
           observacoes: dados.observacoes || null,
           valorTotal: total,
           itens: {

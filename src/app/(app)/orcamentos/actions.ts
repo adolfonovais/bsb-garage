@@ -186,6 +186,10 @@ export async function converterEmOS(orcamentoId: string) {
       include: { itens: true },
     });
 
+    if (!orcamento.veiculoId) {
+      throw new Error("Escolha o veículo no orçamento antes de converter em Ordem de Serviço.");
+    }
+
     const numero = await proximoNumero("OS", ano, tx);
 
     const novaOS = await tx.ordemServico.create({

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { criarOS } from "@/app/(app)/ordens-servico/actions";
 import { Card, Field, Input, LinkButton, PageHeader, Select, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
+import { FormularioComErro } from "@/components/FormularioComErro";
 import { ItensEditor } from "@/components/ItensEditor";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PECAS_CARROCERIA } from "@/lib/pecas-carro";
@@ -32,8 +33,8 @@ export default async function NovaOSPage() {
     <div className="max-w-3xl">
       <PageHeader title="Nova Ordem de Serviço" subtitle="Para orçamentos já aprovados, use o botão 'Converter em OS' na tela do orçamento." />
       <Card className="p-6">
-        <form action={criarOS} className="space-y-6">
-          <ClienteVeiculoPicker clientes={clientes} />
+        <FormularioComErro action={criarOS} className="space-y-6">
+          <ClienteVeiculoPicker clientes={clientes} veiculoObrigatorio />
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field label="Data de entrada">
@@ -69,7 +70,7 @@ export default async function NovaOSPage() {
             </LinkButton>
             <SubmitButton>Salvar Ordem de Serviço</SubmitButton>
           </div>
-        </form>
+        </FormularioComErro>
       </Card>
     </div>
   );
