@@ -307,7 +307,21 @@ export async function excluirPagamento(osId: string, pagamentoId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
+  const pagamento = await prisma.pagamento.findUnique({
+    where: { id: pagamentoId },
+    include: { os: { select: { numero: true, ano: true, cliente: { select: { nome: true } } } } },
+  });
+
   await prisma.pagamento.delete({ where: { id: pagamentoId } });
+
+  if (pagamento) {
+    await registrarExclusao({
+      tipo: "PAGAMENTO",
+      referencia: `Pagamento da OS ${numeroFormatado(pagamento.os.numero, pagamento.os.ano)}`,
+      resumo: `${formatarMoeda(pagamento.valor)} · ${pagamento.formaPagamento ?? "forma não informada"} · ${pagamento.os.cliente.nome}`,
+      dados: pagamento,
+    });
+  }
   revalidatePath(`/ordens-servico/${osId}`);
 }
 
@@ -544,7 +558,10 @@ export async function removerUsoPeca(osId: string, movimentacaoId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  const mov = await prisma.movimentacaoEstoque.findUniqueOrThrow({ where: { id: movimentacaoId } });
+  const mov = await prisma.movimentacaoEstoque.findUniqueOrThrow({
+    where: { id: movimentacaoId },
+    include: { peca: { select: { nome: true, unidade: true } } },
+  });
 
   await prisma.$transaction([
     prisma.movimentacaoEstoque.delete({ where: { id: movimentacaoId } }),
@@ -554,6 +571,12 @@ export async function removerUsoPeca(osId: string, movimentacaoId: string) {
     }),
   ], TX_OPTIONS);
 
+  await registrarExclusao({
+    tipo: "MOVIMENTACAO_ESTOQUE",
+    referencia: `Uso de peça numa OS (${mov.peca.nome})`,
+    resumo: `${Number(mov.quantidade)} ${mov.peca.unidade} devolvidos ao estoque`,
+    dados: mov,
+  });
   revalidatePath(`/ordens-servico/${osId}`);
   revalidatePath("/estoque");
 }

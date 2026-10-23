@@ -9,7 +9,18 @@ import { organizacaoIdAtual } from "@/lib/tenant";
  * só depois que a exclusão deu certo.
  */
 export async function registrarExclusao(params: {
-  tipo: "OS" | "ORCAMENTO" | "CLIENTE" | "VEICULO" | "MENSAGEM_WHATSAPP" | "CONVERSA_WHATSAPP";
+  tipo:
+    | "OS"
+    | "ORCAMENTO"
+    | "CLIENTE"
+    | "VEICULO"
+    | "PECA"
+    | "MOVIMENTACAO_ESTOQUE"
+    | "PAGAMENTO"
+    | "CONTA_FINANCEIRA"
+    | "REPASSE"
+    | "MENSAGEM_WHATSAPP"
+    | "CONVERSA_WHATSAPP";
   referencia: string;
   resumo: string;
   dados: unknown;

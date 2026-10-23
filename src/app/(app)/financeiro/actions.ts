@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
-import { dataDoFormulario } from "@/lib/format";
+import { dataDoFormulario, formatarMoeda } from "@/lib/format";
+import { registrarExclusao } from "@/lib/exclusoes";
 
 const ContaSchema = z.object({
   tipo: z.enum(["PAGAR", "RECEBER"]),
@@ -128,6 +129,17 @@ export async function excluirConta(contaId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
+  const conta = await prisma.contaFinanceira.findUnique({ where: { id: contaId } });
+
   await prisma.contaFinanceira.delete({ where: { id: contaId } });
+
+  if (conta) {
+    await registrarExclusao({
+      tipo: "CONTA_FINANCEIRA",
+      referencia: `${conta.tipo === "PAGAR" ? "Conta a pagar" : "Conta a receber"}: ${conta.descricao}`,
+      resumo: formatarMoeda(conta.valor),
+      dados: conta,
+    });
+  }
   revalidatePath("/financeiro");
 }

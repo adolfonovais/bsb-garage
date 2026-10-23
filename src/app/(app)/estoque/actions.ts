@@ -7,6 +7,7 @@ import { prisma, TX_OPTIONS } from "@/lib/prisma";
 import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { dataDoFormulario } from "@/lib/format";
+import { registrarExclusao } from "@/lib/exclusoes";
 
 const PecaSchema = z.object({
   nome: z.string().trim().min(2, "Informe o nome da peça/material."),
@@ -93,7 +94,18 @@ export async function excluirPeca(pecaId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
+  const peca = await prisma.peca.findUnique({ where: { id: pecaId }, include: { movimentacoes: true } });
+
   await prisma.peca.delete({ where: { id: pecaId } });
+
+  if (peca) {
+    await registrarExclusao({
+      tipo: "PECA",
+      referencia: `Peça ${peca.nome}`,
+      resumo: `Estoque na hora: ${Number(peca.quantidadeAtual)} ${peca.unidade} · ${peca.movimentacoes.length} movimentações`,
+      dados: peca,
+    });
+  }
   revalidatePath("/estoque");
   redirect("/estoque");
 }
@@ -151,7 +163,10 @@ export async function excluirMovimentacao(pecaId: string, movimentacaoId: string
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  const mov = await prisma.movimentacaoEstoque.findUniqueOrThrow({ where: { id: movimentacaoId } });
+  const mov = await prisma.movimentacaoEstoque.findUniqueOrThrow({
+    where: { id: movimentacaoId },
+    include: { peca: { select: { nome: true, unidade: true } } },
+  });
   const delta = mov.tipo === "ENTRADA" ? -Number(mov.quantidade) : Number(mov.quantidade);
 
   await prisma.$transaction([
@@ -162,6 +177,12 @@ export async function excluirMovimentacao(pecaId: string, movimentacaoId: string
     }),
   ], TX_OPTIONS);
 
+  await registrarExclusao({
+    tipo: "MOVIMENTACAO_ESTOQUE",
+    referencia: `Movimentação de estoque (${mov.peca.nome})`,
+    resumo: `${mov.tipo === "ENTRADA" ? "Entrada" : "Saída"} de ${Number(mov.quantidade)} ${mov.peca.unidade}`,
+    dados: mov,
+  });
   revalidatePath(`/estoque/${pecaId}`);
   revalidatePath("/estoque");
 }

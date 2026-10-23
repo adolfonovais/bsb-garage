@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
-import { dataDoFormulario } from "@/lib/format";
+import { dataDoFormulario, formatarMoeda } from "@/lib/format";
+import { registrarExclusao } from "@/lib/exclusoes";
 import type { EstadoFormulario } from "@/components/EdicaoInline";
 import { validarDisponibilidadeRepasse } from "@/lib/repasse-disponibilidade";
 
@@ -208,7 +209,21 @@ export async function excluirRepasse(repasseId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
+  const repasse = await prisma.repasseOficina.findUnique({
+    where: { id: repasseId },
+    include: { oficina: { select: { nome: true } }, itens: true },
+  });
+
   await prisma.repasseOficina.delete({ where: { id: repasseId } });
+
+  if (repasse) {
+    await registrarExclusao({
+      tipo: "REPASSE",
+      referencia: `Repasse · ${repasse.carro}${repasse.placa ? ` · ${repasse.placa}` : ""}`,
+      resumo: `${repasse.oficina.nome} · custo ${formatarMoeda(repasse.custoTotal)}`,
+      dados: repasse,
+    });
+  }
   revalidatePath("/repasses");
   revalidatePath("/oficinas");
   redirect("/repasses");

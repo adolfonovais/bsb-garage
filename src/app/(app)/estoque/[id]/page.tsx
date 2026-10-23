@@ -11,7 +11,9 @@ import { Card, EmptyState, Field, Input, PageHeader, Select } from "@/components
 import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
 import { formatarData, numeroFormatado, paraNumero } from "@/lib/format";
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { ExcluirComConfirmacao } from "@/components/ExcluirComConfirmacao";
+import { ExcluirIconeComConfirmacao } from "@/components/ExcluirIconeComConfirmacao";
 import { Valor } from "@/components/ValoresPrivacidade";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -160,11 +162,11 @@ export default async function PecaDetalhePage({
                       )}
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <form action={excluirMovimentacao.bind(null, peca.id, mov.id)}>
-                        <button type="submit" className="text-slate-400 hover:text-red-600">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </form>
+                      <ExcluirIconeComConfirmacao
+                        acao={excluirMovimentacao.bind(null, peca.id, mov.id)}
+                        titulo="Excluir movimentação"
+                        mensagem="Excluir esta movimentação? O estoque da peça volta ao que era antes dela. Uma cópia fica guardada em Configurações → Exclusões."
+                      />
                     </td>
                   </tr>
                 ))}
@@ -209,11 +211,11 @@ export default async function PecaDetalhePage({
       )}
 
       <Card className="flex justify-end p-4">
-        <form action={excluirPeca.bind(null, peca.id)}>
-          <SubmitButton variant="ghost">
-            <Trash2 className="h-4 w-4" /> Excluir item
-          </SubmitButton>
-        </form>
+        <ExcluirComConfirmacao
+          acao={excluirPeca.bind(null, peca.id)}
+          rotulo="Excluir item"
+          mensagem={`Excluir o item ${peca.nome} do estoque, com todo o histórico de movimentações? Uma cópia fica guardada em Configurações → Exclusões.`}
+        />
       </Card>
     </div>
   );

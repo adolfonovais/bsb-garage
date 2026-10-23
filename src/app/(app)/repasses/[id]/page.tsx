@@ -18,7 +18,7 @@ import {
   STATUS_PAGAMENTO_OFICINA_LABEL,
   STATUS_REPASSE_LABEL,
 } from "@/lib/format";
-import { Trash2 } from "lucide-react";
+import { ExcluirComConfirmacao } from "@/components/ExcluirComConfirmacao";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Valor } from "@/components/ValoresPrivacidade";
 import { buscarOrdensParaRepasse } from "@/lib/repasse-disponibilidade";
@@ -246,11 +246,11 @@ export default async function RepasseDetalhePage({
       </Card>
 
       <Card className="flex justify-end p-4">
-        <form action={excluirRepasse.bind(null, repasse.id)}>
-          <SubmitButton variant="ghost">
-            <Trash2 className="h-4 w-4" /> Excluir repasse
-          </SubmitButton>
-        </form>
+        <ExcluirComConfirmacao
+          acao={excluirRepasse.bind(null, repasse.id)}
+          rotulo="Excluir repasse"
+          mensagem={`Excluir o repasse de ${repasse.carro}? Os serviços dele voltam a ficar disponíveis para repasse. Uma cópia fica guardada em Configurações → Exclusões.`}
+        />
       </Card>
     </div>
   );

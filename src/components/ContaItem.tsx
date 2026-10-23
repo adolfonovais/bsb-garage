@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
+import { ExcluirIconeComConfirmacao } from "@/components/ExcluirIconeComConfirmacao";
 import { Badge, Field, Input } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 import { STATUS_CONTA_LABEL } from "@/lib/format";
@@ -140,11 +141,11 @@ export function ContaItem({
         >
           <Pencil className="h-4 w-4" />
         </button>
-        <form action={acaoExcluir.bind(null, conta.id)}>
-          <button type="submit" className="text-slate-400 hover:text-red-600" title="Excluir">
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </form>
+        <ExcluirIconeComConfirmacao
+          acao={acaoExcluir.bind(null, conta.id)}
+          titulo="Excluir"
+          mensagem={`Excluir a conta "${conta.descricao}"? Uma cópia fica guardada em Configurações → Exclusões.`}
+        />
       </div>
     </li>
   );

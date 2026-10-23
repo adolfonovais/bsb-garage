@@ -15,16 +15,17 @@ import {
 } from "@/app/(app)/ordens-servico/actions";
 import { Badge, Button, buttonVariants, Card, Field, Input, LinkButton, PageHeader, Select } from "@/components/ui";
 import { BotaoCancelarDetails, DetailsForm } from "@/components/DetailsForm";
-import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
+import { formatarData, formatarMoeda, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
 import { Valor } from "@/components/ValoresPrivacidade";
 import { nfseConfigurada } from "@/lib/nfse";
 import { whatsappConfigurado } from "@/lib/whatsapp";
 import { organizacaoAtual } from "@/lib/tenant";
-import { Download, FileText, Pencil, Printer, Receipt, Trash2 } from "lucide-react";
+import { Download, FileText, Pencil, Printer, Receipt } from "lucide-react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { EmitirNfseButton } from "@/components/EmitirNfseButton";
 import { EnviarWhatsAppButton } from "@/components/EnviarWhatsAppButton";
 import { ExcluirComConfirmacao } from "@/components/ExcluirComConfirmacao";
+import { ExcluirIconeComConfirmacao } from "@/components/ExcluirIconeComConfirmacao";
 
 const PROXIMO_STATUS: Record<string, { valor: string; label: string }[]> = {
   ABERTA: [
@@ -263,11 +264,11 @@ export default async function OSDetalhePage({
                       {paraNumero(mov.quantidade)} {mov.peca.unidade}
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <form action={removerUsoPeca.bind(null, os.id, mov.id)}>
-                        <button type="submit" className="text-slate-400 hover:text-red-600">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </form>
+                      <ExcluirIconeComConfirmacao
+                        acao={removerUsoPeca.bind(null, os.id, mov.id)}
+                        titulo="Remover uso de peça"
+                        mensagem="Remover este uso de peça? A quantidade volta para o estoque. Uma cópia fica guardada em Configurações → Exclusões."
+                      />
                     </td>
                   </tr>
                 ))}
@@ -338,11 +339,11 @@ export default async function OSDetalhePage({
                     <td className="px-4 py-2">{p.formaPagamento ?? "-"}</td>
                     <td className="px-4 py-2"><Valor valor={paraNumero(p.valor)} /></td>
                     <td className="px-4 py-2 text-right">
-                      <form action={excluirPagamento.bind(null, os.id, p.id)}>
-                        <button type="submit" className="text-slate-400 hover:text-red-600">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </form>
+                      <ExcluirIconeComConfirmacao
+                        acao={excluirPagamento.bind(null, os.id, p.id)}
+                        titulo="Excluir pagamento"
+                        mensagem={`Excluir o pagamento de ${formatarMoeda(p.valor)} desta OS? O valor volta a aparecer como a receber. Uma cópia fica guardada em Configurações → Exclusões.`}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -419,15 +420,14 @@ function FotoGrupo({
             <div key={foto.id} className="group relative aspect-square overflow-hidden rounded-md border border-slate-200">
               {/* eslint-disable-next-line @next/next/no-img-element -- fotos enviadas pelo usuário, sem otimização necessária em dev local */}
               <img src={foto.url} alt={`Foto ${titulo.toLowerCase()}`} className="h-full w-full object-cover" />
-              <form action={excluirFotoComId.bind(null, foto.id)} className="absolute right-1 top-1">
-                <button
-                  type="submit"
-                  className="rounded-full bg-brand-dark/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                  title="Remover foto"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-              </form>
+              <ExcluirIconeComConfirmacao
+                acao={excluirFotoComId.bind(null, foto.id)}
+                titulo="Remover foto"
+                mensagem="Remover esta foto? O arquivo é apagado e não dá para recuperar."
+                formClassName="absolute right-1 top-1"
+                className="rounded-full bg-brand-dark/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                iconeClassName="h-3 w-3"
+              />
             </div>
           ))}
         </div>
