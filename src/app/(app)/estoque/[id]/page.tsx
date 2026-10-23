@@ -211,11 +211,17 @@ export default async function PecaDetalhePage({
       )}
 
       <Card className="flex justify-end p-4">
-        <ExcluirComConfirmacao
-          acao={excluirPeca.bind(null, peca.id)}
-          rotulo="Excluir item"
-          mensagem={`Excluir o item ${peca.nome} do estoque, com todo o histórico de movimentações? Uma cópia fica guardada em Configurações → Exclusões.`}
-        />
+        {peca.movimentacoes.length > 0 ? (
+          <p className="text-sm text-slate-500">
+            Para excluir este item, apague primeiro as movimentações dele (o histórico acima).
+          </p>
+        ) : (
+          <ExcluirComConfirmacao
+            acao={excluirPeca.bind(null, peca.id)}
+            rotulo="Excluir item"
+            mensagem={`Excluir o item ${peca.nome} do estoque? Uma cópia fica guardada em Configurações → Exclusões.`}
+          />
+        )}
       </Card>
     </div>
   );
