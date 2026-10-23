@@ -15,21 +15,31 @@ import { WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
 
 const OrcamentoSchema = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
-  veiculoId: z.string().optional(),
+  veiculoId: z.string().min(1, "Não é possível salvar o orçamento sem veículo. Selecione o veículo do cliente (se ele ainda não tem, cadastre na página do cliente)."),
   validadeDias: z.string().optional(),
   observacoes: z.string().optional(),
 });
 
-export async function criarOrcamento(formData: FormData) {
+export type EstadoOrcamento = { erro?: string } | undefined;
+
+// Problemas de validação voltam como aviso na própria tela (não como página de erro).
+export async function criarOrcamento(_prevState: EstadoOrcamento, formData: FormData): Promise<EstadoOrcamento> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  const dados = OrcamentoSchema.parse({
+  const parsed = OrcamentoSchema.safeParse({
     clienteId: formData.get("clienteId"),
     veiculoId: formData.get("veiculoId"),
     validadeDias: formData.get("validadeDias"),
     observacoes: formData.get("observacoes"),
   });
+  if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  const dados = parsed.data;
+  const veiculoDoCliente = await prisma.veiculo.findFirst({
+    where: { id: dados.veiculoId, clienteId: dados.clienteId },
+    select: { id: true },
+  });
+  if (!veiculoDoCliente) return { erro: "O veículo escolhido não pertence a esse cliente." };
   const itens = parseItens(formData);
   const total = somaItens(itens);
   const ano = new Date().getFullYear();
@@ -42,7 +52,7 @@ export async function criarOrcamento(formData: FormData) {
         numero,
         ano,
         clienteId: dados.clienteId,
-        veiculoId: dados.veiculoId || null,
+        veiculoId: dados.veiculoId,
         validadeDias: dados.validadeDias ? Number(dados.validadeDias) : 60,
         observacoes: dados.observacoes || null,
         valorTotal: total,
@@ -65,16 +75,27 @@ export async function criarOrcamento(formData: FormData) {
   redirect(`/orcamentos/${orcamento.id}`);
 }
 
-export async function atualizarOrcamento(orcamentoId: string, formData: FormData) {
+export async function atualizarOrcamento(
+  orcamentoId: string,
+  _prevState: EstadoOrcamento,
+  formData: FormData
+): Promise<EstadoOrcamento> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  const dados = OrcamentoSchema.parse({
+  const parsed = OrcamentoSchema.safeParse({
     clienteId: formData.get("clienteId"),
     veiculoId: formData.get("veiculoId"),
     validadeDias: formData.get("validadeDias"),
     observacoes: formData.get("observacoes"),
   });
+  if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  const dados = parsed.data;
+  const veiculoDoCliente = await prisma.veiculo.findFirst({
+    where: { id: dados.veiculoId, clienteId: dados.clienteId },
+    select: { id: true },
+  });
+  if (!veiculoDoCliente) return { erro: "O veículo escolhido não pertence a esse cliente." };
   const itens = parseItens(formData);
   const total = somaItens(itens);
 
@@ -84,7 +105,7 @@ export async function atualizarOrcamento(orcamentoId: string, formData: FormData
       where: { id: orcamentoId },
       data: {
         clienteId: dados.clienteId,
-        veiculoId: dados.veiculoId || null,
+        veiculoId: dados.veiculoId,
         validadeDias: dados.validadeDias ? Number(dados.validadeDias) : 60,
         observacoes: dados.observacoes || null,
         valorTotal: total,
@@ -110,7 +131,7 @@ export async function atualizarOrcamento(orcamentoId: string, formData: FormData
         where: { id: osVinculada.id },
         data: {
           clienteId: dados.clienteId,
-          veiculoId: dados.veiculoId || null,
+          veiculoId: dados.veiculoId,
           observacoes: dados.observacoes || null,
           valorTotal: total,
           itens: {

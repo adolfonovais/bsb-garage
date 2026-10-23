@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { criarOrcamento } from "@/app/(app)/orcamentos/actions";
 import { Card, Field, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
+import { FormularioComErro } from "@/components/FormularioComErro";
 import { ItensEditor } from "@/components/ItensEditor";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PECAS_CARROCERIA } from "@/lib/pecas-carro";
@@ -19,8 +20,8 @@ export default async function NovoOrcamentoPage() {
     <div className="max-w-3xl">
       <PageHeader title="Novo orçamento" />
       <Card className="p-6">
-        <form action={criarOrcamento} className="space-y-6">
-          <ClienteVeiculoPicker clientes={clientes} />
+        <FormularioComErro action={criarOrcamento} className="space-y-6">
+          <ClienteVeiculoPicker clientes={clientes} veiculoObrigatorio />
 
           <Field label="Validade (dias)">
             <Input name="validadeDias" type="number" defaultValue={60} className="max-w-[150px]" />
@@ -41,7 +42,7 @@ export default async function NovoOrcamentoPage() {
             </LinkButton>
             <SubmitButton>Salvar orçamento</SubmitButton>
           </div>
-        </form>
+        </FormularioComErro>
       </Card>
     </div>
   );

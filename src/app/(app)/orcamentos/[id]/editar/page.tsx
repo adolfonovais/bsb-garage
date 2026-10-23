@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { atualizarOrcamento } from "@/app/(app)/orcamentos/actions";
 import { Card, Field, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
 import { ClienteVeiculoPicker } from "@/components/ClienteVeiculoPicker";
+import { FormularioComErro } from "@/components/FormularioComErro";
 import { ItensEditor } from "@/components/ItensEditor";
 import { numeroFormatado, paraNumero } from "@/lib/format";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -51,11 +52,12 @@ export default async function EditarOrcamentoPage({
         </p>
       )}
       <Card className="p-6">
-        <form action={atualizarComId} className="space-y-6">
+        <FormularioComErro action={atualizarComId} className="space-y-6">
           <ClienteVeiculoPicker
             clientes={clientes}
             clienteIdInicial={orcamento.clienteId}
             veiculoIdInicial={orcamento.veiculoId ?? undefined}
+            veiculoObrigatorio
           />
 
           <Field label="Validade (dias)">
@@ -82,7 +84,7 @@ export default async function EditarOrcamentoPage({
             </LinkButton>
             <SubmitButton>Salvar alterações</SubmitButton>
           </div>
-        </form>
+        </FormularioComErro>
       </Card>
     </div>
   );
