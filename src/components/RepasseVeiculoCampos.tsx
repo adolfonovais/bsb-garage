@@ -18,6 +18,8 @@ type ItemOS = {
   tipoServicoNome: string | null;
   /** Repasses (não cancelados) que já cobrem esse item. */
   repassesExistentes: RepasseExistente[];
+  /** Nenhum repasse válido (de qualquer prestador) cobre esse serviço. */
+  disponivel: boolean;
 };
 
 type OS = {
@@ -27,8 +29,10 @@ type OS = {
   cliente: { nome: string };
   veiculo: { modelo: string; placa: string | null } | null;
   itens: ItemOS[];
-  /** Qualquer repasse (não cancelado) já existente pra essa OS, um por prestador. */
+  /** Qualquer repasse (não cancelado) já existente pra essa OS. */
   repassesOS: RepasseExistente[];
+  /** Tem algum serviço ainda não repassado (e a OS não foi entregue). */
+  disponivel: boolean;
 };
 
 export function RepasseVeiculoCampos({
@@ -62,33 +66,14 @@ export function RepasseVeiculoCampos({
     new Set(itensSelecionadosIniciais ?? [])
   );
 
-  // Uma OS só deve ter UM repasse por prestador — se já existe um (completo
-  // ou não) pra esse prestador, a OS some do dropdown pra ele; pra adicionar
-  // mais itens é só editar o repasse existente, não criar outro. Pra outro
-  // prestador diferente, a OS continua disponível normalmente (ex:
-  // lanternagem numa oficina, pintura noutra). Sem prestador ainda, mostra tudo.
-  function itemDisponivel(item: ItemOS, paraOficinaId: string) {
-    return !paraOficinaId || !item.repassesExistentes.some((r) => r.oficinaId === paraOficinaId);
-  }
-  function osTemItemDisponivel(os: OS, paraOficinaId: string) {
-    return !paraOficinaId || !os.repassesOS.some((r) => r.oficinaId === paraOficinaId);
-  }
-
-  const ordensDisponiveis = ordens.filter((os) => osTemItemDisponivel(os, oficinaId));
+  // Um serviço já repassado (pra qualquer prestador) não aparece de novo; os
+  // outros serviços da mesma OS continuam disponíveis. OS entregue não é listada.
+  const ordensDisponiveis = ordens.filter((os) => os.disponivel);
   const osSelecionada = ordensDisponiveis.find((o) => o.id === osId);
-  const itensDisponiveis = osSelecionada ? osSelecionada.itens.filter((item) => itemDisponivel(item, oficinaId)) : [];
+  const itensDisponiveis = osSelecionada ? osSelecionada.itens.filter((item) => item.disponivel) : [];
 
   function selecionarOficina(novoOficinaId: string) {
     setOficinaId(novoOficinaId);
-    setItensSelecionados(new Set());
-    // Se a OS já escolhida não sobra com nenhum item disponível pra esse
-    // prestador, desvincula pra não deixar o select numa OS que sumiu.
-    const osAtual = ordens.find((o) => o.id === osId);
-    if (osAtual && !osTemItemDisponivel(osAtual, novoOficinaId)) {
-      setOsId("");
-      setCarro("");
-      setPlaca("");
-    }
   }
 
   function selecionarOS(novoOsId: string) {
@@ -137,7 +122,7 @@ export function RepasseVeiculoCampos({
 
       <Field
         label="Vincular a uma OS (opcional)"
-        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS que ainda não têm repasse pra esse prestador."
+        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS ainda não entregues que tenham algum serviço sem repasse."
       >
         <Select name="osId" value={osId} onChange={(e) => selecionarOS(e.target.value)}>
           <option value="">Nenhuma</option>
@@ -158,7 +143,7 @@ export function RepasseVeiculoCampos({
         {osSelecionada && itensDisponiveis.length > 0 && (
           <Field
             label="Serviços da OS repassados"
-            hint="Marque quais itens dessa OS (ainda não repassados pra esse prestador) estão indo pra ele — preenche o Tipo de serviço abaixo."
+            hint="Marque quais serviços dessa OS estão indo pra esse prestador (só aparecem os que ainda não foram repassados) — preenche o Tipo de serviço abaixo."
           >
             <div className="space-y-1.5 rounded-md border border-slate-300 bg-white p-3">
               {itensDisponiveis.map((item) => (

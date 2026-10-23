@@ -31,6 +31,7 @@ export function DetailsForm({
   action,
   children,
   limparAoSalvar = false,
+  avisoCampoVazio,
 }: {
   resumo: ReactNode;
   detailsClassName?: string;
@@ -38,6 +39,8 @@ export function DetailsForm({
   action: AcaoComEstado;
   children: ReactNode;
   limparAoSalvar?: boolean;
+  /** Alerta (sem impedir o envio) se o campo `campo` estiver vazio ao salvar. */
+  avisoCampoVazio?: { campo: string; mensagem: string };
 }) {
   const [state, formAction] = useActionState<EstadoSimples, FormData>(action, undefined);
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -61,7 +64,16 @@ export function DetailsForm({
         {resumo}
       </summary>
       <FecharContext.Provider value={fechar}>
-        <form ref={formRef} action={formAction} className={formClassName}>
+        <form
+          ref={formRef}
+          action={formAction}
+          className={formClassName}
+          onSubmit={(e) => {
+            if (!avisoCampoVazio) return;
+            const campo = e.currentTarget.elements.namedItem(avisoCampoVazio.campo);
+            if (campo instanceof HTMLInputElement && campo.value.trim() === "") window.alert(avisoCampoVazio.mensagem);
+          }}
+        >
           {children}
           {state?.erro && <p className="col-span-2 text-sm text-red-700">{state.erro}</p>}
         </form>

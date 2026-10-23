@@ -5,6 +5,11 @@ import { SubmitButton } from "@/components/SubmitButton";
 
 type VeiculoAction = (prevState: EstadoSimples, formData: FormData) => Promise<EstadoSimples>;
 
+const AVISO_SEM_PLACA = {
+  campo: "placa",
+  mensagem: "Atenção: este veículo está sendo salvo sem placa. Dá para salvar assim, mas lembre de preencher a placa depois.",
+};
+
 export function EditarVeiculoForm({
   veiculo,
   atualizarVeiculo,
@@ -17,6 +22,7 @@ export function EditarVeiculoForm({
       resumo={<Pencil className="h-4 w-4 text-slate-400 hover:text-brand-700" />}
       action={atualizarVeiculo}
       formClassName="mt-3 grid grid-cols-2 gap-3"
+      avisoCampoVazio={AVISO_SEM_PLACA}
     >
       <div className="col-span-2">
         <Field label="Modelo *">
@@ -47,6 +53,7 @@ export function NovoVeiculoForm({ criarVeiculo }: { criarVeiculo: VeiculoAction 
       action={criarVeiculo}
       formClassName="mt-3 grid grid-cols-2 gap-3"
       limparAoSalvar
+      avisoCampoVazio={AVISO_SEM_PLACA}
     >
       <div className="col-span-2">
         <Field label="Modelo *">

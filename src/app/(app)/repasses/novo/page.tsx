@@ -4,6 +4,7 @@ import { criarRepasse } from "@/app/(app)/repasses/actions";
 import { Card, Field, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
 import { RepasseVeiculoCampos } from "@/components/RepasseVeiculoCampos";
 import { SubmitButton } from "@/components/SubmitButton";
+import { FormularioComErro } from "@/components/FormularioComErro";
 import { formatarData } from "@/lib/format";
 import { buscarOrdensParaRepasse } from "@/lib/repasse-disponibilidade";
 
@@ -67,7 +68,7 @@ export default async function NovoRepassePage({
       )}
 
       <Card className="p-6">
-        <form action={criarRepasse} className="space-y-6">
+        <FormularioComErro action={criarRepasse} className="space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <RepasseVeiculoCampos ordens={ordens} oficinas={oficinas} oficinaIdInicial={oficinaId ?? ""} />
           </div>
@@ -108,7 +109,7 @@ export default async function NovoRepassePage({
             </LinkButton>
             <SubmitButton>Salvar repasse</SubmitButton>
           </div>
-        </form>
+        </FormularioComErro>
       </Card>
     </div>
   );

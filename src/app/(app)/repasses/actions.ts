@@ -8,6 +8,7 @@ import { organizacaoIdAtual } from "@/lib/tenant";
 import { auth } from "@/lib/auth";
 import { dataDoFormulario } from "@/lib/format";
 import type { EstadoFormulario } from "@/components/EdicaoInline";
+import { validarDisponibilidadeRepasse } from "@/lib/repasse-disponibilidade";
 
 const RepasseSchema = z.object({
   oficinaId: z.string().min(1, "Selecione a oficina."),
@@ -33,7 +34,7 @@ function calcularCustoELucro(custoOficina: number, outrosCustos: number, valorCo
   return { custoTotal, lucro };
 }
 
-export async function criarRepasse(formData: FormData) {
+export async function criarRepasse(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
@@ -71,10 +72,12 @@ export async function criarRepasse(formData: FormData) {
     }
   }
   if (!carro) {
-    throw new Error("Informe o carro, ou vincule a uma OS com veículo cadastrado.");
+    return { erro: "Informe o carro, ou vincule a uma OS com veículo cadastrado." };
   }
 
   const itemIds = formData.getAll("itemIds").map(String).filter(Boolean);
+  const erroDisponibilidade = await validarDisponibilidadeRepasse({ osId: dados.osId, itemIds });
+  if (erroDisponibilidade) return { erro: erroDisponibilidade };
 
   const repasse = await prisma.repasseOficina.create({
     data: {
@@ -136,10 +139,16 @@ export async function atualizarRepasse(
   const { custoTotal, lucro } = calcularCustoELucro(custoOficina, outrosCustos, valorCobrado);
 
   if (!dados.carro) {
-    throw new Error("Informe o carro.");
+    return { erro: "Informe o carro." };
   }
 
   const itemIds = formData.getAll("itemIds").map(String).filter(Boolean);
+  const erroDisponibilidade = await validarDisponibilidadeRepasse({
+    osId: dados.osId,
+    itemIds,
+    repasseEmEdicaoId: repasseId,
+  });
+  if (erroDisponibilidade) return { erro: erroDisponibilidade };
 
   await prisma.repasseOficina.update({
     where: { id: repasseId },
