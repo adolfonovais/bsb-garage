@@ -16,7 +16,7 @@ export function BotaoCancelarEdicao() {
   );
 }
 
-export type EstadoFormulario = { sucesso?: boolean } | undefined;
+export type EstadoFormulario = { sucesso?: boolean; erro?: string } | undefined;
 
 /**
  * Substituto do <form action={...}> dentro do `formulario` de <EdicaoInline>
@@ -48,6 +48,11 @@ export function FormularioComFechamento({
 
   return (
     <form action={formAction} className={className}>
+      {estado?.erro && (
+        <div role="alert" className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
+          {estado.erro}
+        </div>
+      )}
       {children}
     </form>
   );
