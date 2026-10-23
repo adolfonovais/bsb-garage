@@ -9,7 +9,7 @@ import { auth } from "@/lib/auth";
 import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
 import { dataDoFormulario, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
-import { salvarFoto, removerFoto } from "@/lib/storage";
+import { salvarFoto } from "@/lib/storage";
 import { notificarClienteOSConcluida } from "@/lib/notificacoes";
 import { registrarExclusao } from "@/lib/exclusoes";
 import { emitirNFSe } from "@/lib/nfse";
@@ -347,8 +347,23 @@ export async function excluirFoto(osId: string, fotoId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
-  const foto = await prisma.fotoOS.delete({ where: { id: fotoId } });
-  await removerFoto(foto.url);
+  const foto = await prisma.fotoOS.findUnique({
+    where: { id: fotoId },
+    include: { os: { select: { numero: true, ano: true } } },
+  });
+
+  await prisma.fotoOS.delete({ where: { id: fotoId } });
+
+  // O arquivo no Storage é mantido de propósito: assim a foto dá pra recuperar
+  // pelo link guardado em Configurações → Exclusões.
+  if (foto) {
+    await registrarExclusao({
+      tipo: "FOTO_OS",
+      referencia: `Foto ${foto.tipo === "ANTES" ? "de antes" : "de depois"} da OS ${numeroFormatado(foto.os.numero, foto.os.ano)}`,
+      resumo: "arquivo mantido no armazenamento",
+      dados: foto,
+    });
+  }
   revalidatePath(`/ordens-servico/${osId}`);
 }
 

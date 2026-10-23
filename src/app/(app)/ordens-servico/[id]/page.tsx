@@ -423,7 +423,7 @@ function FotoGrupo({
               <ExcluirIconeComConfirmacao
                 acao={excluirFotoComId.bind(null, foto.id)}
                 titulo="Remover foto"
-                mensagem="Remover esta foto? O arquivo é apagado e não dá para recuperar."
+                mensagem="Remover esta foto da OS? Uma cópia fica guardada em Configurações → Exclusões, com o link do arquivo."
                 formClassName="absolute right-1 top-1"
                 className="rounded-full bg-brand-dark/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                 iconeClassName="h-3 w-3"

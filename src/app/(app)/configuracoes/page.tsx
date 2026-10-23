@@ -189,6 +189,19 @@ export default async function ConfiguracoesPage() {
                 </p>
                 <p className="text-xs text-slate-500">
                   Excluído por {e.usuarioNome ?? "—"} em {formatarDataHora(e.createdAt)}
+                  {typeof (e.dados as { url?: unknown } | null)?.url === "string" && (
+                    <>
+                      {" · "}
+                      <a
+                        href={(e.dados as { url: string }).url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-brand-700 underline"
+                      >
+                        abrir arquivo
+                      </a>
+                    </>
+                  )}
                 </p>
               </li>
             ))}

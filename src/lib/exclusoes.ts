@@ -17,6 +17,7 @@ export async function registrarExclusao(params: {
     | "PECA"
     | "MOVIMENTACAO_ESTOQUE"
     | "PAGAMENTO"
+    | "FOTO_OS"
     | "CONTA_FINANCEIRA"
     | "REPASSE"
     | "MENSAGEM_WHATSAPP"
