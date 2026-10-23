@@ -166,6 +166,21 @@ export async function excluirVeiculo(clienteId: string, veiculoId: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Não autenticado.");
 
+  const veiculo = await prisma.veiculo.findUnique({
+    where: { id: veiculoId },
+    include: { cliente: { select: { nome: true } } },
+  });
+
   await prisma.veiculo.delete({ where: { id: veiculoId } });
+
+  // A cópia só é gravada depois que a exclusão deu certo.
+  if (veiculo) {
+    await registrarExclusao({
+      tipo: "VEICULO",
+      referencia: `Veículo ${veiculo.modelo}${veiculo.placa ? ` · ${veiculo.placa}` : " (sem placa)"}`,
+      resumo: `Cliente: ${veiculo.cliente?.nome ?? "-"}`,
+      dados: veiculo,
+    });
+  }
   revalidatePath(`/clientes/${clienteId}`);
 }

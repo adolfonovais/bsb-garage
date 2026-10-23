@@ -17,13 +17,13 @@ import {
   PageHeader,
 } from "@/components/ui";
 import { formatarData, formatarVeiculo, numeroFormatado, paraNumero, STATUS_OS_LABEL } from "@/lib/format";
-import { Trash2 } from "lucide-react";
 import { Valor } from "@/components/ValoresPrivacidade";
 import { BotaoCancelarEdicao, EdicaoInline, FormularioComFechamento } from "@/components/EdicaoInline";
 import { EditarVeiculoForm, NovoVeiculoForm } from "@/components/VeiculoForms";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PedirRetornoButton } from "@/components/PedirRetornoButton";
 import { ExcluirComConfirmacao } from "@/components/ExcluirComConfirmacao";
+import { RemoverVeiculoButton } from "@/components/RemoverVeiculoButton";
 import { organizacaoAtual } from "@/lib/tenant";
 import { whatsappConfigurado } from "@/lib/whatsapp";
 
@@ -187,15 +187,10 @@ export default async function ClienteDetalhePage({
                   </div>
                   <EditarVeiculoForm veiculo={veiculo} atualizarVeiculo={atualizarVeiculo.bind(null, cliente.id, veiculo.id)} />
                 </div>
-                <form action={excluirVeiculo.bind(null, cliente.id, veiculo.id)} className="mt-1 flex justify-end">
-                  <button
-                    type="submit"
-                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-600"
-                    title="Remover veículo"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" /> Remover
-                  </button>
-                </form>
+                <RemoverVeiculoButton
+                  acao={excluirVeiculo.bind(null, cliente.id, veiculo.id)}
+                  mensagem={`Remover o veículo ${veiculo.modelo}${veiculo.placa ? ` (${veiculo.placa})` : ""}? Só é possível se ele não tiver OS ou orçamentos. Uma cópia fica guardada em Configurações → Exclusões.`}
+                />
               </div>
             ))}
           </div>
