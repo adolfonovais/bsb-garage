@@ -11,6 +11,7 @@ import { proximoNumero } from "@/lib/numero";
 import { dataDoFormulario, formatarMoeda, numeroFormatado, paraNumero } from "@/lib/format";
 import { salvarFoto } from "@/lib/storage";
 import { notificarClienteOSConcluida } from "@/lib/notificacoes";
+import { sincronizarItensDaOS } from "@/lib/sincronizar-itens-os";
 import { registrarExclusao } from "@/lib/exclusoes";
 import { emitirNFSe } from "@/lib/nfse";
 import { enviarPdfPorWhatsApp, type EstadoEnvioWhatsApp } from "@/lib/envio-documentos-whatsapp";
@@ -129,7 +130,7 @@ export async function atualizarOS(
   }
 
   const orcamentoVinculadoId = await prisma.$transaction(async (tx) => {
-    await tx.ordemServicoItem.deleteMany({ where: { osId } });
+    await sincronizarItensDaOS(tx, osId, itens);
     const osAtualizada = await tx.ordemServico.update({
       where: { id: osId },
       data: {
@@ -140,16 +141,6 @@ export async function atualizarOS(
         formaPagamento: dados.formaPagamento || null,
         observacoes: dados.observacoes || null,
         valorTotal: total,
-        itens: {
-          create: itens.map((item) => ({
-            descricao: item.descricao,
-            quantidade: item.quantidade,
-            valorUnit: item.valorUnit,
-            valorTotal: item.valorTotal,
-            ordem: item.ordem,
-            tipoServicoId: item.tipoServicoId,
-          })),
-        },
       },
     });
 

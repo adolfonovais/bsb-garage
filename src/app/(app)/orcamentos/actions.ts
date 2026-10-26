@@ -10,6 +10,7 @@ import { parseItens, somaItens } from "@/lib/itens";
 import { proximoNumero } from "@/lib/numero";
 import { formatarMoeda, numeroFormatado } from "@/lib/format";
 import { registrarExclusao } from "@/lib/exclusoes";
+import { sincronizarItensDaOS } from "@/lib/sincronizar-itens-os";
 import { enviarPdfPorWhatsApp, type EstadoEnvioWhatsApp } from "@/lib/envio-documentos-whatsapp";
 import { WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
 
@@ -126,7 +127,7 @@ export async function atualizarOrcamento(
     // também — os dois devem representar o mesmo serviço.
     const osVinculada = await tx.ordemServico.findFirst({ where: { origemOrcamentoId: orcamentoId } });
     if (osVinculada) {
-      await tx.ordemServicoItem.deleteMany({ where: { osId: osVinculada.id } });
+      await sincronizarItensDaOS(tx, osVinculada.id, itens);
       await tx.ordemServico.update({
         where: { id: osVinculada.id },
         data: {
@@ -134,16 +135,6 @@ export async function atualizarOrcamento(
           veiculoId: dados.veiculoId,
           observacoes: dados.observacoes || null,
           valorTotal: total,
-          itens: {
-            create: itens.map((item) => ({
-              descricao: item.descricao,
-              quantidade: item.quantidade,
-              valorUnit: item.valorUnit,
-              valorTotal: item.valorTotal,
-              ordem: item.ordem,
-              tipoServicoId: item.tipoServicoId,
-            })),
-          },
         },
       });
     }
