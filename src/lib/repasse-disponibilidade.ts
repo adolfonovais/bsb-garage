@@ -7,12 +7,11 @@ import { numeroFormatado, paraNumero } from "@/lib/format";
 //  - Um serviço (item da OS) que já foi repassado — pra QUALQUER prestador —
 //    não aparece mais pra outro repasse. Os demais serviços da mesma OS
 //    continuam disponíveis.
-//  - OS já ENTREGUE (ou cancelada) não aceita novos repasses.
+//  - OS cancelada não aceita repasses (OS entregue continua aceitando).
 //  - Repasse "da OS inteira" (sem itens marcados) ocupa todos os serviços.
 //
 // `excluirRepasseId` tira o próprio repasse sendo editado dessa conta, senão
-// editar um repasse faria ele "esconder" os serviços que ele mesmo usa — e a
-// OS dele continua aparecendo mesmo que já tenha sido entregue.
+// editar um repasse faria ele "esconder" os serviços que ele mesmo usa.
 
 export type RepasseExistente = {
   oficinaId: string;
@@ -40,26 +39,14 @@ export type OSParaRepasse = {
   itens: ItemOSDisponibilidade[];
   /** Qualquer repasse (não cancelado) que já existe pra essa OS. */
   repassesOS: RepasseExistente[];
-  /** Tem pelo menos um serviço ainda não repassado (e a OS não foi entregue). */
+  /** Tem pelo menos um serviço ainda não repassado. */
   disponivel: boolean;
 };
 
 export async function buscarOrdensParaRepasse(excluirRepasseId?: string): Promise<OSParaRepasse[]> {
-  // A OS do repasse que está sendo editado precisa continuar na lista, mesmo
-  // se já foi entregue — senão a tela de edição não conseguiria mostrá-la.
-  const repasseEditado = excluirRepasseId
-    ? await prisma.repasseOficina.findUnique({ where: { id: excluirRepasseId }, select: { osId: true } })
-    : null;
-  const osDoRepasseEditado = repasseEditado?.osId ?? null;
-
   const [ordensRaw, repassesComOS] = await Promise.all([
     prisma.ordemServico.findMany({
-      where: {
-        OR: [
-          { status: { notIn: ["CANCELADA", "ENTREGUE"] } },
-          ...(osDoRepasseEditado ? [{ id: osDoRepasseEditado }] : []),
-        ],
-      },
+      where: { status: { not: "CANCELADA" } },
       include: {
         cliente: true,
         veiculo: true,
@@ -149,14 +136,7 @@ export async function validarDisponibilidadeRepasse(params: {
   if (!os) return "OS não encontrada.";
   const numero = numeroFormatado(os.numero, os.ano);
 
-  const repasseEditado = params.repasseEmEdicaoId
-    ? await prisma.repasseOficina.findUnique({ where: { id: params.repasseEmEdicaoId }, select: { osId: true } })
-    : null;
-
   if (os.status === "CANCELADA") return `A OS ${numero} está cancelada e não aceita repasses.`;
-  if (os.status === "ENTREGUE" && repasseEditado?.osId !== os.id) {
-    return `A OS ${numero} já foi entregue e não aceita novos repasses.`;
-  }
 
   const outros = await prisma.repasseOficina.findMany({
     where: {

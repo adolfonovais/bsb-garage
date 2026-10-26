@@ -31,7 +31,7 @@ type OS = {
   itens: ItemOS[];
   /** Qualquer repasse (não cancelado) já existente pra essa OS. */
   repassesOS: RepasseExistente[];
-  /** Tem algum serviço ainda não repassado (e a OS não foi entregue). */
+  /** Tem algum serviço ainda não repassado. */
   disponivel: boolean;
 };
 
@@ -67,7 +67,7 @@ export function RepasseVeiculoCampos({
   );
 
   // Um serviço já repassado (pra qualquer prestador) não aparece de novo; os
-  // outros serviços da mesma OS continuam disponíveis. OS entregue não é listada.
+  // outros serviços da mesma OS continuam disponíveis.
   const ordensDisponiveis = ordens.filter((os) => os.disponivel);
   const osSelecionada = ordensDisponiveis.find((o) => o.id === osId);
   const itensDisponiveis = osSelecionada ? osSelecionada.itens.filter((item) => item.disponivel) : [];
@@ -122,7 +122,7 @@ export function RepasseVeiculoCampos({
 
       <Field
         label="Vincular a uma OS (opcional)"
-        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS ainda não entregues que tenham algum serviço sem repasse."
+        hint="Preenche carro/placa automaticamente ao selecionar. Só lista OS que ainda tenham algum serviço sem repasse."
       >
         <Select name="osId" value={osId} onChange={(e) => selecionarOS(e.target.value)}>
           <option value="">Nenhuma</option>
